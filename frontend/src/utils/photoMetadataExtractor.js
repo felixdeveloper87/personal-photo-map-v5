@@ -11,7 +11,15 @@ export const extractPhotoMetadata = async (file) => {
     
     reader.onload = (e) => {
       try {
-        const exif = EXIF.readFromBinaryFile(e.target.result) || {};
+        // Tentar extrair EXIF de forma robusta
+        let exif = {};
+        try {
+          exif = EXIF.readFromBinaryFile(e.target.result) || {};
+        } catch (exifError) {
+          console.warn('Biblioteca EXIF.js falhou (erro conhecido), continuando sem dados EXIF:', exifError.message);
+          // Continuar com objeto vazio - a aplicação funcionará normalmente
+          // usando apenas a data do arquivo como fallback
+        }
         
         // Extrair data da foto
         const dateStr = exif.DateTimeOriginal || exif.DateTime || exif.DateTimeDigitized || null;
