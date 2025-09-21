@@ -45,7 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/photomap",
             "/api/other-public-endpoint",
             "/health",
-            "/api/images/uploads/**"
+            "/api/images/uploads/**",
+            "/api/images/uploads/*"
     );
 
     @Override
@@ -71,6 +72,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        
+        logger.info(String.format("🔐 Path not excluded, requiring authentication: %s", requestPath));
 
         // Extract JWT
         String token = extractJwtFromRequest(request);
@@ -141,11 +144,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isExcluded(String path) {
+        logger.info(String.format("🔍 Checking if path is excluded: %s", path));
         for (String pattern : EXCLUDE_URLS) {
+            logger.info(String.format("🔍 Testing pattern: %s against path: %s", pattern, path));
             if (pathMatcher.match(pattern, path)) {
+                logger.info(String.format("✅ Path matched pattern: %s", pattern));
                 return true;
             }
         }
+        logger.info(String.format("❌ Path not excluded: %s", path));
         return false;
     }
 
