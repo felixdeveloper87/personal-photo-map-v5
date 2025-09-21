@@ -17,12 +17,12 @@ services:
     environment:
       - SERVER_ADDRESS=0.0.0.0
       - SERVER_PORT=8092
-      - APP_UPLOAD_DIR=/photomap/storage
+      - APP_UPLOAD_DIR=/photomap/storage/uploads
       - APP_BASE_URL=https://api.personalphotomap.co.uk
     ports:
       - "8092:8092"
     volumes:
-      - photomap-storage:/photomap/storage
+      - ./storage:/photomap/storage
     depends_on:
       - postgres-container
 
@@ -43,5 +43,4 @@ services:
 
 volumes:
   postgres-data:
-  photomap-storage:
 
