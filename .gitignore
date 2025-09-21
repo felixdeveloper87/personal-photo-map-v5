@@ -1,0 +1,14 @@
+# Ignore secrets/certs and local artifacts
+nginx/certs/
+*.key
+*.crt
+*.pem
+
+# Node/Java common ignores (adjust if needed)
+node_modules/
+dist/
+build/
+target/
+.env
+.DS_Store
+Thumbs.db
