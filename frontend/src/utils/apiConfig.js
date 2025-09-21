@@ -42,14 +42,14 @@ export const buildApiUrl = (endpoint) => {
  * @returns {string} Complete image URL
  */
 export const buildImageUrl = (filePath) => {
-  // If it's already a full URL (S3 or local storage), return as is
-  if (filePath && filePath.includes('http')) {
-    return filePath;
-  }
-  
   // If filePath is empty or null, return empty string
   if (!filePath) {
     return '';
+  }
+  
+  // If it's already a full URL (S3 or local storage), return as is
+  if (filePath.includes('http')) {
+    return filePath;
   }
   
   // If filePath already starts with /api, it's already a complete path
@@ -58,7 +58,14 @@ export const buildImageUrl = (filePath) => {
     return baseUrl ? `${baseUrl}${filePath}` : filePath;
   }
   
-  // Otherwise, build with API base URLl
+  // If filePath is just a filename, prepend the uploads path
+  if (!filePath.startsWith('/')) {
+    const baseUrl = getApiBaseUrl();
+    const uploadsPath = '/api/images/uploads/';
+    return baseUrl ? `${baseUrl}${uploadsPath}${filePath}` : `${uploadsPath}${filePath}`;
+  }
+  
+  // Otherwise, build with API base URL
   const baseUrl = getApiBaseUrl();
   return baseUrl ? `${baseUrl}${filePath}` : filePath;
 };
