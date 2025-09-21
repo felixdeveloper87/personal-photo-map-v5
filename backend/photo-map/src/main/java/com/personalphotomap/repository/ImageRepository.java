@@ -100,4 +100,9 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
      */
     @Query("SELECT i.countryId, COUNT(i) as photoCount FROM Image i WHERE i.user.id = :userId GROUP BY i.countryId ORDER BY photoCount DESC")
     List<Object[]> findCountriesWithPhotoCountsByUserId(@Param("userId") Long userId);
+
+    /**
+     * Checks if an image with the given filename belongs to the specified user.
+     */
+    boolean existsByFileNameAndUserId(String fileName, Long userId);
 }
