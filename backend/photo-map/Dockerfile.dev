@@ -5,8 +5,8 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copy necessary files for the build
-COPY photo-map/pom.xml .
-COPY photo-map/src ./src
+COPY pom.xml .
+COPY src ./src
 
 # Build the JAR file
 RUN mvn clean package -DskipTests
