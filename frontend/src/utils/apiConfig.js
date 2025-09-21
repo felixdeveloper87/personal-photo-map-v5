@@ -52,7 +52,13 @@ export const buildImageUrl = (filePath) => {
     return '';
   }
   
-  // Otherwise, build with API base URL
+  // If filePath already starts with /api, it's already a complete path
+  if (filePath.startsWith('/api/')) {
+    const baseUrl = getApiBaseUrl();
+    return baseUrl ? `${baseUrl}${filePath}` : filePath;
+  }
+  
+  // Otherwise, build with API base URLl
   const baseUrl = getApiBaseUrl();
   return baseUrl ? `${baseUrl}${filePath}` : filePath;
 };
