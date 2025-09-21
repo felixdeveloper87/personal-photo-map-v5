@@ -11,7 +11,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,10 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.UUID;
-
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
 
 /**
  * LocalFileStorageService
@@ -188,34 +183,12 @@ public class LocalFileStorageService {
 
     /**
      * Resizes an image to fit within the specified maximum dimension.
-     * Automatically corrects EXIF orientation to prevent rotation issues.
      */
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // Reset stream for EXIF reading
-        inputStream.mark(Integer.MAX_VALUE);
-        
-        // Read EXIF orientation first
-        int orientation = 1; // Default: no rotation
-        try {
-            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
-            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            if (directory != null && directory.hasTagName(ExifIFD0Directory.TAG_ORIENTATION)) {
-                orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-                logger.debug("🔍 EXIF Orientation detected: {}", orientation);
-            }
-        } catch (Exception e) {
-            logger.debug("Could not read EXIF orientation, using default: {}", e.getMessage());
-        }
-        
-        // Reset stream for image reading
-        inputStream.reset();
         BufferedImage originalImage = ImageIO.read(inputStream);
         
-        // Apply EXIF orientation correction first
-        BufferedImage correctedImage = correctImageOrientation(originalImage, orientation);
-        
-        int originalWidth = correctedImage.getWidth();
-        int originalHeight = correctedImage.getHeight();
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
         
         // Calculate new dimensions maintaining aspect ratio
         double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
@@ -231,88 +204,10 @@ public class LocalFileStorageService {
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        g2d.drawImage(correctedImage, 0, 0, newWidth, newHeight, null);
+        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
-        
-        logger.info("✅ Image resized and orientation corrected: {}x{} -> {}x{} (orientation: {})", 
-                   originalImage.getWidth(), originalImage.getHeight(), newWidth, newHeight, orientation);
         
         return resizedImage;
-    }
-
-    /**
-     * Corrects image orientation based on EXIF data.
-     * This fixes the rotation issue that occurs with mobile photos.
-     */
-    private BufferedImage correctImageOrientation(BufferedImage image, int orientation) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        
-        BufferedImage correctedImage;
-        AffineTransform transform = new AffineTransform();
-        
-        switch (orientation) {
-            case 1: // Normal orientation
-                return image;
-                
-            case 2: // Flip horizontal
-                correctedImage = new BufferedImage(width, height, image.getType());
-                transform.scale(-1.0, 1.0);
-                transform.translate(-width, 0);
-                break;
-                
-            case 3: // Rotate 180°
-                correctedImage = new BufferedImage(width, height, image.getType());
-                transform.translate(width, height);
-                transform.rotate(Math.PI);
-                break;
-                
-            case 4: // Flip vertical
-                correctedImage = new BufferedImage(width, height, image.getType());
-                transform.scale(1.0, -1.0);
-                transform.translate(0, -height);
-                break;
-                
-            case 5: // Rotate 90° CCW + flip horizontal
-                correctedImage = new BufferedImage(height, width, image.getType());
-                transform.rotate(-Math.PI / 2);
-                transform.scale(-1.0, 1.0);
-                break;
-                
-            case 6: // Rotate 90° CW
-                correctedImage = new BufferedImage(height, width, image.getType());
-                transform.translate(height, 0);
-                transform.rotate(Math.PI / 2);
-                break;
-                
-            case 7: // Rotate 90° CW + flip horizontal
-                correctedImage = new BufferedImage(height, width, image.getType());
-                transform.scale(-1.0, 1.0);
-                transform.translate(-height, 0);
-                transform.translate(height, 0);
-                transform.rotate(Math.PI / 2);
-                break;
-                
-            case 8: // Rotate 90° CCW
-                correctedImage = new BufferedImage(height, width, image.getType());
-                transform.translate(0, width);
-                transform.rotate(-Math.PI / 2);
-                break;
-                
-            default:
-                logger.warn("Unknown EXIF orientation: {}, using original image", orientation);
-                return image;
-        }
-        
-        Graphics2D g2d = correctedImage.createGraphics();
-        g2d.setTransform(transform);
-        g2d.drawImage(image, 0, 0, null);
-        g2d.dispose();
-        
-        logger.debug("✅ Applied EXIF orientation correction: {} -> {}x{}", orientation, 
-                    correctedImage.getWidth(), correctedImage.getHeight());
-        
-        return correctedImage;
     }
 
     /**
