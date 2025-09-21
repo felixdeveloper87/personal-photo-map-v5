@@ -42,7 +42,7 @@ export const buildApiUrl = (endpoint) => {
  * @returns {string} Complete image URL
  */
 export const buildImageUrl = (filePath) => {
-  // If filePath is empty or null, return empty string
+  // If filePath is empty or null, return empty strings
   if (!filePath) {
     return '';
   }
