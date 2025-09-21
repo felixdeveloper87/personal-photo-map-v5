@@ -86,6 +86,13 @@
 			<version>2.9.0</version>
 		</dependency>
 
+		<!-- Metadata Extractor for EXIF data reading -->
+		<dependency>
+			<groupId>com.drewnoakes</groupId>
+			<artifactId>metadata-extractor</artifactId>
+			<version>2.18.0</version>
+		</dependency>
+
 		<!-- Lombok for reducing boilerplate code -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
