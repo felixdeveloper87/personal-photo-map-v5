@@ -1,0 +1,44 @@
+
+# Etapa 1: Construção do Frontend
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+# Copiar os arquivos necessários
+COPY package*.json ./
+RUN npm install
+
+# Copiar todo o código do frontend
+COPY . .
+
+# Definir a URL do backend via argumento (passado no Render)
+ARG VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+
+# Criar o build de produção
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm run build
+
+# Etapa 2: Servir com Nginx
+FROM nginx:stable-alpine
+
+# Remover arquivos padrão do Nginx
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copiar o build do React para a pasta do Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copiar a configuração do Nginx (template)
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+
+# Copiar o script de entrada e dar permissão de execução
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Definir o script de entrada antes de iniciar o Nginx
+CMD ["/docker-entrypoint.sh", "nginx", "-g", "daemon off;"]
+
+
+
+
+

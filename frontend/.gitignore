@@ -1,0 +1,26 @@
+# Ignorar arquivos de ambiente do frontend
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Ignorar dependências do Node.js
+node_modules/
+.vite/
+dist/
+
+# Ignorar arquivos de log e cache
+*.log
+logs/
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorar arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de build
+build/

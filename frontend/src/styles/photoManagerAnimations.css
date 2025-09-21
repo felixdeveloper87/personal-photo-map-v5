@@ -1,0 +1,132 @@
+/* PhotoManager Animations and Effects */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.05;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Floating elements animation */
+.floating-element {
+  animation: float 6s ease-in-out infinite !important;
+}
+
+.floating-element-reverse {
+  animation: float 8s ease-in-out infinite reverse !important;
+}
+
+/* Pulse background animation */
+.pulse-bg {
+  animation: pulse 4s ease-in-out infinite !important;
+}
+
+/* Gradient animation for buttons */
+.gradient-border {
+  animation: gradient 3s ease infinite !important;
+  background-size: 400% 400% !important;
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2), 0 12px 24px rgba(147, 51, 234, 0.15) !important;
+}
+
+/* Feature badge animations */
+.feature-badge {
+  transition: all 0.3s ease !important;
+}
+
+.feature-badge:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Button animations */
+.cta-button {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3) !important;
+  background-color: #EBF8FF !important;
+}
+
+.cta-button:active {
+  transform: translateY(-1px) scale(1.02) !important;
+}
+
+/* Quote box animations */
+.quote-box {
+  transition: all 0.3s ease !important;
+}
+
+.quote-box:hover {
+  opacity: 1 !important;
+  transform: scale(1.02) !important;
+}
+
+/* Enhanced title animations */
+@keyframes titleGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(147, 51, 234, 0.5));
+  }
+}
+
+/* Responsive enhancements */
+@media (max-width: 768px) {
+  .floating-element,
+  .floating-element-reverse {
+    animation-duration: 8s !important;
+  }
+  
+  .gradient-border {
+    animation-duration: 4s !important;
+  }
+}

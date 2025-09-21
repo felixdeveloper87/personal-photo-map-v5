@@ -1,0 +1,22 @@
+# This file is only used for local development.
+
+# Step 1: Build the Backend
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
+
+# Copy necessary files for the build
+COPY photo-map/pom.xml .
+COPY photo-map/src ./src
+
+# Build the JAR file
+RUN mvn clean package -DskipTests
+
+# Step 2: Run the Backend
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+
+# Copy the generated JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8092
+ENTRYPOINT ["java", "-jar", "app.jar"]

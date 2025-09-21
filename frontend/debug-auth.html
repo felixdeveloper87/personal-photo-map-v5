@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 300px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Authentication Debug Tool</h1>
+    
+    <div class="section">
+        <h3>Current Authentication Status</h3>
+        <div id="auth-status">Loading...</div>
+        <button onclick="checkAuthStatus()">Refresh Status</button>
+    </div>
+    
+    <div class="section">
+        <h3>Test API Endpoints</h3>
+        <p>Test the endpoints that are failing:</p>
+        
+        <div>
+            <label>Country ID:</label>
+            <input type="text" id="countryId" value="ru" placeholder="e.g., ru, us, br">
+        </div>
+        
+        <button onclick="testImagesEndpoint()">Test /api/images/{countryId}</button>
+        <button onclick="testYearsEndpoint()">Test /api/images/{countryId}/available-years</button>
+        <button onclick="testAlbumsEndpoint()">Test /api/albums/{countryId}</button>
+        
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="section">
+        <h3>Token Management</h3>
+        <button onclick="clearToken()">Clear Token</button>
+        <button onclick="showToken()">Show Token Info</button>
+        <div id="token-info"></div>
+    </div>
+    
+    <div class="section">
+        <h3>Manual API Test</h3>
+        <div>
+            <label>API URL:</label>
+            <input type="text" id="apiUrl" value="https://api.personalphotomap.co.uk/api/images/ru" placeholder="Enter API URL">
+        </div>
+        <button onclick="testCustomEndpoint()">Test Custom Endpoint</button>
+        <div id="custom-test-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.personalphotomap.co.uk';
+        
+        function checkAuthStatus() {
+            const token = localStorage.getItem('token');
+            const fullname = localStorage.getItem('fullname');
+            const email = localStorage.getItem('email');
+            const premium = localStorage.getItem('premium');
+            
+            const statusDiv = document.getElementById('auth-status');
+            
+            if (token) {
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ <strong>Authenticated</strong><br>
+                        Name: ${fullname || 'N/A'}<br>
+                        Email: ${email || 'N/A'}<br>
+                        Premium: ${premium === 'true' ? 'Yes' : 'No'}<br>
+                        Token Length: ${token.length} characters<br>
+                        Token Preview: ${token.substring(0, 30)}...
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="warning">
+                        ⚠️ <strong>Not Authenticated</strong><br>
+                        No token found in localStorage
+                    </div>
+                `;
+            }
+        }
+        
+        async function testImagesEndpoint() {
+            const countryId = document.getElementById('countryId').value;
+            await testEndpoint(`/api/images/${countryId}`, 'images');
+        }
+        
+        async function testYearsEndpoint() {
+            const countryId = document.getElementById('countryId').value;
+            await testEndpoint(`/api/images/${countryId}/available-years`, 'years');
+        }
+        
+        async function testAlbumsEndpoint() {
+            const countryId = document.getElementById('countryId').value;
+            await testEndpoint(`/api/albums/${countryId}`, 'albums');
+        }
+        
+        async function testEndpoint(endpoint, name) {
+            const token = localStorage.getItem('token');
+            const resultsDiv = document.getElementById('test-results');
+            
+            if (!token) {
+                resultsDiv.innerHTML = `<div class="error">❌ No token found. Please log in first.</div>`;
+                return;
+            }
+            
+            try {
+                console.log(`🔍 Testing ${name} endpoint: ${endpoint}`);
+                console.log(`🔑 Using token: ${token.substring(0, 20)}...`);
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log(`📡 Response status: ${response.status}`);
+                console.log(`📡 Response headers:`, response.headers);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>${name} endpoint successful!</strong><br>
+                            Status: ${response.status}<br>
+                            Data: <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>${name} endpoint failed!</strong><br>
+                            Status: ${response.status}<br>
+                            Error: ${errorText}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error(`💥 Error testing ${name} endpoint:`, error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        💥 <strong>Network error testing ${name} endpoint!</strong><br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('fullname');
+            localStorage.removeItem('email');
+            localStorage.removeItem('premium');
+            checkAuthStatus();
+            document.getElementById('test-results').innerHTML = '<div class="warning">Token cleared</div>';
+        }
+        
+        function showToken() {
+            const token = localStorage.getItem('token');
+            const tokenInfoDiv = document.getElementById('token-info');
+            
+            if (token) {
+                try {
+                    // Try to decode JWT payload (base64)
+                    const parts = token.split('.');
+                    if (parts.length === 3) {
+                        const payload = JSON.parse(atob(parts[1]));
+                        const expiry = new Date(payload.exp * 1000);
+                        const now = new Date();
+                        
+                        tokenInfoDiv.innerHTML = `
+                            <div class="success">
+                                <strong>JWT Token Info:</strong><br>
+                                Issued at: ${new Date(payload.iat * 1000).toLocaleString()}<br>
+                                Expires at: ${expiry.toLocaleString()}<br>
+                                Expired: ${expiry < now ? 'Yes' : 'No'}<br>
+                                Subject: ${payload.sub || 'N/A'}<br>
+                                Issuer: ${payload.iss || 'N/A'}<br>
+                                Payload: <pre>${JSON.stringify(payload, null, 2)}</pre>
+                            </div>
+                        `;
+                    } else {
+                        tokenInfoDiv.innerHTML = `<div class="warning">Token format appears invalid</div>`;
+                    }
+                } catch (e) {
+                    tokenInfoDiv.innerHTML = `<div class="error">Error parsing token: ${e.message}</div>`;
+                }
+            } else {
+                tokenInfoDiv.innerHTML = `<div class="warning">No token found</div>`;
+            }
+        }
+        
+        async function testCustomEndpoint() {
+            const url = document.getElementById('apiUrl').value;
+            const token = localStorage.getItem('token');
+            const resultsDiv = document.getElementById('custom-test-results');
+            
+            if (!token) {
+                resultsDiv.innerHTML = `<div class="error">❌ No token found. Please log in first.</div>`;
+                return;
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>Custom endpoint successful!</strong><br>
+                            Status: ${response.status}<br>
+                            Data: <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>Custom endpoint failed!</strong><br>
+                            Status: ${response.status}<br>
+                            Error: ${errorText}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        💥 <strong>Network error!</strong><br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Initialize on page load
+        checkAuthStatus();
+    </script>
+</body>
+</html>

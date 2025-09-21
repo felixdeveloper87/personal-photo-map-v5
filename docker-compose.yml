@@ -1,0 +1,27 @@
+services:
+  postgres-container:
+    image: postgres:16
+    container_name: postgres-container
+    env_file: .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: 
+      context: ./backend/photo-map
+      dockerfile: Dockerfile.dev
+    container_name: photomap-backend
+    env_file: .env
+    ports:
+      - "8092:8092"
+    volumes:
+      - photomap-storage:/photomap/storage
+    depends_on:
+      - postgres-container
+
+
+volumes:
+  postgres-data:
+  photomap-storage:
