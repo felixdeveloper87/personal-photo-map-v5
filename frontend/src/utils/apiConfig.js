@@ -80,3 +80,21 @@ export const buildImageUrl = (filePath) => {
   console.log('✅ buildImageUrl - Default case:', filePath, '-> Final URL:', finalUrl);
   return finalUrl;
 };
+
+/**
+ * Test image URL accessibility
+ * @param {string} imageUrl - The image URL to test
+ * @returns {Promise<boolean>} Whether the image is accessible
+ */
+export const testImageAccess = async (imageUrl) => {
+  try {
+    console.log('🔍 Testing image access:', imageUrl);
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    const isAccessible = response.ok;
+    console.log(`${isAccessible ? '✅' : '❌'} Image accessibility test:`, imageUrl, 'Status:', response.status);
+    return isAccessible;
+  } catch (error) {
+    console.error('❌ Image accessibility test failed:', imageUrl, error);
+    return false;
+  }
+};

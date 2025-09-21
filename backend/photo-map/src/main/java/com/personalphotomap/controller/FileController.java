@@ -2,15 +2,14 @@ package com.personalphotomap.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -85,6 +84,10 @@ public class FileController {
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                     .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000") // Cache for 1 year
+                    .header("Access-Control-Allow-Origin", "*") // Explicit CORS for images
+                    .header("Access-Control-Allow-Methods", "GET, OPTIONS")
+                    .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                    .header("Cross-Origin-Resource-Policy", "cross-origin")
                     .body(resource);
 
         } catch (MalformedURLException e) {
@@ -108,6 +111,20 @@ public class FileController {
     public ResponseEntity<Resource> serveResizedFile(@PathVariable String filename, @PathVariable String size) {
         // Since we only have one optimized version, just serve the main file
         return serveFile(filename);
+    }
+
+    /**
+     * Handle OPTIONS requests for CORS preflight.
+     */
+    @RequestMapping(value = "/{filename:.+}", method = RequestMethod.OPTIONS)
+    public ResponseEntity<Void> handleOptions(@PathVariable String filename) {
+        logger.info("🔍 OPTIONS request for file: {}", filename);
+        return ResponseEntity.ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                .header("Access-Control-Max-Age", "3600")
+                .build();
     }
 
     /**
