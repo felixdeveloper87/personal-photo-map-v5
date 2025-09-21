@@ -51,14 +51,20 @@ public class FileController {
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         try {
+            logger.info("🔍 FileController: Attempting to serve file: {}", filename);
+            logger.info("🔍 Upload directory: {}", uploadDir);
+            
             // Security: Sanitize filename to prevent directory traversal
             String sanitizedFilename = sanitizeFilename(filename);
+            logger.info("🔍 Sanitized filename: {}", sanitizedFilename);
 
             Path file = Paths.get(uploadDir).resolve(sanitizedFilename);
+            logger.info("🔍 Full file path: {}", file.toAbsolutePath());
+            
             Resource resource = new UrlResource(file.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
-                logger.warn("File not found or not readable: {}", sanitizedFilename);
+                logger.warn("❌ File not found or not readable: {} | Path: {}", sanitizedFilename, file.toAbsolutePath());
                 return ResponseEntity.notFound().build();
             }
 
@@ -67,12 +73,13 @@ public class FileController {
             Path filePath = file.toAbsolutePath().normalize();
 
             if (!filePath.startsWith(uploadPath)) {
-                logger.warn("Security violation: Attempted to access file outside upload directory: {}", filename);
+                logger.warn("❌ Security violation: Attempted to access file outside upload directory: {} | Upload path: {} | File path: {}", filename, uploadPath, filePath);
                 return ResponseEntity.badRequest().build();
             }
 
             // Determine content type
             String contentType = determineContentType(file);
+            logger.info("✅ File served successfully: {} | Content-Type: {}", filename, contentType);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
@@ -112,15 +119,26 @@ public class FileController {
             Path uploadPath = Paths.get(uploadDir);
             boolean uploadDirExists = Files.exists(uploadPath);
             boolean uploadDirWritable = Files.isWritable(uploadPath);
-
+            
+            logger.info("🔍 Health check - Upload dir: {} | Exists: {} | Writable: {}", uploadDir, uploadDirExists, uploadDirWritable);
+            
             if (uploadDirExists && uploadDirWritable) {
-                return ResponseEntity.ok("File server is healthy");
+                // Lista alguns arquivos para debug
+                try {
+                    long fileCount = Files.list(uploadPath).count();
+                    logger.info("🔍 Upload directory contains {} files", fileCount);
+                } catch (Exception e) {
+                    logger.warn("Could not list files in upload directory: {}", e.getMessage());
+                }
+                
+                return ResponseEntity.ok("File server is healthy - Upload dir: " + uploadDir);
             } else {
-                return ResponseEntity.internalServerError()
-                        .body("Upload directory issues - exists: " + uploadDirExists + ", writable: "
-                                + uploadDirWritable);
+                String errorMsg = "Upload directory issues - exists: " + uploadDirExists + ", writable: " + uploadDirWritable + ", path: " + uploadDir;
+                logger.error("❌ {}", errorMsg);
+                return ResponseEntity.internalServerError().body(errorMsg);
             }
         } catch (Exception e) {
+            logger.error("❌ Error checking file server health", e);
             return ResponseEntity.internalServerError().body("Error checking file server health: " + e.getMessage());
         }
     }

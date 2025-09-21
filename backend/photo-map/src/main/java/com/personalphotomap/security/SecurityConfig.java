@@ -49,8 +49,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("https://www.personalphotomap.co.uk"));
-        // cfg.setAllowedOriginPatterns(List.of("https://*.personalphotomap.co.uk"));
+        // Permitir tanto o domínio de produção quanto localhost para desenvolvimento
+        cfg.setAllowedOrigins(List.of(
+            "https://www.personalphotomap.co.uk",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173"
+        ));
+        // Também permitir padrões para subdomínios
+        cfg.setAllowedOriginPatterns(List.of("https://*.personalphotomap.co.uk"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","Origin","X-Requested-With"));
         cfg.setExposedHeaders(List.of("Authorization","Content-Disposition"));
