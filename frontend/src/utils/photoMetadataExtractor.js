@@ -277,110 +277,55 @@ export const isValidImageFile = (file) => {
 };
 
 /**
- * Cria um preview de uma imagem com orientação correta baseada no EXIF
+ * Cria um preview de uma imagem com orientação correta
  * @param {File} file - Arquivo de imagem
  * @param {number} maxSize - Tamanho máximo do preview (default: 200)
  * @returns {Promise<string>} URL do preview
  */
 export const createImagePreview = (file, maxSize = 200) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Extrair metadados incluindo orientação
-      const metadata = await extractPhotoMetadata(file);
-      const orientation = metadata.orientation || 1;
-
-      const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
       
-      reader.onload = (e) => {
-        const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Calcular dimensões mantendo proporção
-          let { width, height } = img;
-          
-          // Para orientações 6 e 8, as dimensões precisam ser trocadas
-          if (orientation === 6 || orientation === 8) {
-            [width, height] = [height, width];
-          }
-          
-          const aspectRatio = width / height;
-          
-          if (width > height) {
-            width = maxSize;
-            height = maxSize / aspectRatio;
-          } else {
-            height = maxSize;
-            width = maxSize * aspectRatio;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          // Aplicar correção de orientação
-          applyOrientationTransform(ctx, orientation, width, height);
-          
-          // Desenhar imagem com correção de orientação
-          if (orientation === 6 || orientation === 8) {
-            // Para rotações de 90°, usar dimensões originais da imagem
-            ctx.drawImage(img, 0, 0, height, width);
-          } else {
-            ctx.drawImage(img, 0, 0, width, height);
-          }
-          
-          // Converter para URL
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(URL.createObjectURL(blob));
-            } else {
-              reject(new Error('Erro ao criar preview'));
-            }
-          }, 'image/jpeg', 0.8);
-        };
+        // Calcular dimensões mantendo proporção
+        let { width, height } = img;
+        const aspectRatio = width / height;
         
-        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-        img.src = e.target.result;
+        if (width > height) {
+          width = maxSize;
+          height = maxSize / aspectRatio;
+        } else {
+          height = maxSize;
+          width = maxSize * aspectRatio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Desenhar imagem redimensionada
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Converter para URL
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(URL.createObjectURL(blob));
+          } else {
+            reject(new Error('Erro ao criar preview'));
+          }
+        }, 'image/jpeg', 0.8);
       };
       
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-      reader.readAsDataURL(file);
-    } catch (error) {
-      reject(error);
-    }
+      img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+    reader.readAsDataURL(file);
   });
-};
-
-/**
- * Aplica transformações de orientação no contexto do canvas
- * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
- * @param {number} orientation - Valor da orientação EXIF
- * @param {number} width - Largura do canvas
- * @param {number} height - Altura do canvas
- */
-const applyOrientationTransform = (ctx, orientation, width, height) => {
-  switch (orientation) {
-    case 1:
-      // Normal - nenhuma transformação
-      break;
-    case 3:
-      // Rotacionar 180°
-      ctx.translate(width, height);
-      ctx.rotate(Math.PI);
-      break;
-    case 6:
-      // Rotacionar 90° horário
-      ctx.translate(width, 0);
-      ctx.rotate(Math.PI / 2);
-      break;
-    case 8:
-      // Rotacionar 90° anti-horário
-      ctx.translate(0, height);
-      ctx.rotate(-Math.PI / 2);
-      break;
-    default:
-      console.warn(`Orientação EXIF não suportada: ${orientation}`);
-      break;
-  }
 };

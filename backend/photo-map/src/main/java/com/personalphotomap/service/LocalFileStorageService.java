@@ -11,7 +11,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,10 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.UUID;
-
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
 
 /**
  * LocalFileStorageService
@@ -122,13 +117,11 @@ public class LocalFileStorageService {
         
         do {
             try {
-                // Read and resize image with EXIF orientation correction
-                try (InputStream inputStream = file.getInputStream()) {
-                    BufferedImage resizedImage = resizeImage(inputStream, MAX_SIZE);
-                    
-                    // Convert to bytes with specified quality
-                    optimizedImageBytes = imageToBytes(resizedImage, quality);
-                }
+                // Read and resize image
+                BufferedImage resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+                
+                // Convert to bytes with specified quality
+                optimizedImageBytes = imageToBytes(resizedImage, quality);
 
             } catch (Exception e) {
                 logger.error("Error creating optimized image with quality {}: {}", quality, e.getMessage());
@@ -162,7 +155,6 @@ public class LocalFileStorageService {
 
     /**
      * Creates a smaller image when quality reduction isn't enough.
-     * Uses the corrected resizeImage method that handles EXIF orientation.
      */
     private byte[] createSmallerImage(MultipartFile file) throws IOException {
         int[] dimensions = {1600, 1200, 800, 600, 400};
@@ -171,16 +163,13 @@ public class LocalFileStorageService {
             float quality = INITIAL_QUALITY;
             
             do {
-                // Create new input stream for each attempt
-                try (InputStream inputStream = file.getInputStream()) {
-                    BufferedImage resizedImage = resizeImage(inputStream, maxDim);
-                    byte[] imageBytes = imageToBytes(resizedImage, quality);
-                    
-                    if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
-                        logger.info("Achieved target size with {}x{} dimensions at quality {}", 
-                            maxDim, maxDim, quality);
-                        return imageBytes;
-                    }
+                BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
+                byte[] imageBytes = imageToBytes(resizedImage, quality);
+                
+                if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
+                    logger.info("Achieved target size with {}x{} dimensions at quality {}", 
+                        maxDim, maxDim, quality);
+                    return imageBytes;
                 }
                 
                 quality -= 0.1f;
@@ -188,32 +177,18 @@ public class LocalFileStorageService {
         }
         
         // Last resort - very small image with minimum quality
-        try (InputStream inputStream = file.getInputStream()) {
-            BufferedImage lastResort = resizeImage(inputStream, 300);
-            return imageToBytes(lastResort, MIN_QUALITY);
-        }
+        BufferedImage lastResort = resizeImage(file.getInputStream(), 300);
+        return imageToBytes(lastResort, MIN_QUALITY);
     }
 
     /**
      * Resizes an image to fit within the specified maximum dimension.
-     * Also corrects orientation based on EXIF data.
      */
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // Mark the stream to allow reset
-        inputStream.mark(Integer.MAX_VALUE);
-        
-        // Extract EXIF orientation first
-        int orientation = extractOrientation(inputStream);
-        
-        // Reset stream to read the actual image
-        inputStream.reset();
         BufferedImage originalImage = ImageIO.read(inputStream);
         
-        // Apply EXIF orientation correction
-        BufferedImage orientedImage = correctOrientation(originalImage, orientation);
-        
-        int originalWidth = orientedImage.getWidth();
-        int originalHeight = orientedImage.getHeight();
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
         
         // Calculate new dimensions maintaining aspect ratio
         double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
@@ -229,92 +204,12 @@ public class LocalFileStorageService {
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        g2d.drawImage(orientedImage, 0, 0, newWidth, newHeight, null);
+        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
         
         return resizedImage;
     }
 
-    /**
-     * Extracts EXIF orientation from image stream.
-     */
-    private int extractOrientation(InputStream inputStream) {
-        try {
-            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
-            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            
-            if (directory != null && directory.hasTagName(ExifIFD0Directory.TAG_ORIENTATION)) {
-                return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-            }
-        } catch (Exception e) {
-            logger.debug("Could not extract EXIF orientation: {}", e.getMessage());
-        }
-        
-        return 1; // Default orientation (normal)
-    }
-
-    /**
-     * Corrects image orientation based on EXIF orientation tag.
-     */
-    private BufferedImage correctOrientation(BufferedImage image, int orientation) {
-        switch (orientation) {
-            case 1:
-                // Normal orientation - no change needed
-                return image;
-                
-            case 3:
-                // Rotate 180 degrees
-                return rotateImage(image, 180);
-                
-            case 6:
-                // Rotate 90 degrees clockwise
-                return rotateImage(image, 90);
-                
-            case 8:
-                // Rotate 90 degrees counter-clockwise
-                return rotateImage(image, -90);
-                
-            default:
-                logger.debug("Unsupported orientation: {}, using original image", orientation);
-                return image;
-        }
-    }
-
-    /**
-     * Rotates an image by the specified angle.
-     */
-    private BufferedImage rotateImage(BufferedImage image, double angle) {
-        double radians = Math.toRadians(angle);
-        double sin = Math.abs(Math.sin(radians));
-        double cos = Math.abs(Math.cos(radians));
-        
-        int width = image.getWidth();
-        int height = image.getHeight();
-        
-        // Calculate new dimensions
-        int newWidth = (int) Math.floor(width * cos + height * sin);
-        int newHeight = (int) Math.floor(height * cos + width * sin);
-        
-        // Create new image with corrected dimensions
-        BufferedImage rotatedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = rotatedImage.createGraphics();
-        
-        // Set rendering hints for better quality
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        // Rotate around center
-        AffineTransform transform = new AffineTransform();
-        transform.translate((newWidth - width) / 2.0, (newHeight - height) / 2.0);
-        transform.rotate(radians, width / 2.0, height / 2.0);
-        
-        g2d.setTransform(transform);
-        g2d.drawImage(image, 0, 0, null);
-        g2d.dispose();
-        
-        return rotatedImage;
-    }
 
     /**
      * Converts BufferedImage to byte array with specified quality.
