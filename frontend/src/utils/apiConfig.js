@@ -42,9 +42,14 @@ export const buildApiUrl = (endpoint) => {
  * @returns {string} Complete image URL
  */
 export const buildImageUrl = (filePath) => {
-  // If it's already a full URL (S3), return as is
-  if (filePath.includes('http')) {
+  // If it's already a full URL (S3 or local storage), return as is
+  if (filePath && filePath.includes('http')) {
     return filePath;
+  }
+  
+  // If filePath is empty or null, return empty string
+  if (!filePath) {
+    return '';
   }
   
   // Otherwise, build with API base URL

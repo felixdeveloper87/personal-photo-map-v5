@@ -81,7 +81,7 @@ public class LocalFileStorageService {
             // Process and save only if it's an image
             if (isImageFile(file)) {
                 String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
-                String fileUrl = baseUrl + "/api/images/uploads/" + finalFileName;
+                String fileUrl = "/api/images/uploads/" + finalFileName;
                 
                 logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
                 return fileUrl;
@@ -106,7 +106,6 @@ public class LocalFileStorageService {
      */
     private String createOptimizedImage(MultipartFile file, String fileName, Path uploadPath) throws IOException {
         String nameWithoutExt = getFileNameWithoutExtension(fileName);
-        String extension = getFileExtension(fileName);
         
         // Force JPEG format for better compression
         String finalFileName = nameWithoutExt + ".jpg";
@@ -276,6 +275,13 @@ public class LocalFileStorageService {
      */
     public String getImageUrl(String originalUrl, String size) {
         // Since we only store one optimized version, return the original URL
+        // If it's a full URL, extract just the path part
+        if (originalUrl != null && originalUrl.startsWith("http")) {
+            int pathIndex = originalUrl.indexOf("/api/images/uploads/");
+            if (pathIndex != -1) {
+                return originalUrl.substring(pathIndex);
+            }
+        }
         return originalUrl;
     }
 

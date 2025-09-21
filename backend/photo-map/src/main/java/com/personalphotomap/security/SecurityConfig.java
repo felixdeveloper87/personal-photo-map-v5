@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()      // preflight
                 .requestMatchers("/api/auth/**").permitAll()                 // login/registro públicos
                 .requestMatchers("/health").permitAll()                      // health público
+                .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
                 .requestMatchers(HttpMethod.PUT, "/api/users/make-premium").authenticated()
                 .anyRequest().authenticated()
             );
