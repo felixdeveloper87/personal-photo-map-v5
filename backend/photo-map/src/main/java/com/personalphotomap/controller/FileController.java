@@ -19,8 +19,9 @@ import java.nio.file.Paths;
 /**
  * FileController
  * 
- * REST controller for serving static files from local storage.
- * Replaces AWS S3 public URL functionality by serving files directly from the VPS.
+ * REST controller for serving staticc files from local storage.
+ * Replaces AWS S3 public URL functionality by serving files directly from the
+ * VPS.
  * 
  * Features:
  * - Serves images from local upload directory
@@ -49,7 +50,7 @@ public class FileController {
         try {
             // Security: Sanitize filename to prevent directory traversal
             String sanitizedFilename = sanitizeFilename(filename);
-            
+
             Path file = Paths.get(uploadDir).resolve(sanitizedFilename);
             Resource resource = new UrlResource(file.toUri());
 
@@ -61,7 +62,7 @@ public class FileController {
             // Security check: Ensure the resolved path is within the upload directory
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path filePath = file.toAbsolutePath().normalize();
-            
+
             if (!filePath.startsWith(uploadPath)) {
                 logger.warn("Security violation: Attempted to access file outside upload directory: {}", filename);
                 return ResponseEntity.badRequest().build();
@@ -90,7 +91,7 @@ public class FileController {
      * Since we only store one optimized version, this redirects to the main file.
      * 
      * @param filename The base filename
-     * @param size The size variant (ignored)
+     * @param size     The size variant (ignored)
      * @return ResponseEntity with the optimized image resource
      */
     @GetMapping("/{filename:.+}/size/{size}")
@@ -108,12 +109,13 @@ public class FileController {
             Path uploadPath = Paths.get(uploadDir);
             boolean uploadDirExists = Files.exists(uploadPath);
             boolean uploadDirWritable = Files.isWritable(uploadPath);
-            
+
             if (uploadDirExists && uploadDirWritable) {
                 return ResponseEntity.ok("File server is healthy");
             } else {
                 return ResponseEntity.internalServerError()
-                    .body("Upload directory issues - exists: " + uploadDirExists + ", writable: " + uploadDirWritable);
+                        .body("Upload directory issues - exists: " + uploadDirExists + ", writable: "
+                                + uploadDirWritable);
             }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error checking file server health: " + e.getMessage());
@@ -124,12 +126,13 @@ public class FileController {
      * Sanitizes filename to prevent directory traversal attacks.
      */
     private String sanitizeFilename(String filename) {
-        if (filename == null) return "";
-        
+        if (filename == null)
+            return "";
+
         // Remove any path separators and parent directory references
         return filename.replaceAll("[/\\\\]", "")
-                      .replaceAll("\\.\\.", "")
-                      .trim();
+                .replaceAll("\\.\\.", "")
+                .trim();
     }
 
     /**
