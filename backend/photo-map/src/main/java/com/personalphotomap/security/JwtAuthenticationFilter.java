@@ -45,8 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/photomap",
             "/api/other-public-endpoint",
             "/health",
-            "/api/images/uploads/**",
-            "/api/images/uploads/*"
+            "/api/images/uploads/**"
     );
 
     @Override
