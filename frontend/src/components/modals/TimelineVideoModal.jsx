@@ -27,7 +27,7 @@ import { FaVideo, FaImages, FaCalendar } from 'react-icons/fa';
 import { MdClose, MdUndo, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
-import { buildApiUrl } from '../../utils/apiConfig';
+import { buildApiUrl, buildImageUrl } from '../../utils/apiConfig';
 import TimelineVideoGenerator from '../features/videos/components/TimelineVideoGeneratorRefactored';
 
 // Fetch photos for video generation
@@ -62,9 +62,7 @@ const fetchAllPictures = async () => {
     const fallbackFileName = image.fileName || `image_${index + 1}`;
     
     return {
-      url: image.filePath && image.filePath.includes('s3.') ? 
-        image.filePath : 
-        `${import.meta.env.VITE_BACKEND_URL}${image.filePath || ''}`,
+      url: buildImageUrl(image.filePath || ''),
       id: image.id || index,
       year: fallbackYear || new Date().getFullYear(),
       countryId: image.countryId || null, // Não forçar 'unknown', deixar null para debug
@@ -647,3 +645,6 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
 };
 
 export default TimelineVideoModal;
+
+
+

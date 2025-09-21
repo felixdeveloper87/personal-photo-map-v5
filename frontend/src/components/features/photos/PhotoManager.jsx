@@ -7,7 +7,7 @@ import { AuthContext } from '../../../context/AuthContext';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
-import { buildApiUrl } from '../../../utils/apiConfig';
+import { buildApiUrl, buildImageUrl } from '../../../utils/apiConfig';
 import '../../../styles/photoManagerAnimations.css';
 import {
   Box,
@@ -374,7 +374,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /* ---------------- Mappers ---------------- */
   const mapImageDto = (image) => ({
-    url: image.filePath?.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
+    url: buildImageUrl(image.filePath || ''),
     id: image.id,
     year: image.year,
     countryId: image.countryId,
@@ -605,3 +605,4 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 };
 
 export default PhotoManager;
+
