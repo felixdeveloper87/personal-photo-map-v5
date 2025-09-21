@@ -11,10 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.personalphotomap.model.AppUser;
-import com.personalphotomap.repository.ImageRepository;
-import com.personalphotomap.repository.UserRepository;
-import com.personalphotomap.security.JwtUtil;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -45,14 +41,6 @@ public class FileController {
     @Value("${app.upload.dir:uploads/}")
     private String uploadDir;
 
-    @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     /**
      * Serves image files from the local upload directory.
@@ -61,16 +49,10 @@ public class FileController {
      * @return ResponseEntity with the file resource
      */
     @GetMapping("/{filename:.+}")
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         try {
             // Security: Sanitize filename to prevent directory traversal
             String sanitizedFilename = sanitizeFilename(filename);
-
-            // Check if user has access to this image
-            if (!hasAccessToImage(sanitizedFilename, token)) {
-                logger.warn("User attempted to access unauthorized image: {}", sanitizedFilename);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
 
             Path file = Paths.get(uploadDir).resolve(sanitizedFilename);
             Resource resource = new UrlResource(file.toUri());
@@ -116,9 +98,9 @@ public class FileController {
      * @return ResponseEntity with the optimized image resource
      */
     @GetMapping("/{filename:.+}/size/{size}")
-    public ResponseEntity<Resource> serveResizedFile(@PathVariable String filename, @PathVariable String size, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Resource> serveResizedFile(@PathVariable String filename, @PathVariable String size) {
         // Since we only have one optimized version, just serve the main file
-        return serveFile(filename, token);
+        return serveFile(filename);
     }
 
     /**
@@ -208,32 +190,4 @@ public class FileController {
         return filename;
     }
 
-    /**
-     * Checks if the authenticated user has access to the specified image file.
-     */
-    private boolean hasAccessToImage(String filename, String token) {
-        try {
-            if (token == null || !token.startsWith("Bearer ")) {
-                return false;
-            }
-            
-            // Extract email from JWT token
-            String email = jwtUtil.extractUsernameFromToken(token);
-            if (email == null) {
-                return false;
-            }
-            
-            // Find user by email
-            AppUser user = userRepository.findByEmail(email);
-            if (user == null) {
-                return false;
-            }
-            
-            // Check if the image belongs to the authenticated user
-            return imageRepository.existsByFileNameAndUserId(filename, user.getId());
-        } catch (Exception e) {
-            logger.error("Error checking image access for file {}", filename, e);
-            return false;
-        }
-    }
 }
