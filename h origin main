@@ -1,0 +1,39 @@
+[1mdiff --git a/backend/photo-map/src/main/java/com/personalphotomap/security/JwtAuthenticationFilter.java b/backend/photo-map/src/main/java/com/personalphotomap/security/JwtAuthenticationFilter.java[m
+[1mindex 3493c02..1f15beb 100644[m
+[1m--- a/backend/photo-map/src/main/java/com/personalphotomap/security/JwtAuthenticationFilter.java[m
+[1m+++ b/backend/photo-map/src/main/java/com/personalphotomap/security/JwtAuthenticationFilter.java[m
+[36m@@ -45,7 +45,8 @@[m [mpublic class JwtAuthenticationFilter extends OncePerRequestFilter {[m
+             "/photomap",[m
+             "/api/other-public-endpoint",[m
+             "/health",[m
+[31m-            "/api/images/uploads/**"[m
+[32m+[m[32m            "/api/images/uploads/**",[m
+[32m+[m[32m            "/api/images/uploads/*"[m
+     );[m
+ [m
+     @Override[m
+[36m@@ -71,6 +72,8 @@[m [mpublic class JwtAuthenticationFilter extends OncePerRequestFilter {[m
+             filterChain.doFilter(request, response);[m
+             return;[m
+         }[m
+[32m+[m[41m        [m
+[32m+[m[32m        logger.info(String.format("🔐 Path not excluded, requiring authentication: %s", requestPath));[m
+ [m
+         // Extract JWT[m
+         String token = extractJwtFromRequest(request);[m
+[36m@@ -141,11 +144,15 @@[m [mpublic class JwtAuthenticationFilter extends OncePerRequestFilter {[m
+     }[m
+ [m
+     private boolean isExcluded(String path) {[m
+[32m+[m[32m        logger.info(String.format("🔍 Checking if path is excluded: %s", path));[m
+         for (String pattern : EXCLUDE_URLS) {[m
+[32m+[m[32m            logger.info(String.format("🔍 Testing pattern: %s against path: %s", pattern, path));[m
+             if (pathMatcher.match(pattern, path)) {[m
+[32m+[m[32m                logger.info(String.format("✅ Path matched pattern: %s", pattern));[m
+                 return true;[m
+             }[m
+         }[m
+[32m+[m[32m        logger.info(String.format("❌ Path not excluded: %s", path));[m
+         return false;[m
+     }[m
+ [m
