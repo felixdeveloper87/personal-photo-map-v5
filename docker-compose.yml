@@ -21,6 +21,20 @@ services:
     depends_on:
       - postgres-container
 
+  nginx:
+    image: nginx:alpine
+    container_name: photomap-nginx
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+    restart: unless-stopped
+
 
 volumes:
   postgres-data:
