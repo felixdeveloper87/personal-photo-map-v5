@@ -66,6 +66,58 @@ public class ImageController {
         }
     }
 
+    /**
+     * Handles individual image upload for sequential processing.
+     * Returns immediate response with upload status and progress info.
+     */
+    @PostMapping(value = "/upload-single", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadSingleImage(
+            @RequestParam("image") MultipartFile file,
+            @RequestParam("countryId") String countryId,
+            @RequestParam("year") int year,
+            @RequestParam("current") int current,
+            @RequestParam("total") int total,
+            @RequestHeader("Authorization") String token) {
+        
+        System.out.println("📤 Single upload request: " + file.getOriginalFilename() + " (" + current + "/" + total + ")");
+        
+        try {
+            String imageUrl = imageService.handleSingleUpload(file, countryId, year, token);
+            
+            Map<String, Object> response = Map.of(
+                "success", true,
+                "message", "Image uploaded successfully",
+                "imageUrl", imageUrl,
+                "fileName", file.getOriginalFilename(),
+                "current", current,
+                "total", total,
+                "progress", Math.round((current * 100.0) / total)
+            );
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage(),
+                "fileName", file.getOriginalFilename(),
+                "current", current,
+                "total", total
+            ));
+        } catch (Exception e) {
+            System.out.println("❌ Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", "Upload failed: " + e.getMessage(),
+                "fileName", file.getOriginalFilename(),
+                "current", current,
+                "total", total
+            ));
+        }
+    }
+
     // ===============================
     // DELETE METHODS
     // ===============================

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import { buildApiUrl } from '../../../utils/apiConfig';
-import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
+import SequentialImageUploaderModal from '../../modals/SequentialImageUploaderModal';
 
 // Helper function to fetch user photos for a country
 const getAuthHeaders = () => {
@@ -167,7 +167,7 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
           </VStack>
         </CardBody>
         
-        <EnhancedImageUploaderModal
+        <SequentialImageUploaderModal
           isOpen={isImageUploaderOpen}
           onClose={onImageUploaderClose}
           onUploadSuccess={onUploadSuccess}

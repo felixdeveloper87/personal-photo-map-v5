@@ -8,15 +8,19 @@ import com.personalphotomap.repository.ImageRepository;
 import com.personalphotomap.repository.UserRepository;
 import com.personalphotomap.security.JwtUtil;
 
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -42,23 +46,27 @@ import java.util.stream.Collectors;
 public class ImageService {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
+    private static final Tika tika = new Tika();
     
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final ImageUploadService imageUploadService;
     private final ImageDeleteService imageDeleteService;
+    private final LocalFileStorageService localFileStorageService;
 
     public ImageService(ImageRepository imageRepository,
             UserRepository userRepository,
             JwtUtil jwtUtil,
             ImageUploadService imageUploadService,
-            ImageDeleteService imageDeleteService) {
+            ImageDeleteService imageDeleteService,
+            LocalFileStorageService localFileStorageService) {
         this.imageRepository = imageRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.imageUploadService = imageUploadService;
         this.imageDeleteService = imageDeleteService;
+        this.localFileStorageService = localFileStorageService;
     }
 
     /**
@@ -137,6 +145,67 @@ public class ImageService {
 
         logger.info("✅ Upload completed: {}/{} files successful", successfulUrls.size(), files.size());
         return successfulUrls;
+    }
+
+    /**
+     * Handles upload of a single image (for sequential processing).
+     * Processes immediately without async complexity.
+     *
+     * @return URL of uploaded image
+     */
+    public String handleSingleUpload(MultipartFile file, String countryId, int year, String token) {
+        AppUser user = getUserFromToken(token);
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty or null");
+        }
+
+        logger.info("📤 Processing single image: {} ({}KB) for user: {}", 
+            file.getOriginalFilename(), file.getSize() / 1024, user.getEmail());
+
+        try {
+            // Upload directly without async
+            String fileName = UUID.randomUUID().toString() + "_" + 
+                StringUtils.cleanPath(file.getOriginalFilename());
+            
+            // File type validation
+            String mimeType = tika.detect(file.getInputStream());
+            logger.info("🧪 Detected MIME type: {} | File: {}", mimeType, file.getOriginalFilename());
+            if (!isSupportedImageType(mimeType)) {
+                throw new IllegalArgumentException("Unsupported file type: " + mimeType);
+            }
+
+            // Upload to local storage
+            String fileUrl = localFileStorageService.uploadFile(file, fileName);
+
+            // Save image metadata to database
+            Image image = new Image();
+            image.setUser(user);
+            image.setCountryId(countryId);
+            image.setFileName(fileName);
+            image.setFilePath(fileUrl);
+            image.setYear(year);
+            imageRepository.save(image);
+
+            logger.info("✅ Single image uploaded: {} -> {}", file.getOriginalFilename(), fileUrl);
+            return fileUrl;
+
+        } catch (IOException e) {
+            logger.error("❌ Upload failed for {}: {}", file.getOriginalFilename(), e.getMessage());
+            throw new RuntimeException("Upload failed: " + e.getMessage());
+        }
+    }
+
+    private boolean isSupportedImageType(String mimeType) {
+        return mimeType != null && (
+            mimeType.equalsIgnoreCase("image/jpeg") ||
+            mimeType.equalsIgnoreCase("image/png") ||
+            mimeType.equalsIgnoreCase("image/webp") ||
+            mimeType.equalsIgnoreCase("image/gif") ||
+            mimeType.equalsIgnoreCase("image/bmp") ||
+            mimeType.equalsIgnoreCase("image/heic") ||
+            mimeType.equalsIgnoreCase("image/heif")
+        );
     }
 
     // ===============================
