@@ -1,0 +1,29 @@
+/* Correção de rotação para fotos do iPhone */
+/* Aplica rotação automática para imagens que parecem estar de lado */
+
+/* Detectar imagens que provavelmente precisam de rotação */
+img[src*=".jpg"]:not([data-orientation="1"]),
+img[src*=".jpeg"]:not([data-orientation="1"]),
+img[src*=".png"]:not([data-orientation="1"]) {
+  /* Aplicar rotação de 90 graus por padrão para fotos */
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+
+/* Reverter para imagens que já estão corretas */
+img[data-orientation="1"] {
+  transform: none;
+}
+
+/* Aplicar rotação específica baseada na orientação */
+img[data-orientation="3"] {
+  transform: rotate(180deg);
+}
+
+img[data-orientation="6"] {
+  transform: rotate(90deg);
+}
+
+img[data-orientation="8"] {
+  transform: rotate(-90deg);
+}

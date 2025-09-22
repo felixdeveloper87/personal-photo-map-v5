@@ -20,7 +20,6 @@ import {
 import { FiX, FiZoomIn, FiZoomOut, FiMaximize } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import AutoOrientedImage from '../ui/AutoOrientedImage';
 import logo from '../../assets/logo.png';
 
 // Animation variants
@@ -391,7 +390,7 @@ const FullImageModal = memo(
                               <Spinner size="xl" thickness="4px" color={accentColor} />
                             </Center>
                           )}
-                          <AutoOrientedImage
+                          <Image
                             src={imageUrl}
                             alt={
                               countryName
