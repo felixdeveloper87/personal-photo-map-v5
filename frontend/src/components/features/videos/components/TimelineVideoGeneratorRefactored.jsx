@@ -21,15 +21,15 @@ import { AuthContext } from '../../../../context/AuthContext';
 import { useVideoGenerator } from '../hooks/useVideoGenerator';
 import VideoSettings from './VideoSettings';
 
-const TimelineVideoGenerator = ({ images, onClose }) => {
+const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
   const { isLoggedIn } = useContext(AuthContext);
   
   // Log básico apenas uma vez
   React.useEffect(() => {
     if (images?.length > 0) {
-      console.log('🎬 VideoGenerator iniciado:', `${images.length} imagens carregadas`);
+      console.log('🎬 VideoGenerator iniciado:', `${images.length} imagens carregadas`, contextInfo);
     }
-  }, [images?.length]);
+  }, [images?.length, contextInfo]);
   const {
     canvasRef,
     videoRef,
@@ -76,6 +76,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   // Audio settings
   const [audioFile, setAudioFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+
+  // Funções para personalizar vídeo baseado no contexto
+  const getVideoTitle = () => {
+    if (contextInfo?.album) return `Álbum: ${contextInfo.album}`;
+    if (contextInfo?.year) return `${contextInfo.name} - ${contextInfo.year}`;
+    if (contextInfo?.name) return `${contextInfo.name} - Minhas Fotos`;
+    return 'Timeline';
+  };
+
+  const getVideoDescription = () => {
+    if (contextInfo?.album) return `Vídeo do álbum ${contextInfo.album} com ${images?.length || 0} fotos`;
+    if (contextInfo?.year) return `Vídeo de ${contextInfo.year} com ${images?.length || 0} fotos de ${contextInfo.name}`;
+    if (contextInfo?.name) return `Vídeo de ${contextInfo.name} com ${images?.length || 0} fotos`;
+    return `Vídeo timeline com ${images?.length || 0} fotos`;
+  };
 
   // Handlers
   const handleGenerateVideo = () => {
@@ -126,9 +141,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         p={{ base: 6, md: 8 }}
       >
         <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-        <Text fontSize="xl" fontWeight="bold" color={textColor}>
-          Timeline Video Generator
-        </Text>
+        <VStack spacing={2} align="start">
+          <Text fontSize="xl" fontWeight="bold" color={textColor}>
+            {getVideoTitle()}
+          </Text>
+          <Text fontSize="sm" color={mutedTextColor}>
+            {getVideoDescription()}
+          </Text>
+        </VStack>
 
         {/* Settings */}
         <VideoSettings

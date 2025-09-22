@@ -37,6 +37,7 @@ import {
   YearSelectableButton,
   AlbumSelectableButton,
 } from '../../ui/buttons/SelectableButtons';
+import VideoGeneratorButton from './VideoGeneratorButton';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -512,9 +513,41 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         )
       )}
 
+      {/* Botão de vídeo geral quando não há filtros específicos */}
+      {!(selectedYear || selectedAlbum || showAllSelected) && allImages.length > 0 && (
+        <Flex mt={4} justify="center">
+          <VideoGeneratorButton
+            images={allImages}
+            context="country"
+            contextName={countryId}
+          />
+        </Flex>
+      )}
+
       {/* Botões de ação contextual */}
       {(selectedYear || selectedAlbum) && (
         <Flex mt={2} justify="center" direction={{ base: 'column', sm: 'row' }} align="center" gap={3}>
+          {/* Botão de vídeo para ano selecionado */}
+          {selectedYear && (
+            <VideoGeneratorButton
+              images={images}
+              context="year"
+              contextName={countryId}
+              contextYear={selectedYear}
+            />
+          )}
+          
+          {/* Botão de vídeo para álbum selecionado */}
+          {selectedAlbum && (
+            <VideoGeneratorButton
+              images={images}
+              context="album"
+              contextName={countryId}
+              contextAlbum={albumsData.find(a => a.id === selectedAlbum)?.name}
+            />
+          )}
+          
+          {/* Botões de delete existentes */}
           {selectedAlbum && (
             <DeleteAlbum onClick={() => handleDeleteAlbum(selectedAlbum)} isLoading={deleteAlbumMutation.isLoading} borderRadius="xl" />
           )}
@@ -529,7 +562,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       )}
 
       {showAllSelected && (
-        <Flex mt={2} justify="center">
+        <Flex mt={2} justify="center" gap={3}>
+          <VideoGeneratorButton
+            images={allImages}
+            context="country"
+            contextName={countryId}
+          />
           <DeleteAllByYearButton
             year={selectedYear}
             onClick={onAllDeleteOpen}
