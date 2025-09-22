@@ -15,6 +15,9 @@ import {
   HStack,
   Icon,
   Badge,
+  Input,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { FaVideo, FaPlay, FaCog } from 'react-icons/fa';
 import TimelineVideoGeneratorRefactored from '../videos/components/TimelineVideoGeneratorRefactored';
@@ -38,6 +41,7 @@ const VideoGeneratorButton = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isHovered, setIsHovered] = useState(false);
+  const [videoTitle, setVideoTitle] = useState('');
 
   // Color scheme
   const modalBg = useColorModeValue('white', 'gray.800');
@@ -125,15 +129,40 @@ const VideoGeneratorButton = ({
           <ModalCloseButton />
           
           <ModalBody pb={6} overflowY="auto">
-            <TimelineVideoGeneratorRefactored 
-              images={images}
-              contextInfo={{
-                type: context,
-                name: contextName,
-                year: contextYear,
-                album: contextAlbum,
-              }}
-            />
+            <VStack spacing={4} align="stretch">
+              {/* Campo de título do vídeo */}
+              <FormControl>
+                <FormLabel fontSize="sm" fontWeight="semibold" color="gray.600">
+                  Video Title (optional)
+                </FormLabel>
+                <Input
+                  placeholder={getContextTitle()}
+                  value={videoTitle}
+                  onChange={(e) => setVideoTitle(e.target.value)}
+                  size="md"
+                  borderRadius="lg"
+                  borderColor="gray.300"
+                  _focus={{
+                    borderColor: "green.500",
+                    boxShadow: "0 0 0 1px green.500"
+                  }}
+                />
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  This title will appear on the first frame of your video
+                </Text>
+              </FormControl>
+
+              <TimelineVideoGeneratorRefactored 
+                images={images}
+                contextInfo={{
+                  type: context,
+                  name: contextName,
+                  year: contextYear,
+                  album: contextAlbum,
+                }}
+                videoTitle={videoTitle || getContextTitle()}
+              />
+            </VStack>
           </ModalBody>
         </ModalContent>
       </Modal>

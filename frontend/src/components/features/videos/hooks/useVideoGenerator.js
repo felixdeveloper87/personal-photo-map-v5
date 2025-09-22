@@ -16,6 +16,7 @@ import {
   downloadBlob
 } from '../utils/videoUtils';
 import { drawImageWithTransition, getDynamicTransition } from '../utils/transitionEngine';
+import { drawTitleFrame } from '../utils/titleFrame';
 
 export const useVideoGenerator = () => {
   const toast = useToast();
@@ -99,11 +100,12 @@ export const useVideoGenerator = () => {
   /**
    * Função principal para gerar o vídeo
    */
-  const generateVideo = useCallback(async (images, settings, audioFile) => {
+  const generateVideo = useCallback(async (images, settings, audioFile, videoTitle = '') => {
     // Log detalhado para debug
     console.log('🎬 Gerando vídeo:', `${images.length} imagens`, `${images.length * settings.duration}s de duração`);
     console.log('🎬 Imagens recebidas:', images);
     console.log('🎬 Configurações:', settings);
+    console.log('🎬 Título do vídeo:', videoTitle);
     
     if (!images || images.length === 0) {
       console.error('❌ Nenhuma imagem disponível para gerar vídeo');
@@ -133,11 +135,13 @@ export const useVideoGenerator = () => {
       canvas.width = resolution.width;
       canvas.height = resolution.height;
 
-      // Calcular duração total do vídeo
-      const totalVideoDuration = images.length * settings.duration;
+      // Calcular duração total do vídeo (incluindo frame de título se fornecido)
+      const titleDuration = videoTitle ? 3 : 0; // 3 segundos para o título
+      const totalVideoDuration = (images.length * settings.duration) + titleDuration;
       console.log('📊 Cálculo de duração:', {
         numberOfImages: images.length,
         durationPerImage: settings.duration,
+        titleDuration: titleDuration,
         totalExpectedDuration: totalVideoDuration,
         fps: settings.fps
       });
@@ -342,8 +346,74 @@ export const useVideoGenerator = () => {
 
       // Calcular total de frames
       const framesPerImage = settings.duration * settings.fps;
-      const totalFrames = images.length * framesPerImage;
+      const titleFrames = titleDuration * settings.fps;
+      const totalFrames = (images.length * framesPerImage) + titleFrames;
       let currentFrame = 0;
+
+      // Renderizar frame de título primeiro (se fornecido)
+      if (videoTitle && titleFrames > 0) {
+        console.log('🎬 Renderizando frame de título:', videoTitle);
+        await new Promise((resolve) => {
+          const startTime = performance.now();
+          const targetDuration = titleDuration * 1000; // Duração em ms
+          const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
+          const maxDuration = targetDuration + 500; // Timeout de segurança
+          
+          let frameCount = 0;
+          let isResolved = false;
+          let timeoutId;
+          
+          const renderTitleFrame = async () => {
+            const elapsed = performance.now() - startTime;
+            
+            // Timeout de segurança
+            if (elapsed > maxDuration) {
+              console.warn(`⚠️ Timeout no frame de título após ${elapsed.toFixed(2)}ms`);
+              if (!isResolved) {
+                isResolved = true;
+                clearTimeout(timeoutId);
+                resolve();
+              }
+              return;
+            }
+            
+            if (frameCount >= titleFrames) {
+              if (!isResolved) {
+                isResolved = true;
+                clearTimeout(timeoutId);
+                resolve();
+              }
+              return;
+            }
+            
+            // Limpar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Desenhar frame de título
+            drawTitleFrame(ctx, canvas, videoTitle);
+            
+            // Atualizar progresso
+            currentFrame++;
+            const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+            setProgress(progressPercent);
+            
+            frameCount++;
+            
+            // Continuar renderização
+            if (!isResolved && frameCount < titleFrames) {
+              timeoutId = setTimeout(renderTitleFrame, frameInterval);
+            } else if (!isResolved) {
+              isResolved = true;
+              resolve();
+            }
+          };
+          
+          // Iniciar renderização do título
+          renderTitleFrame();
+        });
+      }
 
       // Processar cada ano
       let globalImageIndex = 0;

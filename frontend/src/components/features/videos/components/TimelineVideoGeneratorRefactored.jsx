@@ -21,7 +21,7 @@ import { AuthContext } from '../../../../context/AuthContext';
 import { useVideoGenerator } from '../hooks/useVideoGenerator';
 import VideoSettings from './VideoSettings';
 
-const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
+const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) => {
   const { isLoggedIn } = useContext(AuthContext);
   
   // Log básico apenas uma vez
@@ -79,6 +79,12 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
 
   // Funções para personalizar vídeo baseado no contexto
   const getVideoTitle = () => {
+    // Se um título personalizado foi fornecido, usar ele
+    if (videoTitle && videoTitle.trim()) {
+      return videoTitle.trim();
+    }
+    
+    // Caso contrário, usar o título baseado no contexto
     if (contextInfo?.album) return `Album: ${contextInfo.album}`;
     if (contextInfo?.type === 'timeline' && contextInfo?.year) return `Timeline - ${contextInfo.year}`;
     if (contextInfo?.type === 'timeline') return 'Complete Timeline';
@@ -98,7 +104,7 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
 
   // Handlers
   const handleGenerateVideo = () => {
-    generateVideo(images, settings, audioFile);
+    generateVideo(images, settings, audioFile, getVideoTitle());
   };
 
   const handleAudioFileChange = (file) => {
