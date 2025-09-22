@@ -47,20 +47,20 @@ const VideoGeneratorButton = ({
 
   // Determina o título baseado no contexto
   const getContextTitle = () => {
-    if (contextAlbum) return `Álbum: ${contextAlbum}`;
+    if (contextAlbum) return `Album: ${contextAlbum}`;
     if (context === 'timeline' && contextYear) return `Timeline - ${contextYear}`;
-    if (context === 'timeline') return 'Timeline Completo';
-    if (contextYear) return `Ano: ${contextYear}`;
-    return `País: ${contextName}`;
+    if (context === 'timeline') return 'Complete Timeline';
+    if (contextYear) return `Year: ${contextYear}`;
+    return `Country: ${contextName}`;
   };
 
   // Determina o subtítulo baseado no contexto
   const getContextSubtitle = () => {
-    if (contextAlbum) return `${images.length} fotos no álbum`;
-    if (context === 'timeline' && contextYear) return `${images.length} fotos de ${contextYear}`;
-    if (context === 'timeline') return `${images.length} fotos da sua timeline`;
-    if (contextYear) return `${images.length} fotos de ${contextYear}`;
-    return `${images.length} fotos de ${contextName}`;
+    if (contextAlbum) return `${images.length} photos in album`;
+    if (context === 'timeline' && contextYear) return `${images.length} photos from ${contextYear}`;
+    if (context === 'timeline') return `${images.length} photos from your timeline`;
+    if (contextYear) return `${images.length} photos from ${contextYear}`;
+    return `${images.length} photos from ${contextName}`;
   };
 
   // Verifica se pode gerar vídeo
@@ -99,7 +99,7 @@ const VideoGeneratorButton = ({
       >
         <HStack spacing={2}>
           <Icon as={isHovered ? FaPlay : FaVideo} />
-          <Text>Gerar Vídeo</Text>
+          <Text>Generate Video</Text>
           <Badge colorScheme="teal" variant="subtle" fontSize="xs">
             {images.length}
           </Badge>
@@ -119,7 +119,7 @@ const VideoGeneratorButton = ({
               <HStack spacing={3}>
                 <Icon as={FaVideo} color="teal.500" />
                 <Text fontSize="xl" fontWeight="bold">
-                  Gerador de Vídeo
+                  Video Generator
                 </Text>
               </HStack>
               <Text fontSize="md" color="gray.600" fontWeight="normal">
