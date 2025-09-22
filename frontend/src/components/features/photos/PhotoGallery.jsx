@@ -81,6 +81,10 @@ const PhotoGallery = memo(function PhotoGallery({
   const checkboxBgColor = useColorModeValue('white', 'gray.800');
   const checkboxBorderColor = useColorModeValue('gray.300', 'gray.600');
 
+  // Debug: Log images data
+  console.log('🖼️ PhotoGallery received images:', images?.length || 0, 'images');
+  console.log('🖼️ First image sample:', images?.[0]);
+
   // O(1) lookup — garante que Select All/Unselect All reflitam imediatamente nos checkboxes
   const selectedSet = useMemo(
     () => new Set((selectedImageIds || []).map((id) => String(id))),
@@ -408,6 +412,8 @@ const PhotoGallery = memo(function PhotoGallery({
                       objectFit="cover"
                       loading="lazy"
                       fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
+                      onLoad={() => console.log('✅ Image loaded successfully:', image.url)}
+                      onError={(e) => console.error('❌ Image failed to load:', image.url, e)}
                       sx={{
                         aspectRatio: '1/1',
                         minHeight: isMobile ? '120px' : '200px',
