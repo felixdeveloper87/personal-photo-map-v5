@@ -80,6 +80,8 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
   // Funções para personalizar vídeo baseado no contexto
   const getVideoTitle = () => {
     if (contextInfo?.album) return `Álbum: ${contextInfo.album}`;
+    if (contextInfo?.type === 'timeline' && contextInfo?.year) return `Timeline - ${contextInfo.year}`;
+    if (contextInfo?.type === 'timeline') return 'Timeline Completo';
     if (contextInfo?.year) return `${contextInfo.name} - ${contextInfo.year}`;
     if (contextInfo?.name) return `${contextInfo.name} - Minhas Fotos`;
     return 'Timeline';
@@ -87,6 +89,8 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo }) => {
 
   const getVideoDescription = () => {
     if (contextInfo?.album) return `Vídeo do álbum ${contextInfo.album} com ${images?.length || 0} fotos`;
+    if (contextInfo?.type === 'timeline' && contextInfo?.year) return `Vídeo de ${contextInfo.year} com ${images?.length || 0} fotos da timeline`;
+    if (contextInfo?.type === 'timeline') return `Vídeo da timeline completa com ${images?.length || 0} fotos`;
     if (contextInfo?.year) return `Vídeo de ${contextInfo.year} com ${images?.length || 0} fotos de ${contextInfo.name}`;
     if (contextInfo?.name) return `Vídeo de ${contextInfo.name} com ${images?.length || 0} fotos`;
     return `Vídeo timeline com ${images?.length || 0} fotos`;

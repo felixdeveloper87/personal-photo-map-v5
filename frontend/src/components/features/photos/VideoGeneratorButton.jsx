@@ -48,6 +48,8 @@ const VideoGeneratorButton = ({
   // Determina o título baseado no contexto
   const getContextTitle = () => {
     if (contextAlbum) return `Álbum: ${contextAlbum}`;
+    if (context === 'timeline' && contextYear) return `Timeline - ${contextYear}`;
+    if (context === 'timeline') return 'Timeline Completo';
     if (contextYear) return `Ano: ${contextYear}`;
     return `País: ${contextName}`;
   };
@@ -55,6 +57,8 @@ const VideoGeneratorButton = ({
   // Determina o subtítulo baseado no contexto
   const getContextSubtitle = () => {
     if (contextAlbum) return `${images.length} fotos no álbum`;
+    if (context === 'timeline' && contextYear) return `${images.length} fotos de ${contextYear}`;
+    if (context === 'timeline') return `${images.length} fotos da sua timeline`;
     if (contextYear) return `${images.length} fotos de ${contextYear}`;
     return `${images.length} fotos de ${contextName}`;
   };

@@ -21,6 +21,7 @@ import { CountriesContext } from '../../context/CountriesContext';
 import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
 import TimelineVideoModal from '../modals/TimelineVideoModal';
+import VideoGeneratorButton from './photos/VideoGeneratorButton';
 import { FaGlobe, FaVideo } from 'react-icons/fa';
 
 // Lazy loading of PhotoGallery
@@ -216,29 +217,12 @@ const Timeline = ({ selectedYear }) => {
           
           {/* Botão para gerar vídeo timeline */}
           {sortedYears.length > 0 && (
-            <Button
-              leftIcon={<FaVideo />}
-              colorScheme="purple"
-              size="lg"
-              onClick={videoModal.onOpen}
-              px={8}
-              py={6}
-              fontSize="md"
-              fontWeight="bold"
-              borderRadius="xl"
-              bgGradient="linear(to-r, purple.500, pink.500)"
-              _hover={{
-                bgGradient: "linear(to-r, purple.600, pink.600)",
-                transform: 'translateY(-2px)',
-                boxShadow: 'xl'
-              }}
-              _active={{
-                transform: 'translateY(0)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Criar Vídeo Timeline ({images.length} fotos)
-            </Button>
+            <VideoGeneratorButton
+              images={images}
+              context="timeline"
+              contextName="Timeline"
+              contextYear={selectedYear}
+            />
           )}
         </VStack>
 
@@ -281,18 +265,27 @@ const Timeline = ({ selectedYear }) => {
                       >
                         {year}
                       </Text>
-                      <IconButton
-                        aria-label={`Toggle photos for ${year}`}
-                        icon={collapsedYears[year] ? <ChevronDownIcon /> : <ChevronUpIcon />}
-                        size="sm"
-                        variant="ghost"
-                        color={textColor}
-                        _hover={{ color: accentColor, bg: 'transparent' }}
-                        onClick={(e) => {
-                          e?.stopPropagation?.();
-                          toggleYear(year);
-                        }}
-                      />
+                      <HStack spacing={2}>
+                        {/* Botão de vídeo para o ano */}
+                        <VideoGeneratorButton
+                          images={groupedByYear[year] || []}
+                          context="year"
+                          contextName="Timeline"
+                          contextYear={year}
+                        />
+                        <IconButton
+                          aria-label={`Toggle photos for ${year}`}
+                          icon={collapsedYears[year] ? <ChevronDownIcon /> : <ChevronUpIcon />}
+                          size="sm"
+                          variant="ghost"
+                          color={textColor}
+                          _hover={{ color: accentColor, bg: 'transparent' }}
+                          onClick={(e) => {
+                            e?.stopPropagation?.();
+                            toggleYear(year);
+                          }}
+                        />
+                      </HStack>
                     </HStack>
                     <Collapse in={!collapsedYears[year]} animateOpacity>
                       <Box mt={2} pl={{ base: 0, md: 8 }}>
