@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,11 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -26,8 +20,8 @@ public class SecurityConfig {
         System.out.println("🔧 Configuring SecurityFilterChain with JWT filter: " + jwtAuthenticationFilter.getClass().getSimpleName());
         
         http
-            // 1) CORS antes de tudo
-            .cors(Customizer.withDefaults())
+            // 1) CORS handled by CustomCorsFilter to prevent duplicates
+            .cors(cors -> cors.disable())
             // 2) API stateless
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -57,53 +51,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 5) CORS: permitir somente origens necessárias
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cfg = new CorsConfiguration();
-
-        // Usar apenas padrões para evitar duplicação de header
-        cfg.setAllowedOriginPatterns(List.of(
-            "https://*.personalphotomap.co.uk",
-            "http://localhost:*",
-            "http://127.0.0.1:*"
-        ));
-
-        // Métodos permitidos
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // Headers permitidos
-        cfg.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "Accept",
-            "Origin",
-            "X-Requested-With",
-            "DNT",
-            "User-Agent",
-            "If-Modified-Since",
-            "Cache-Control",
-            "Range"
-        ));
-
-        // Headers expostos
-        cfg.setExposedHeaders(List.of(
-            "Authorization",
-            "Content-Disposition",
-            "Content-Length",
-            "Content-Range"
-        ));
-
-        // Permitir credenciais
-        cfg.setAllowCredentials(true);
-
-        // Cache de preflight
-        cfg.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
-        return source;
-    }
+    // CORS is now handled by CustomCorsFilter to prevent duplicate headers
 
     @Bean
     public PasswordEncoder passwordEncoder() {
