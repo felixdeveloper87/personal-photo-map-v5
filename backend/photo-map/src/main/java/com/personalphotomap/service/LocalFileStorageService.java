@@ -58,6 +58,7 @@ public class LocalFileStorageService {
     // Image size configurations
     private static final int MAX_SIZE = 1920;
     private static final int MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1MB
+    private static final int MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final float INITIAL_QUALITY = 0.9f;
     private static final float MIN_QUALITY = 0.3f;
 
@@ -92,6 +93,7 @@ public class LocalFileStorageService {
             logger.info("   - Passthrough mode: {}", passthroughStore);
             logger.info("   - Max image size: {}px", MAX_SIZE);
             logger.info("   - Max file size: {}KB", MAX_FILE_SIZE_BYTES / 1024);
+            logger.info("   - Max upload size: {}MB", MAX_UPLOAD_SIZE_BYTES / (1024 * 1024));
             configurationLogged = true;
         }
 
@@ -107,13 +109,21 @@ public class LocalFileStorageService {
                 throw new RuntimeException("Only image files are supported");
             }
 
-            // Check if image needs resizing (only if larger than 1MB)
-            long fileSizeKB = file.getSize() / 1024;
-            logger.info("🔍 Image size: {}KB, needs processing: {}", fileSizeKB, fileSizeKB > 1024);
+            // Check file size limits
+            long fileSizeBytes = file.getSize();
+            long fileSizeKB = fileSizeBytes / 1024;
+            long fileSizeMB = fileSizeBytes / (1024 * 1024);
+            
+            // Reject files larger than 10MB
+            if (fileSizeBytes > MAX_UPLOAD_SIZE_BYTES) {
+                throw new RuntimeException("File too large: " + fileSizeMB + "MB. Maximum allowed: 10MB");
+            }
+            
+            logger.info("🔍 Image size: {}KB ({}MB), needs processing: {}", fileSizeKB, fileSizeMB, fileSizeKB > 1024);
 
             if (fileSizeKB > 1024) {
-                // Only process if larger than 1MB
-                logger.info("🔄 Image is larger than 1MB, processing and optimizing: {}", file.getOriginalFilename());
+                // Process if larger than 1MB
+                logger.info("🔄 Image is larger than 1MB, processing and optimizing to ≤1MB: {}", file.getOriginalFilename());
                 String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
                 logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
