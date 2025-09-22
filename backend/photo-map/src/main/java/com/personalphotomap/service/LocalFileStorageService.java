@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.UUID;
 
+
 /**
  * LocalFileStorageService
  * 
@@ -44,6 +45,10 @@ public class LocalFileStorageService {
 
     @Value("${app.base.url:http://localhost:8092}")
     private String baseUrl;
+
+    // If true, store original bytes (preserve EXIF/orientation/format)
+    @Value("${app.images.passthrough:true}")
+    private boolean passthroughStore;
 
     // Image size configurations
     private static final int MAX_SIZE = 1920;
@@ -76,6 +81,14 @@ public class LocalFileStorageService {
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
+            }
+
+            // Fast path: passthrough store (no re-encode, preserve EXIF and format)
+            if (isImageFile(file) && passthroughStore) {
+                String finalFileName = storeOriginalFile(file, customFileName, uploadPath);
+                String fileUrl = "/api/images/uploads/" + finalFileName;
+                logger.info("Stored original image (passthrough): {} -> {}", file.getOriginalFilename(), fileUrl);
+                return fileUrl;
             }
 
             // Process and save only if it's an image
@@ -117,7 +130,7 @@ public class LocalFileStorageService {
         
         do {
             try {
-                // Read and resize image
+                // Read and resize image (no EXIF rotation)
                 BufferedImage resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
                 
                 // Convert to bytes with specified quality
@@ -151,6 +164,28 @@ public class LocalFileStorageService {
             finalFileName, finalSizeKB, quality);
 
         return finalFileName;
+    }
+
+    /**
+     * Store original file without modifying bytes (preserve EXIF and original format).
+     */
+    private String storeOriginalFile(MultipartFile file, String desiredFileName, Path uploadPath) throws IOException {
+        String targetName = sanitizeFileName(desiredFileName != null ? desiredFileName : file.getOriginalFilename());
+        if (targetName == null || targetName.isBlank()) {
+            targetName = UUID.randomUUID().toString();
+        }
+        // Ensure filename has an extension; fall back to content-type
+        if (!targetName.contains(".")) {
+            String ext = getExtensionFromContentType(file.getContentType());
+            if (ext != null && !ext.isBlank()) {
+                targetName = targetName + "." + ext;
+            }
+        }
+        Path finalPath = uploadPath.resolve(targetName);
+        try (InputStream in = file.getInputStream()) {
+            Files.copy(in, finalPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        return finalPath.getFileName().toString();
     }
 
     /**
@@ -209,6 +244,7 @@ public class LocalFileStorageService {
         
         return resizedImage;
     }
+
 
 
     /**
@@ -311,6 +347,22 @@ public class LocalFileStorageService {
             return fileName.substring(dotIndex + 1).toLowerCase();
         }
         return "jpg"; // Default extension
+    }
+
+    /**
+     * Map content-type to a typical file extension.
+     */
+    private String getExtensionFromContentType(String contentType) {
+        if (contentType == null) return null;
+        String ct = contentType.toLowerCase();
+        if (ct.equals("image/jpeg")) return "jpg";
+        if (ct.equals("image/png")) return "png";
+        if (ct.equals("image/webp")) return "webp";
+        if (ct.equals("image/gif")) return "gif";
+        if (ct.equals("image/bmp")) return "bmp";
+        if (ct.equals("image/heic")) return "heic";
+        if (ct.equals("image/heif")) return "heif";
+        return null;
     }
 
     /**
