@@ -136,7 +136,7 @@ export const useVideoGenerator = () => {
       canvas.height = resolution.height;
 
       // Calcular duração total do vídeo (incluindo frame de título se fornecido)
-      const titleDuration = videoTitle ? 3 : 0; // 3 segundos para o título
+      const titleDuration = videoTitle ? 1.5 : 0; // 1.5 segundos para o títuloo
       const totalVideoDuration = (images.length * settings.duration) + titleDuration;
       console.log('📊 Cálculo de duração:', {
         numberOfImages: images.length,
