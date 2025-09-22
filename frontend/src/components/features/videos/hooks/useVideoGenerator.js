@@ -313,15 +313,7 @@ export const useVideoGenerator = () => {
       const generationStartTime = Date.now();
       console.log('Iniciando geração em:', generationStartTime);
       
-      // Testar se o canvas está funcionando antes de iniciar a gravação
-      console.log('🧪 Testando canvas antes da gravação...');
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '48px Arial';
-      ctx.fillText('TESTE', canvas.width/2 - 100, canvas.height/2);
-      
-      // Aguardar um pouco para o canvas ser processado
+      // Aguardar um pouco para o canvas ser processadoo
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Iniciar gravação
