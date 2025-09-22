@@ -103,7 +103,7 @@ public class LocalFileStorageService {
         String finalFileName = nameWithoutExt + ".jpg";
         Path finalPath = uploadPath.resolve(finalFileName);
 
-        BufferedImage resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+        BufferedImage resizedImage = resizeImage(file, MAX_SIZE);
         logger.info("📐 Image resized to {}x{} (max size: {})",
                 resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
 
@@ -168,7 +168,7 @@ public class LocalFileStorageService {
         float quality = 0.6f;
 
         for (int maxDim : dimensions) {
-            BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
+            BufferedImage resizedImage = resizeImage(file, maxDim);
             byte[] imageBytes = imageToBytes(resizedImage, quality);
             if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
                 logger.info("Achieved target size with {}px max dimension at quality {}", maxDim, quality);
@@ -176,22 +176,34 @@ public class LocalFileStorageService {
             }
         }
 
-        BufferedImage lastResort = resizeImage(file.getInputStream(), 600);
+        BufferedImage lastResort = resizeImage(file, 600);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
-    private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // Primeiro, lemos a orientação EXIF
-        int orientation = getExifOrientation(inputStream);
+    /**
+     * Lê EXIF orientation num stream e a imagem completa em outro stream.
+     */
+    private BufferedImage resizeImage(MultipartFile file, int maxDimension) throws IOException {
+        int orientation = 1;
+        try (InputStream metaStream = file.getInputStream()) {
+            Metadata metadata = ImageMetadataReader.readMetadata(metaStream);
+            Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+            }
+        } catch (Exception e) {
+            logger.debug("❌ Could not read EXIF orientation: {}", e.getMessage());
+        }
 
-        // Reset stream para ler imagem
-        inputStream.reset();
-        BufferedImage originalImage = ImageIO.read(inputStream);
+        BufferedImage originalImage;
+        try (InputStream imageStream = file.getInputStream()) {
+            originalImage = ImageIO.read(imageStream);
+        }
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
         }
 
-        // Corrige rotação
+        // aplica correção de orientação
         originalImage = applyOrientation(originalImage, orientation);
 
         int originalWidth = originalImage.getWidth();
@@ -213,28 +225,14 @@ public class LocalFileStorageService {
         return resizedImage;
     }
 
-    private int getExifOrientation(InputStream inputStream) {
-        try {
-            inputStream.mark(Integer.MAX_VALUE);
-            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
-            Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
-                return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-            }
-        } catch (Exception e) {
-            logger.debug("❌ Não consegui ler EXIF orientation: {}", e.getMessage());
-        }
-        return 1; // default
-    }
-
     private BufferedImage applyOrientation(BufferedImage image, int orientation) {
         if (orientation == 1) return image;
 
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage rotatedImage;
-
         Graphics2D g2d;
+
         switch (orientation) {
             case 3: // 180
                 rotatedImage = new BufferedImage(width, height, image.getType());
