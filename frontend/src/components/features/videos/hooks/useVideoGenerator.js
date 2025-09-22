@@ -192,9 +192,24 @@ export const useVideoGenerator = () => {
       const mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions);
       mediaRecorderRef.current = mediaRecorder;
 
+      // Debug: Verificar se o stream tem tracks válidos
+      console.log('🎬 Stream tracks:', {
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length,
+        videoTrackActive: stream.getVideoTracks()[0]?.readyState,
+        audioTrackActive: stream.getAudioTracks()[0]?.readyState
+      });
+
       mediaRecorder.ondataavailable = (event) => {
+        console.log('📦 Data available:', {
+          size: event.data.size,
+          type: event.data.type,
+          timecode: event.timecode
+        });
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
+        } else {
+          console.warn('⚠️ Chunk vazio recebido');
         }
       };
 
@@ -298,10 +313,24 @@ export const useVideoGenerator = () => {
       const generationStartTime = Date.now();
       console.log('Iniciando geração em:', generationStartTime);
       
+      // Testar se o canvas está funcionando antes de iniciar a gravação
+      console.log('🧪 Testando canvas antes da gravação...');
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '48px Arial';
+      ctx.fillText('TESTE', canvas.width/2 - 100, canvas.height/2);
+      
+      // Aguardar um pouco para o canvas ser processado
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Iniciar gravação
       console.log('🎬 Iniciando gravação do MediaRecorder...');
       mediaRecorder.start();
       console.log('📹 MediaRecorder state after start:', mediaRecorder.state);
+      
+      // Aguardar um pouco para o MediaRecorder estabilizar
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // Iniciar áudio se configurado
       let audioStartTime = null;
@@ -354,39 +383,41 @@ export const useVideoGenerator = () => {
               selectedTransition = settings.transition;
             }
             
-            // Animar a imagem com timing preciso usando requestAnimationFrame
+            // Animar a imagem com timing preciso usando setTimeout para controle exato
             await new Promise((resolve) => {
               const startTime = performance.now();
               const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
               const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
-              const maxDuration = targetDuration + 200; // Timeout de segurança mais restrito (+200ms)
+              const maxDuration = targetDuration + 500; // Timeout de segurança
               
-              let animationId;
+              let frameCount = 0;
               let isResolved = false;
+              let timeoutId;
               
-              const renderFrame = async (currentTime) => {
-                const elapsed = currentTime - startTime;
-                const frame = Math.floor((elapsed / frameInterval));
+              const renderFrame = async () => {
+                const elapsed = performance.now() - startTime;
                 
                 // Timeout de segurança
                 if (elapsed > maxDuration) {
                   console.warn(`⚠️ Timeout na imagem ${globalImageIndex + 1} após ${elapsed.toFixed(2)}ms`);
                   if (!isResolved) {
                     isResolved = true;
+                    clearTimeout(timeoutId);
                     resolve();
                   }
                   return;
                 }
                 
-                if (frame >= framesPerImage) {
+                if (frameCount >= framesPerImage) {
                   if (!isResolved) {
                     isResolved = true;
+                    clearTimeout(timeoutId);
                     resolve();
                   }
                   return;
                 }
                 
-                const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
+                const transitionProgress = Math.min(frameCount / (settings.fps * settings.transitionDuration), 1);
                 
                 // Limpar canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -406,7 +437,7 @@ export const useVideoGenerator = () => {
                 );
                 
                 // Log apenas da primeira imagem para confirmar que dados estão chegando
-                if (frame === 0 && globalImageIndex === 0) {
+                if (frameCount === 0 && globalImageIndex === 0) {
                   console.log(`📷 Primeira imagem confirmada:`, {
                     fileName: image.fileName,
                     year: image.year,
@@ -423,29 +454,24 @@ export const useVideoGenerator = () => {
                   countryId: image.countryId // Usar 'image' original, não 'img' HTMLImageElement
                 });
                 
-                // Atualizar progresso apenas quando mudamos para um novo frame
-                const expectedFrameCount = globalImageIndex * framesPerImage + frame + 1;
-                if (currentFrame < expectedFrameCount) {
-                  currentFrame = expectedFrameCount;
-                  const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
-                  setProgress(progressPercent);
-                }
+                // Atualizar progresso
+                currentFrame++;
+                const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+                setProgress(progressPercent);
                 
-                // Continuar renderização
-                if (!isResolved) {
-                  animationId = requestAnimationFrame(renderFrame);
+                frameCount++;
+                
+                // Continuar renderização com timing preciso
+                if (!isResolved && frameCount < framesPerImage) {
+                  timeoutId = setTimeout(renderFrame, frameInterval);
+                } else if (!isResolved) {
+                  isResolved = true;
+                  resolve();
                 }
               };
               
               // Iniciar renderização
-              animationId = requestAnimationFrame(renderFrame);
-              
-              // Cleanup em caso de cancelamento
-              return () => {
-                if (animationId) {
-                  cancelAnimationFrame(animationId);
-                }
-              };
+              renderFrame();
             });
             
             // Atualizar índices
@@ -479,8 +505,17 @@ export const useVideoGenerator = () => {
         frameRatio: `${currentFrame}/${totalFrames} (${(currentFrame/totalFrames*100).toFixed(1)}%)`
       });
       
-      // Aguardar finalização
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Aguardar finalização - tempo maior para garantir que todos os frames sejam processados
+      console.log('⏳ Aguardando finalização da gravação...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Verificar estado do MediaRecorder antes de parar
+      console.log('🎬 Estado do MediaRecorder antes de parar:', {
+        state: mediaRecorder.state,
+        mimeType: mediaRecorder.mimeType,
+        videoBitsPerSecond: mediaRecorder.videoBitsPerSecond,
+        audioBitsPerSecond: mediaRecorder.audioBitsPerSecond
+      });
       
       // Parar o áudio
       if (audioSetup && audioSetup.audioSource) {
