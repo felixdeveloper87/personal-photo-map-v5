@@ -90,9 +90,6 @@ public class FileController {
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                     .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000") // Cache for 1 year
-                    .header("Access-Control-Allow-Origin", "*") // Explicit CORS for images
-                    .header("Access-Control-Allow-Methods", "GET, OPTIONS")
-                    .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
                     .header("Cross-Origin-Resource-Policy", "cross-origin")
                     .body(resource);
 
@@ -121,16 +118,13 @@ public class FileController {
 
     /**
      * Handle OPTIONS requests for CORS preflight.
+     * CORS is now handled by Spring Security configuration.
      */
     @RequestMapping(value = "/{filename:.+}", method = RequestMethod.OPTIONS)
     public ResponseEntity<Void> handleOptions(@PathVariable String filename) {
         logger.info("🔍 OPTIONS request for file: {}", filename);
-        return ResponseEntity.ok()
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "GET, OPTIONS")
-                .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-                .header("Access-Control-Max-Age", "3600")
-                .build();
+        // CORS headers are handled by Spring Security configuration
+        return ResponseEntity.ok().build();
     }
 
     /**
