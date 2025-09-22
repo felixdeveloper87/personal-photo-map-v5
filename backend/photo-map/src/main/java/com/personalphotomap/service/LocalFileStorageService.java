@@ -261,13 +261,16 @@ public class LocalFileStorageService {
      * Optimized to reduce file reading and processing iterations.
      */
     private byte[] createSmallerImage(MultipartFile file) throws IOException {
+        // Create a copy of the input stream to avoid mark/reset issues
+        byte[] inputBytes = file.getInputStream().readAllBytes();
+        
         // Try only 2 smaller sizes with moderate quality
         int[] dimensions = {1200, 800};
         float quality = 0.6f; // Start with moderate quality
 
         for (int maxDim : dimensions) {
             try {
-                BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
+                BufferedImage resizedImage = resizeImage(new ByteArrayInputStream(inputBytes), maxDim);
                 byte[] imageBytes = imageToBytes(resizedImage, quality);
                 if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
                     logger.info("Achieved target size with {}px max dimension at quality {}", maxDim, quality);
@@ -279,7 +282,7 @@ public class LocalFileStorageService {
         }
 
         // Last resort - small image with low quality
-        BufferedImage lastResort = resizeImage(file.getInputStream(), 600);
+        BufferedImage lastResort = resizeImage(new ByteArrayInputStream(inputBytes), 600);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
@@ -288,8 +291,11 @@ public class LocalFileStorageService {
      * Applies EXIF orientation correction to preserve the correct image orientation.
      */
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
+        // Create a copy of the input stream to avoid mark/reset issues
+        byte[] inputBytes = inputStream.readAllBytes();
+        
         // First, read the image with EXIF orientation applied
-        BufferedImage originalImage = readImageWithOrientation(inputStream);
+        BufferedImage originalImage = readImageWithOrientation(new ByteArrayInputStream(inputBytes));
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
         }
