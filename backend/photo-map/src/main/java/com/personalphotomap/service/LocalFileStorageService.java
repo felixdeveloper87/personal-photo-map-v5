@@ -16,6 +16,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -322,11 +323,14 @@ public class LocalFileStorageService {
      * This ensures images from mobile devices (especially iPhones) are displayed correctly.
      */
     private BufferedImage readImageWithOrientation(InputStream inputStream) throws IOException {
-        try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
+        // Create a new InputStream for fallback since ImageInputStream consumes the original
+        byte[] inputBytes = inputStream.readAllBytes();
+        
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(inputBytes))) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) {
                 // Fallback to simple ImageIO.read if no specialized reader is available
-                return ImageIO.read(inputStream);
+                return ImageIO.read(new ByteArrayInputStream(inputBytes));
             }
 
             ImageReader reader = readers.next();
