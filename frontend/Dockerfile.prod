@@ -1,5 +1,5 @@
 
-# Etapa 1: Construção do Frontend
+# Etapa 1: Construção do frontend
 FROM node:18-alpine AS build
 
 WORKDIR /app

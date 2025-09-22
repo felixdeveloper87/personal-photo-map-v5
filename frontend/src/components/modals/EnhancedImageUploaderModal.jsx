@@ -1,4 +1,4 @@
-// Frontend/src/components/modals/EnhancedImageUploaderModal.jsx
+// frontend/src/components/modals/EnhancedImageUploaderModal.jsx
 import React, { useState, useContext, useMemo, useCallback } from 'react';
 import {
   Box,

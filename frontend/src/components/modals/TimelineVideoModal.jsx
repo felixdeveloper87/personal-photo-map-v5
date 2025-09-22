@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -22,67 +22,96 @@ import {
   Box,
   Collapse,
   IconButton,
+  useToast,
+  Tooltip,
+  Progress,
 } from '@chakra-ui/react';
-import { FaVideo, FaImages, FaCalendar } from 'react-icons/fa';
-import { MdClose, MdUndo, MdExpandMore, MdExpandLess } from 'react-icons/md';
+import { FaVideo, FaImages, FaCalendar, FaExclamationTriangle } from 'react-icons/fa';
+import { MdClose, MdUndo, MdExpandMore, MdExpandLess, MdRefresh } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl, buildImageUrl } from '../../utils/apiConfig';
 import TimelineVideoGenerator from '../features/videos/components/TimelineVideoGeneratorRefactored';
 
-// Fetch photos for video generation
-const fetchAllPictures = async () => {
-  const response = await fetch(buildApiUrl('/api/images/allPictures'), {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
+// Fetch photos for video generation with retry logic
+const fetchAllPictures = async (retryCount = 0) => {
+  const maxRetries = 3;
+  const retryDelay = 1000 * Math.pow(2, retryCount); // Exponential backoff
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch photos: ${response.statusText}`);
+  try {
+    const response = await fetch(buildApiUrl('/api/images/allPictures'), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      if (response.status >= 500 && retryCount < maxRetries) {
+        console.warn(`Server error, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return fetchAllPictures(retryCount + 1);
+      }
+      throw new Error(`Failed to fetch photos: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      console.warn('Invalid data format received from API');
+      return [];
+    }
+
+    console.log('📸 Fotos carregadas do backend:', data.length);
+
+    const mappedImages = data.map((image, index) => {
+      // Extrair ano do filePath se year estiver undefined
+      const fallbackYear = !image.year && image.filePath ? 
+        (() => {
+          const yearMatch = image.filePath.match(/\/(\d{4})\//);
+          return yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
+        })() : image.year;
+
+      // Usar index como fallback para fileName se estiver undefined  
+      const fallbackFileName = image.fileName || `image_${index + 1}`;
+      
+      return {
+        url: buildImageUrl(image.filePath || ''),
+        id: image.id || index,
+        year: fallbackYear || new Date().getFullYear(),
+        countryId: image.countryId || null,
+        fileName: fallbackFileName,
+        _original: image
+      };
+    });
+
+    console.log('✅ Imagens processadas para vídeo:', mappedImages.length);
+    return mappedImages;
+
+  } catch (error) {
+    if (retryCount < maxRetries && error.message.includes('fetch')) {
+      console.warn(`Network error, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return fetchAllPictures(retryCount + 1);
+    }
+    console.error('Failed to fetch photos after all retries:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  if (!Array.isArray(data)) return [];
-
-  // Log básico apenas
-  console.log('📸 Fotos carregadas do backend:', data.length);
-
-  const mappedImages = data.map((image, index) => {
-    // Extrair ano do filePath se year estiver undefined
-    const fallbackYear = !image.year && image.filePath ? 
-      (() => {
-        const yearMatch = image.filePath.match(/\/(\d{4})\//);
-        return yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
-      })() : image.year;
-
-    // Usar index como fallback para fileName se estiver undefined  
-    const fallbackFileName = image.fileName || `image_${index + 1}`;
-    
-    return {
-      url: buildImageUrl(image.filePath || ''),
-      id: image.id || index,
-      year: fallbackYear || new Date().getFullYear(),
-      countryId: image.countryId || null, // Não forçar 'unknown', deixar null para debug
-      fileName: fallbackFileName,
-      // Manter dados originais para debug
-      _original: image
-    };
-  });
-
-  // Log confirmação do mapeamento
-  console.log('✅ Imagens processadas para vídeo:', mappedImages.length);
-
-  return mappedImages;
 };
 
 const TimelineVideoModal = ({ isOpen, onClose }) => {
   const { isLoggedIn } = useContext(AuthContext);
+  const toast = useToast();
   const [showGenerator, setShowGenerator] = useState(false);
   const [excludedImageIds, setExcludedImageIds] = useState(new Set());
   const [isPhotoPreviewOpen, setIsPhotoPreviewOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [imageLoadErrors, setImageLoadErrors] = useState(new Set());
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   // Cores do tema - Estilo OpenAI
   const bgColor = useColorModeValue('white', '#0f0f0f');
@@ -99,46 +128,129 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   const secondaryButtonBorder = useColorModeValue('#d0d0d0', '#404040');
   const secondaryButtonText = useColorModeValue('#1a1a1a', '#f0f0f0');
 
-  // Fetch photos - forçar refetch sempre que o modal abrir
-  const { data: images = [], isLoading, error } = useQuery({
-    queryKey: ['allPicturesForVideo', isOpen], // Incluir isOpen na key para forçar refetch
+  // Fetch photos with improved caching and error handling
+  const { 
+    data: images = [], 
+    isLoading, 
+    error, 
+    refetch,
+    isFetching 
+  } = useQuery({
+    queryKey: ['allPicturesForVideo', isOpen],
     queryFn: fetchAllPictures,
     enabled: isLoggedIn && isOpen,
-    staleTime: 0, // Remover cache para debug
-    cacheTime: 0, // Remover cache persistente
-    refetchOnMount: true, // Sempre refetch ao montar
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnMount: true,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    onError: (error) => {
+      console.error('Failed to fetch photos:', error);
+      toast({
+        title: 'Failed to load photos',
+        description: error.message || 'Please try again later',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    },
   });
 
-  // Filtrar imagens excluídas
-  const filteredImages = images.filter(img => !excludedImageIds.has(img.id));
+  // Memoized calculations for better performance
+  const filteredImages = useMemo(() => 
+    images.filter(img => !excludedImageIds.has(img.id)), 
+    [images, excludedImageIds]
+  );
   
-  // Agrupar imagens por ano para estatísticas
-  const imagesByYear = filteredImages.reduce((acc, img) => {
-    if (!acc[img.year]) acc[img.year] = [];
-    acc[img.year].push(img);
-    return acc;
-  }, {});
+  const imagesByYear = useMemo(() => 
+    filteredImages.reduce((acc, img) => {
+      if (!acc[img.year]) acc[img.year] = [];
+      acc[img.year].push(img);
+      return acc;
+    }, {}), 
+    [filteredImages]
+  );
 
-  const years = Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b));
-  const totalPhotos = filteredImages.length;
-  const excludedCount = excludedImageIds.size;
+  const years = useMemo(() => 
+    Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b)), 
+    [imagesByYear]
+  );
 
-  // Funções para gerenciar remoção de fotos
-  const removeImage = (imageId) => {
+  const totalPhotos = useMemo(() => filteredImages.length, [filteredImages]);
+  const excludedCount = useMemo(() => excludedImageIds.size, [excludedImageIds]);
+  const estimatedDuration = useMemo(() => 
+    Math.round((totalPhotos * 1.5) / 60), 
+    [totalPhotos]
+  );
+
+  // Improved image management functions with user feedback
+  const removeImage = useCallback((imageId) => {
     setExcludedImageIds(prev => new Set([...prev, imageId]));
-  };
+    toast({
+      title: 'Photo excluded',
+      description: 'This photo will not be included in the video',
+      status: 'info',
+      duration: 2000,
+      isClosable: true,
+    });
+  }, [toast]);
 
-  const restoreImage = (imageId) => {
+  const restoreImage = useCallback((imageId) => {
     setExcludedImageIds(prev => {
       const newSet = new Set(prev);
       newSet.delete(imageId);
       return newSet;
     });
-  };
+    toast({
+      title: 'Photo restored',
+      description: 'This photo will be included in the video',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  }, [toast]);
 
-  const restoreAllImages = () => {
+  const restoreAllImages = useCallback(() => {
+    const count = excludedImageIds.size;
     setExcludedImageIds(new Set());
-  };
+    if (count > 0) {
+      toast({
+        title: 'All photos restored',
+        description: `${count} photos will be included in the video`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [excludedImageIds.size, toast]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      toast({
+        title: 'Photos refreshed',
+        description: 'Your photo collection has been updated',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: 'Refresh failed',
+        description: 'Could not refresh photos. Please try again.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch, toast]);
+
+  const handleImageError = useCallback((imageId) => {
+    setImageLoadErrors(prev => new Set([...prev, imageId]));
+  }, []);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -146,6 +258,8 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
       setShowGenerator(false);
       setExcludedImageIds(new Set());
       setIsPhotoPreviewOpen(false);
+      setImageLoadErrors(new Set());
+      setIsRefreshing(false);
     }
   }, [isOpen]);
 
@@ -233,14 +347,37 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
             <VStack spacing={4} py={8}>
               <Spinner size="xl" color="blue.500" />
               <Text>Loading your photos...</Text>
+              {isFetching && (
+                <Progress 
+                  size="sm" 
+                  isIndeterminate 
+                  colorScheme="blue" 
+                  w="200px" 
+                />
+              )}
             </VStack>
           ) : error ? (
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>
-                Error loading photos: {error.message}
-              </AlertDescription>
-            </Alert>
+            <VStack spacing={4} py={8}>
+              <Alert status="error" borderRadius="lg">
+                <AlertIcon />
+                <VStack align="start" spacing={2} flex="1">
+                  <AlertDescription>
+                    Error loading photos: {error.message}
+                  </AlertDescription>
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    variant="outline"
+                    leftIcon={<MdRefresh />}
+                    onClick={handleRefresh}
+                    isLoading={isRefreshing}
+                    loadingText="Retrying..."
+                  >
+                    Try Again
+                  </Button>
+                </VStack>
+              </Alert>
+            </VStack>
           ) : totalPhotos === 0 ? (
             <Alert status="info">
               <AlertIcon />
@@ -360,7 +497,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                       <FaVideo size={18} color={useColorModeValue("#8B5CF6", "#A78BFA")} />
                     </Box>
                     <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#8B5CF6", "#A78BFA")} lineHeight="1">
-                      {Math.round((totalPhotos * 1.5) / 60)}min
+                      {estimatedDuration}min
                     </Text>
                     <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
                       Duration
@@ -441,27 +578,49 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     <Text fontSize="md" fontWeight="medium" color={textColor}>
                       Photo Preview ({totalPhotos} photos{excludedCount > 0 ? `, ${excludedCount} removed` : ''})
                     </Text>
+                    {imageLoadErrors.size > 0 && (
+                      <Tooltip label={`${imageLoadErrors.size} photos failed to load`}>
+                        <Box color="red.500">
+                          <FaExclamationTriangle size={16} />
+                        </Box>
+                      </Tooltip>
+                    )}
                   </HStack>
                   
-                  {excludedCount > 0 && (
-                    <Button
-                      size="sm"
-                      leftIcon={<MdUndo />}
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        restoreAllImages();
-                      }}
-                      borderRadius="lg"
-                      color={useColorModeValue("#F59E0B", "#FBBF24")}
-                      fontSize="xs"
-                      _hover={{
-                        bg: useColorModeValue("rgba(245, 158, 11, 0.1)", "rgba(251, 191, 36, 0.1)")
-                      }}
-                    >
-                      Restore {excludedCount}
-                    </Button>
-                  )}
+                  <HStack spacing={2}>
+                    <Tooltip label="Refresh photos">
+                      <IconButton
+                        size="sm"
+                        icon={<MdRefresh />}
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRefresh();
+                        }}
+                        isLoading={isRefreshing}
+                        aria-label="Refresh photos"
+                      />
+                    </Tooltip>
+                    {excludedCount > 0 && (
+                      <Button
+                        size="sm"
+                        leftIcon={<MdUndo />}
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          restoreAllImages();
+                        }}
+                        borderRadius="lg"
+                        color={useColorModeValue("#F59E0B", "#FBBF24")}
+                        fontSize="xs"
+                        _hover={{
+                          bg: useColorModeValue("rgba(245, 158, 11, 0.1)", "rgba(251, 191, 36, 0.1)")
+                        }}
+                      >
+                        Restore {excludedCount}
+                      </Button>
+                    )}
+                  </HStack>
                 </HStack>
                 
                 {/* Conteúdo colapsável */}
@@ -470,6 +629,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     <SimpleGrid columns={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing={{ base: 2, md: 3 }}>
                       {images.map((img, index) => {
                         const isExcluded = excludedImageIds.has(img.id);
+                        const hasError = imageLoadErrors.has(img.id);
                         return (
                           <Box 
                             key={img.id} 
@@ -478,17 +638,51 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                             transform={isExcluded ? "scale(0.95)" : "scale(1)"}
                             transition="all 0.2s"
                           >
-                            <Image
-                              src={img.url}
-                              alt={`Photo ${index + 1}`}
-                              w={{ base: "50px", md: "60px" }}
-                              h={{ base: "50px", md: "60px" }}
-                              objectFit="cover"
-                              borderRadius="lg"
-                              border="2px solid"
-                              borderColor={isExcluded ? "red.300" : borderColor}
-                              filter={isExcluded ? "grayscale(100%)" : "none"}
-                            />
+                            {hasError ? (
+                              <Box
+                                w={{ base: "50px", md: "60px" }}
+                                h={{ base: "50px", md: "60px" }}
+                                bg="gray.100"
+                                borderRadius="lg"
+                                border="2px solid"
+                                borderColor="red.300"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                flexDirection="column"
+                              >
+                                <FaExclamationTriangle color="red" size={16} />
+                                <Text fontSize="xs" color="red.500" textAlign="center">
+                                  Error
+                                </Text>
+                              </Box>
+                            ) : (
+                              <Image
+                                src={img.url}
+                                alt={`Photo ${index + 1}`}
+                                w={{ base: "50px", md: "60px" }}
+                                h={{ base: "50px", md: "60px" }}
+                                objectFit="cover"
+                                borderRadius="lg"
+                                border="2px solid"
+                                borderColor={isExcluded ? "red.300" : borderColor}
+                                filter={isExcluded ? "grayscale(100%)" : "none"}
+                                onError={() => handleImageError(img.id)}
+                                fallback={
+                                  <Box
+                                    w={{ base: "50px", md: "60px" }}
+                                    h={{ base: "50px", md: "60px" }}
+                                    bg="gray.100"
+                                    borderRadius="lg"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                  >
+                                    <Spinner size="sm" />
+                                  </Box>
+                                }
+                              />
+                            )}
                             
                             {/* Botão de remoção/restauração */}
                             <Box
@@ -522,10 +716,19 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                       })}
                     </SimpleGrid>
                     
-                    {excludedCount > 0 && (
-                      <Text fontSize="sm" color="orange.500" textAlign="center">
-                        {excludedCount} photo{excludedCount > 1 ? 's' : ''} removed from video
-                      </Text>
+                    {(excludedCount > 0 || imageLoadErrors.size > 0) && (
+                      <VStack spacing={2}>
+                        {excludedCount > 0 && (
+                          <Text fontSize="sm" color="orange.500" textAlign="center">
+                            {excludedCount} photo{excludedCount > 1 ? 's' : ''} removed from video
+                          </Text>
+                        )}
+                        {imageLoadErrors.size > 0 && (
+                          <Text fontSize="sm" color="red.500" textAlign="center">
+                            {imageLoadErrors.size} photo{imageLoadErrors.size > 1 ? 's' : ''} failed to load
+                          </Text>
+                        )}
+                      </VStack>
                     )}
                   </VStack>
                 </Collapse>

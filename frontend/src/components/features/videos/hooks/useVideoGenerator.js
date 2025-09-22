@@ -100,9 +100,13 @@ export const useVideoGenerator = () => {
    * Função principal para gerar o vídeo
    */
   const generateVideo = useCallback(async (images, settings, audioFile) => {
-    // Log básico apenas
+    // Log detalhado para debug
     console.log('🎬 Gerando vídeo:', `${images.length} imagens`, `${images.length * settings.duration}s de duração`);
+    console.log('🎬 Imagens recebidas:', images);
+    console.log('🎬 Configurações:', settings);
+    
     if (!images || images.length === 0) {
+      console.error('❌ Nenhuma imagem disponível para gerar vídeo');
       toast({
         title: 'Erro',
         description: 'Nenhuma imagem disponível para gerar vídeo',

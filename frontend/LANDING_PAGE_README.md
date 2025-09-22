@@ -59,7 +59,7 @@ Esta landing page foi criada para apresentar a aplicação **Personal Photo Map*
 
 ## Tecnologias Utilizadas
 
-### Frontend
+### frontend
 - **React 18** - Framework principal
 - **Chakra UI** - Sistema de design e componentes
 - **Framer Motion** - Animações e transições
@@ -123,7 +123,7 @@ Esta landing page foi criada para apresentar a aplicação **Personal Photo Map*
 ## Estrutura de Arquivos
 
 ```
-Frontend/
+frontend/
 ├── src/
 │   ├── pages/
 │   │   ├── Home.jsx          # Landing Page
