@@ -10,10 +10,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -25,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.UUID;
-import org.w3c.dom.NodeList;
 import net.coobird.thumbnailator.Thumbnails;
 
 /**
@@ -322,166 +317,166 @@ public class LocalFileStorageService {
         }
     }
 
-    /**
-     * Resizes an image to fit within the specified maximum dimension.
-     * Applies EXIF orientation correction to preserve the correct image orientation.
-     */
-    private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // First, read the image with EXIF orientation applied
-        BufferedImage originalImage = readImageWithOrientation(inputStream);
-        if (originalImage == null) {
-            throw new IOException("Unsupported image format or unreadable image");
-        }
+    // /**
+    //  * Resizes an image to fit within the specified maximum dimension.
+    //  * Applies EXIF orientation correction to preserve the correct image orientation.
+    //  */
+    // private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
+    //     // First, read the image with EXIF orientation applied
+    //     BufferedImage originalImage = readImageWithOrientation(inputStream);
+    //     if (originalImage == null) {
+    //         throw new IOException("Unsupported image format or unreadable image");
+    //     }
 
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
+    //     int originalWidth = originalImage.getWidth();
+    //     int originalHeight = originalImage.getHeight();
 
-        // Calculate new dimensions maintaining aspect ratio; never upscale
-        double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
-        ratio = Math.min(1.0, ratio);
-        int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
-        int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
+    //     // Calculate new dimensions maintaining aspect ratio; never upscale
+    //     double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
+    //     ratio = Math.min(1.0, ratio);
+    //     int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
+    //     int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
 
-        // Create resized image
-        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = resizedImage.createGraphics();
+    //     // Create resized image
+    //     BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+    //     Graphics2D g2d = resizedImage.createGraphics();
 
-        // Set rendering hints for better quality
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    //     // Set rendering hints for better quality
+    //     g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    //     g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+    //     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-        g2d.dispose();
+    //     g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+    //     g2d.dispose();
 
-        return resizedImage;
-    }
+    //     return resizedImage;
+    // }
 
     /**
      * Reads an image and applies EXIF orientation correction.
      * This ensures images from mobile devices (especially iPhones) are displayed correctly.
      */
-    private BufferedImage readImageWithOrientation(InputStream inputStream) throws IOException {
-        try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-            if (!readers.hasNext()) {
-                // Fallback to simple ImageIO.read if no specialized reader is available
-                return ImageIO.read(inputStream);
-            }
+    // private BufferedImage readImageWithOrientation(InputStream inputStream) throws IOException {
+    //     try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
+    //         Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+    //         if (!readers.hasNext()) {
+    //             // Fallback to simple ImageIO.read if no specialized reader is available
+    //             return ImageIO.read(inputStream);
+    //         }
 
-            ImageReader reader = readers.next();
-            reader.setInput(iis);
+    //         ImageReader reader = readers.next();
+    //         reader.setInput(iis);
 
-            // Read the image
-            BufferedImage image = reader.read(0);
+    //         // Read the image
+    //         BufferedImage image = reader.read(0);
 
-            // Get EXIF orientation
-            int orientation = getExifOrientation(reader);
+    //         // Get EXIF orientation
+    //         int orientation = getExifOrientation(reader);
 
-            // Apply orientation correction
-            return applyOrientation(image, orientation);
-        }
-    }
+    //         // Apply orientation correction
+    //         return applyOrientation(image, orientation);
+    //     }
+    // }
 
     /**
      * Extracts EXIF orientation value from image metadata.
      */
-    private int getExifOrientation(ImageReader reader) {
-        try {
-            IIOMetadata metadata = reader.getImageMetadata(0);
-            if (metadata == null) {
-                return 1; // Default orientation
-            }
+    // private int getExifOrientation(ImageReader reader) {
+    //     try {
+    //         IIOMetadata metadata = reader.getImageMetadata(0);
+    //         if (metadata == null) {
+    //             return 1; // Default orientation
+    //         }
 
-            String[] formats = metadata.getMetadataFormatNames();
-            for (String format : formats) {
-                if (format.equals("javax_imageio_jpeg_image_1.0") || format.equals("com_sun_media_imageio_plugins_jpeg_JPEGImageMetadata")) {
-                    IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(format);
-                    NodeList orientationNodes = root.getElementsByTagName("Orientation");
-                    if (orientationNodes.getLength() > 0) {
-                        IIOMetadataNode orientationNode = (IIOMetadataNode) orientationNodes.item(0);
-                        String orientationValue = orientationNode.getAttribute("value");
-                        if (orientationValue != null && !orientationValue.isEmpty()) {
-                            return Integer.parseInt(orientationValue);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.debug("Could not read EXIF orientation: {}", e.getMessage());
-        }
-        return 1; // Default orientation (no rotation)
-    }
+    //         String[] formats = metadata.getMetadataFormatNames();
+    //         for (String format : formats) {
+    //             if (format.equals("javax_imageio_jpeg_image_1.0") || format.equals("com_sun_media_imageio_plugins_jpeg_JPEGImageMetadata")) {
+    //                 IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(format);
+    //                 NodeList orientationNodes = root.getElementsByTagName("Orientation");
+    //                 if (orientationNodes.getLength() > 0) {
+    //                     IIOMetadataNode orientationNode = (IIOMetadataNode) orientationNodes.item(0);
+    //                     String orientationValue = orientationNode.getAttribute("value");
+    //                     if (orientationValue != null && !orientationValue.isEmpty()) {
+    //                         return Integer.parseInt(orientationValue);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     } catch (Exception e) {
+    //         logger.debug("Could not read EXIF orientation: {}", e.getMessage());
+    //     }
+    //     return 1; // Default orientation (no rotation)
+    // }
 
     /**
      * Applies orientation transformation to the image based on EXIF orientation value.
      */
-    private BufferedImage applyOrientation(BufferedImage image, int orientation) {
-        if (orientation == 1) {
-            return image; // No rotation needed
-        }
+    // private BufferedImage applyOrientation(BufferedImage image, int orientation) {
+    //     if (orientation == 1) {
+    //         return image; // No rotation needed
+    //     }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
-        BufferedImage rotatedImage;
+    //     int width = image.getWidth();
+    //     int height = image.getHeight();
+    //     BufferedImage rotatedImage;
 
-        switch (orientation) {
-            case 2: // Flip horizontal
-                rotatedImage = new BufferedImage(width, height, image.getType());
-                Graphics2D g2d = rotatedImage.createGraphics();
-                g2d.drawImage(image, width, 0, -width, height, null);
-                g2d.dispose();
-                return rotatedImage;
+    //     switch (orientation) {
+    //         case 2: // Flip horizontal
+    //             rotatedImage = new BufferedImage(width, height, image.getType());
+    //             Graphics2D g2d = rotatedImage.createGraphics();
+    //             g2d.drawImage(image, width, 0, -width, height, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 3: // Rotate 180 degrees
-                rotatedImage = new BufferedImage(width, height, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.drawImage(image, width, height, -width, -height, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 3: // Rotate 180 degrees
+    //             rotatedImage = new BufferedImage(width, height, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.drawImage(image, width, height, -width, -height, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 4: // Flip vertical
-                rotatedImage = new BufferedImage(width, height, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.drawImage(image, 0, height, width, -height, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 4: // Flip vertical
+    //             rotatedImage = new BufferedImage(width, height, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.drawImage(image, 0, height, width, -height, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 5: // Rotate 90 degrees counter-clockwise and flip horizontal
-                rotatedImage = new BufferedImage(height, width, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.drawImage(image, height, 0, -height, width, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 5: // Rotate 90 degrees counter-clockwise and flip horizontal
+    //             rotatedImage = new BufferedImage(height, width, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.drawImage(image, height, 0, -height, width, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 6: // Rotate 90 degrees clockwise
-                rotatedImage = new BufferedImage(height, width, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.rotate(Math.PI / 2);
-                g2d.drawImage(image, 0, -width, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 6: // Rotate 90 degrees clockwise
+    //             rotatedImage = new BufferedImage(height, width, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.rotate(Math.PI / 2);
+    //             g2d.drawImage(image, 0, -width, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 7: // Rotate 90 degrees clockwise and flip horizontal
-                rotatedImage = new BufferedImage(height, width, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.rotate(Math.PI / 2);
-                g2d.drawImage(image, 0, -width, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 7: // Rotate 90 degrees clockwise and flip horizontal
+    //             rotatedImage = new BufferedImage(height, width, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.rotate(Math.PI / 2);
+    //             g2d.drawImage(image, 0, -width, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            case 8: // Rotate 90 degrees counter-clockwise
-                rotatedImage = new BufferedImage(height, width, image.getType());
-                g2d = rotatedImage.createGraphics();
-                g2d.rotate(-Math.PI / 2);
-                g2d.drawImage(image, -height, 0, null);
-                g2d.dispose();
-                return rotatedImage;
+    //         case 8: // Rotate 90 degrees counter-clockwise
+    //             rotatedImage = new BufferedImage(height, width, image.getType());
+    //             g2d = rotatedImage.createGraphics();
+    //             g2d.rotate(-Math.PI / 2);
+    //             g2d.drawImage(image, -height, 0, null);
+    //             g2d.dispose();
+    //             return rotatedImage;
 
-            default:
-                return image; // Unknown orientation, return as-is
-        }
-    }
+    //         default:
+    //             return image; // Unknown orientation, return as-is
+    //     }
+    // }
 
     /**
      * Converts BufferedImage to byte array with specified quality.
@@ -611,13 +606,13 @@ public class LocalFileStorageService {
     }
 
     // Checks if ImageIO can decode the uploaded image format
-    private boolean canDecodeImage(MultipartFile file) {
-        try (InputStream in = file.getInputStream()) {
-            BufferedImage img = ImageIO.read(in);
-            return img != null;
-        } catch (Exception e) {
-            logger.debug("Cannot decode image {}: {}", file.getOriginalFilename(), e.getMessage());
-            return false;
-        }
-    }
+    // private boolean canDecodeImage(MultipartFile file) {
+    //     try (InputStream in = file.getInputStream()) {
+    //         BufferedImage img = ImageIO.read(in);
+    //         return img != null;
+    //     } catch (Exception e) {
+    //         logger.debug("Cannot decode image {}: {}", file.getOriginalFilename(), e.getMessage());
+    //         return false;
+    //     }
+    // }
 }
