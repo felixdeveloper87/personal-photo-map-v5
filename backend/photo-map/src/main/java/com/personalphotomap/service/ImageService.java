@@ -17,8 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -112,19 +113,27 @@ public class ImageService {
         }
 
         logger.info("⏳ Waiting for {} upload tasks to complete...", futures.size());
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        List<String> successfulUrls = futures.stream()
-                .map(future -> {
-                    try {
-                        return future.join();
-                    } catch (Exception e) {
-                        logger.error("❌ Failed to process one image upload: {}", e.getMessage(), e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        
+        // Process results as they complete, don't fail if one fails
+        List<String> successfulUrls = new ArrayList<>();
+        for (int i = 0; i < futures.size(); i++) {
+            try {
+                CompletableFuture<String> future = futures.get(i);
+                // Add timeout to prevent hanging uploads
+                String result = future.get(60, TimeUnit.SECONDS);
+                if (result != null) {
+                    successfulUrls.add(result);
+                    logger.info("✅ Image {}/{} uploaded successfully", i + 1, futures.size());
+                } else {
+                    logger.warn("⚠️ Image {}/{} returned null (unsupported format?)", i + 1, futures.size());
+                }
+            } catch (TimeoutException e) {
+                logger.error("⏰ Image {}/{} timed out after 60 seconds", i + 1, futures.size());
+            } catch (Exception e) {
+                logger.error("❌ Image {}/{} failed: {}", i + 1, futures.size(), e.getMessage());
+                // Continue processing other images
+            }
+        }
 
         logger.info("✅ Upload completed: {}/{} files successful", successfulUrls.size(), files.size());
         return successfulUrls;

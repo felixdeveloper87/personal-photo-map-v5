@@ -399,7 +399,8 @@ public class LocalFileStorageService {
         try (InputStream in = file.getInputStream()) {
             BufferedImage img = ImageIO.read(in);
             return img != null;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            logger.debug("Cannot decode image {}: {}", file.getOriginalFilename(), e.getMessage());
             return false;
         }
     }
