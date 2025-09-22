@@ -100,8 +100,14 @@ public class LocalFileStorageService {
         try {
             // Ensure upload directory exists
             Path uploadPath = Paths.get(uploadDir);
+            logger.info("🔍 Upload path: {}", uploadPath.toAbsolutePath());
+            logger.info("🔍 Upload path exists: {}", Files.exists(uploadPath));
+            logger.info("🔍 Upload path is writable: {}", Files.isWritable(uploadPath));
+            
             if (!Files.exists(uploadPath)) {
+                logger.info("🔧 Creating upload directory: {}", uploadPath.toAbsolutePath());
                 Files.createDirectories(uploadPath);
+                logger.info("✅ Upload directory created successfully");
             }
 
             // Check if it's an image file
@@ -137,7 +143,10 @@ public class LocalFileStorageService {
             }
 
         } catch (IOException e) {
-            logger.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+            logger.error("❌ IOException during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
+            throw new RuntimeException("Failed to upload file to local storage", e);
+        } catch (Exception e) {
+            logger.error("❌ Unexpected error during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
             throw new RuntimeException("Failed to upload file to local storage", e);
         }
     }
@@ -205,7 +214,9 @@ public class LocalFileStorageService {
         }
 
         // Save the optimized image
+        logger.info("🔧 Writing optimized image to: {}", finalPath.toAbsolutePath());
         Files.write(finalPath, optimizedImageBytes);
+        logger.info("✅ Successfully wrote optimized image file");
 
         long finalSizeKB = optimizedImageBytes.length / 1024;
         long originalSizeKB = file.getSize() / 1024;
@@ -235,9 +246,11 @@ public class LocalFileStorageService {
         }
 
         Path finalPath = uploadPath.resolve(targetName);
+        logger.info("🔧 Storing original file to: {}", finalPath.toAbsolutePath());
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, finalPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
+        logger.info("✅ Successfully stored original file");
 
         return finalPath.getFileName().toString();
     }
