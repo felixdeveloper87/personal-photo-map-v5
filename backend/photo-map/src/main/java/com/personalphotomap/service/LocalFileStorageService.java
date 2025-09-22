@@ -181,27 +181,27 @@ public class LocalFileStorageService {
     }
 
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // lê todos os bytes do arquivo
-        byte[] imageBytes = inputStream.readAllBytes();
-    
-        // cria streams independentes para cada operação
-        int orientation = getExifOrientation(imageBytes);
-        BufferedImage originalImage = ImageIO.read(new java.io.ByteArrayInputStream(imageBytes));
+        // Primeiro, lemos a orientação EXIF
+        int orientation = getExifOrientation(inputStream);
+
+        // Reset stream para ler imagem
+        inputStream.reset();
+        BufferedImage originalImage = ImageIO.read(inputStream);
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
         }
-    
-        // corrige rotação
+
+        // Corrige rotação
         originalImage = applyOrientation(originalImage, orientation);
-    
+
         int originalWidth = originalImage.getWidth();
         int originalHeight = originalImage.getHeight();
-    
+
         double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
         ratio = Math.min(1.0, ratio);
         int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
         int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
-    
+
         BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resizedImage.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -209,13 +209,14 @@ public class LocalFileStorageService {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
-    
+
         return resizedImage;
     }
-    
-    private int getExifOrientation(byte[] imageBytes) {
+
+    private int getExifOrientation(InputStream inputStream) {
         try {
-            Metadata metadata = ImageMetadataReader.readMetadata(new java.io.ByteArrayInputStream(imageBytes));
+            inputStream.mark(Integer.MAX_VALUE);
+            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
             Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
             if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
                 return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
@@ -223,9 +224,8 @@ public class LocalFileStorageService {
         } catch (Exception e) {
             logger.debug("❌ Não consegui ler EXIF orientation: {}", e.getMessage());
         }
-        return 1;
+        return 1; // default
     }
-    
 
     private BufferedImage applyOrientation(BufferedImage image, int orientation) {
         if (orientation == 1) return image;
