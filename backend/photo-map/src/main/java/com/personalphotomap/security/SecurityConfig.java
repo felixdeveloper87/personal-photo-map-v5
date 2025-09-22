@@ -57,26 +57,21 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 5) CORS: permita seu domínio do frontend
+    // 5) CORS: permitir somente origens necessárias
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        
-        // Permitir domínios específicos
-        cfg.setAllowedOrigins(List.of(
-            "https://www.personalphotomap.co.uk",
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173"
+
+        // Usar apenas padrões para evitar duplicação de header
+        cfg.setAllowedOriginPatterns(List.of(
+            "https://*.personalphotomap.co.uk",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
         ));
-        
-        // Permitir padrões para subdomínios
-        cfg.setAllowedOriginPatterns(List.of("https://*.personalphotomap.co.uk"));
-        
+
         // Métodos permitidos
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
         // Headers permitidos
         cfg.setAllowedHeaders(List.of(
             "Authorization",
@@ -90,7 +85,7 @@ public class SecurityConfig {
             "Cache-Control",
             "Range"
         ));
-        
+
         // Headers expostos
         cfg.setExposedHeaders(List.of(
             "Authorization",
@@ -98,10 +93,10 @@ public class SecurityConfig {
             "Content-Length",
             "Content-Range"
         ));
-        
+
         // Permitir credenciais
         cfg.setAllowCredentials(true);
-        
+
         // Cache de preflight
         cfg.setMaxAge(3600L);
 
@@ -111,11 +106,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration conf) throws Exception {
         return conf.getAuthenticationManager();
     }
 }
-
