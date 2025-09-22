@@ -104,24 +104,25 @@ public class LocalFileStorageService {
                 throw new RuntimeException("Only image files are supported");
             }
 
-            // Debug: Check passthrough configuration
-            logger.info("🔍 Debug - passthroughStore: {}, canDecodeImage: {}", passthroughStore, canDecodeImage(file));
+            // Check if image needs resizing (only if larger than 1MB)
+            long fileSizeKB = file.getSize() / 1024;
+            logger.info("🔍 Image size: {}KB, needs processing: {}", fileSizeKB, fileSizeKB > 1024);
             
-            // Force passthrough only if explicitly enabled AND image cannot be decoded
-            if (passthroughStore && !canDecodeImage(file)) {
-                logger.info("🔄 Passthrough enabled and image cannot be decoded, storing original: {}", file.getOriginalFilename());
+            if (fileSizeKB > 1024) { // Only process if larger than 1MB
+                logger.info("🔄 Image is larger than 1MB, processing and optimizing: {}", file.getOriginalFilename());
+                String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
+                String fileUrl = "/api/images/uploads/" + finalFileName;
+                
+                logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
+                return fileUrl;
+            } else {
+                logger.info("📁 Image is 1MB or smaller, storing original: {}", file.getOriginalFilename());
                 String finalFileName = storeOriginalFile(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
+                
+                logger.info("✅ Original image stored: {} -> {}", file.getOriginalFilename(), fileUrl);
                 return fileUrl;
             }
-
-            // Process and optimize image (default behavior when passthrough is disabled)
-            logger.info("🔄 Processing and optimizing image: {} (passthrough: {})", file.getOriginalFilename(), passthroughStore);
-            String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
-            String fileUrl = "/api/images/uploads/" + finalFileName;
-            
-            logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
-            return fileUrl;
 
         } catch (IOException e) {
             logger.error("Failed to upload file: {}", file.getOriginalFilename(), e);
