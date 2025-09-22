@@ -60,6 +60,12 @@ public class FileController {
             Path file = Paths.get(uploadDir).resolve(sanitizedFilename);
             logger.info("🔍 Full file path: {}", file.toAbsolutePath());
             
+            // Check if file exists before creating resource
+            if (!Files.exists(file)) {
+                logger.warn("❌ File does not exist: {} | Path: {}", sanitizedFilename, file.toAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
+            
             Resource resource = new UrlResource(file.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
@@ -144,6 +150,12 @@ public class FileController {
                 try {
                     long fileCount = Files.list(uploadPath).count();
                     logger.info("🔍 Upload directory contains {} files", fileCount);
+                    
+                    // Lista os primeiros 5 arquivos para debug
+                    Files.list(uploadPath)
+                        .limit(5)
+                        .forEach(file -> logger.info("🔍 Found file: {}", file.getFileName()));
+                        
                 } catch (Exception e) {
                     logger.warn("Could not list files in upload directory: {}", e.getMessage());
                 }
