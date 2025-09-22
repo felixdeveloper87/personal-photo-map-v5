@@ -56,25 +56,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String requestPath = request.getRequestURI();
+        String requestMethod = request.getMethod();
+
+        logger.info(String.format("🔍 Processing request: %s %s from %s", requestMethod, requestPath, request.getRemoteAddr()));
+
+        // Skip auth for public endpoints FIRST
+        if (isExcluded(requestPath)) {
+            logger.info(String.format("✅ Skipping authentication for excluded path: %s", requestPath));
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Allow CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
-        String requestPath = request.getRequestURI();
-        String requestMethod = request.getMethod();
-
-        logger.info(String.format("🔍 Processing request: %s %s from %s", requestMethod, requestPath, request.getRemoteAddr()));
         logger.info(String.format("🔍 Authorization header: %s", request.getHeader("Authorization")));
-
-        // Skip auth for public endpoints
-        if (isExcluded(requestPath)) {
-            logger.info(String.format("✅ Skipping authentication for excluded path: %s", requestPath));
-            filterChain.doFilter(request, response);
-            return;
-        }
-        
         logger.info(String.format("🔐 Path not excluded, requiring authentication: %s", requestPath));
 
         // Extract JWT
@@ -147,9 +147,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isExcluded(String path) {
         logger.info(String.format("🔍 Checking if path is excluded: %s", path));
+        logger.info(String.format("🔍 Available exclude patterns: %s", EXCLUDE_URLS));
         for (String pattern : EXCLUDE_URLS) {
             logger.info(String.format("🔍 Testing pattern: %s against path: %s", pattern, path));
-            if (pathMatcher.match(pattern, path)) {
+            boolean matches = pathMatcher.match(pattern, path);
+            logger.info(String.format("🔍 Pattern %s matches %s: %s", pattern, path, matches));
+            if (matches) {
                 logger.info(String.format("✅ Path matched pattern: %s", pattern));
                 return true;
             }

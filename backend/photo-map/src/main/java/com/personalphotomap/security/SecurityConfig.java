@@ -23,6 +23,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        System.out.println("🔧 Configuring SecurityFilterChain with JWT filter: " + jwtAuthenticationFilter.getClass().getSimpleName());
+        
         http
             // 1) CORS antes de tudo
             .cors(Customizer.withDefaults())
@@ -30,16 +32,20 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // 3) Autorização (preflight e endpoints públicos)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()      // preflight
-                .requestMatchers("/api/auth/**").permitAll()                 // login/registro públicos
-                .requestMatchers("/health").permitAll()                      // health público
-                .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
-                .requestMatchers(HttpMethod.PUT, "/api/users/make-premium").authenticated()
-                .anyRequest().authenticated()
-            );
+            .authorizeHttpRequests(auth -> {
+                System.out.println("🔧 Configuring authorization rules...");
+                auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()      // preflight
+                    .requestMatchers("/api/auth/**").permitAll()                 // login/registro públicos
+                    .requestMatchers("/health").permitAll()                      // health público
+                    .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
+                    .requestMatchers(HttpMethod.PUT, "/api/users/make-premium").authenticated()
+                    .anyRequest().authenticated();
+                System.out.println("🔧 Authorization rules configured");
+            });
 
         // 4) Filtro JWT antes do UsernamePasswordAuthenticationFilter
+        System.out.println("🔧 Adding JWT filter before UsernamePasswordAuthenticationFilter");
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
