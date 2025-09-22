@@ -16,6 +16,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,8 +65,14 @@ public class LocalFileStorageService {
 
         try {
             Path uploadPath = Paths.get(uploadDir);
+            logger.info("🔍 Upload path: {}", uploadPath.toAbsolutePath());
+            logger.info("🔍 Upload path exists: {}", Files.exists(uploadPath));
+            logger.info("🔍 Upload path is writable: {}", Files.isWritable(uploadPath));
+            
             if (!Files.exists(uploadPath)) {
+                logger.info("🔧 Creating upload directory: {}", uploadPath.toAbsolutePath());
                 Files.createDirectories(uploadPath);
+                logger.info("✅ Upload directory created successfully");
             }
 
             if (!isImageFile(file)) {
@@ -90,7 +97,10 @@ public class LocalFileStorageService {
             }
 
         } catch (IOException e) {
-            logger.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+            logger.error("❌ IOException during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
+            throw new RuntimeException("Failed to upload file to local storage", e);
+        } catch (Exception e) {
+            logger.error("❌ Unexpected error during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
             throw new RuntimeException("Failed to upload file to local storage", e);
         }
     }
@@ -133,7 +143,9 @@ public class LocalFileStorageService {
             optimizedImageBytes = createSmallerImage(file);
         }
 
+        logger.info("🔧 Writing optimized image to: {}", finalPath.toAbsolutePath());
         Files.write(finalPath, optimizedImageBytes);
+        logger.info("✅ Successfully wrote optimized image file");
 
         long finalSizeKB = optimizedImageBytes.length / 1024;
         long originalSizeKB = file.getSize() / 1024;
@@ -157,9 +169,11 @@ public class LocalFileStorageService {
             }
         }
         Path finalPath = uploadPath.resolve(targetName);
+        logger.info("🔧 Storing original file to: {}", finalPath.toAbsolutePath());
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, finalPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
+        logger.info("✅ Successfully stored original file");
         return finalPath.getFileName().toString();
     }
 
@@ -189,19 +203,29 @@ public class LocalFileStorageService {
      */
     private BufferedImage resizeImage(MultipartFile file, int maxDimension) throws IOException {
         int orientation = 1;
-        try (InputStream metaStream = file.getInputStream()) {
-            Metadata metadata = ImageMetadataReader.readMetadata(metaStream);
-            Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
-                orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-            }
-        } catch (Exception e) {
-            logger.debug("❌ Could not read EXIF orientation: {}", e.getMessage());
-        }
-
         BufferedImage originalImage;
-        try (InputStream imageStream = file.getInputStream()) {
-            originalImage = ImageIO.read(imageStream);
+        
+        // Create a buffered input stream that supports mark/reset
+        try (BufferedInputStream bufferedStream = new BufferedInputStream(file.getInputStream())) {
+            // Mark the beginning of the stream
+            bufferedStream.mark(Integer.MAX_VALUE);
+            
+            // Read EXIF orientation
+            try {
+                Metadata metadata = ImageMetadataReader.readMetadata(bufferedStream);
+                Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                    orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+                }
+            } catch (Exception e) {
+                logger.debug("❌ Could not read EXIF orientation: {}", e.getMessage());
+            }
+            
+            // Reset to the beginning of the stream
+            bufferedStream.reset();
+            
+            // Read the image
+            originalImage = ImageIO.read(bufferedStream);
         }
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
