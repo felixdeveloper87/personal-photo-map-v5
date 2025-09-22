@@ -84,7 +84,7 @@ public class LocalFileStorageService {
             }
 
             // Fast path: passthrough store (no re-encode, preserve EXIF and format)
-            if (isImageFile(file) && passthroughStore) {
+            if (isImageFile(file) && (passthroughStore || !canDecodeImage(file))) {
                 String finalFileName = storeOriginalFile(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
                 logger.info("Stored original image (passthrough): {} -> {}", file.getOriginalFilename(), fileUrl);
@@ -221,27 +221,31 @@ public class LocalFileStorageService {
      */
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
         BufferedImage originalImage = ImageIO.read(inputStream);
-        
+        if (originalImage == null) {
+            throw new IOException("Unsupported image format or unreadable image");
+        }
+
         int originalWidth = originalImage.getWidth();
         int originalHeight = originalImage.getHeight();
-        
-        // Calculate new dimensions maintaining aspect ratio
+
+        // Calculate new dimensions maintaining aspect ratio; never upscale
         double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
-        int newWidth = (int) (originalWidth * ratio);
-        int newHeight = (int) (originalHeight * ratio);
-        
+        ratio = Math.min(1.0, ratio);
+        int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
+        int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
+
         // Create resized image
         BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resizedImage.createGraphics();
-        
+
         // Set rendering hints for better quality
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
+
         g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
-        
+
         return resizedImage;
     }
 
@@ -374,5 +378,15 @@ public class LocalFileStorageService {
             return fileName.substring(0, dotIndex);
         }
         return fileName;
+    }
+
+    // Checks if ImageIO can decode the uploaded image format
+    private boolean canDecodeImage(MultipartFile file) {
+        try (InputStream in = file.getInputStream()) {
+            BufferedImage img = ImageIO.read(in);
+            return img != null;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }
