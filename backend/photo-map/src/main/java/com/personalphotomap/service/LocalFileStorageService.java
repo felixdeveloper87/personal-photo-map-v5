@@ -104,6 +104,9 @@ public class LocalFileStorageService {
                 throw new RuntimeException("Only image files are supported");
             }
 
+            // Debug: Check passthrough configuration
+            logger.info("🔍 Debug - passthroughStore: {}, canDecodeImage: {}", passthroughStore, canDecodeImage(file));
+            
             // Force passthrough only if explicitly enabled AND image cannot be decoded
             if (passthroughStore && !canDecodeImage(file)) {
                 logger.info("🔄 Passthrough enabled and image cannot be decoded, storing original: {}", file.getOriginalFilename());
