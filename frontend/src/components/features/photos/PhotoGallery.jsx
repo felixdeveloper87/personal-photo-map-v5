@@ -24,6 +24,7 @@ import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
+import AutoOrientedImage from '../../ui/AutoOrientedImage';
 import { motion } from 'framer-motion';
 
 // Registrar nomes de países
@@ -404,7 +405,7 @@ const PhotoGallery = memo(function PhotoGallery({
 
                   {/* Imagem */}
                   <Box position="relative" overflow="hidden" borderRadius={isMobile ? '8px' : '12px'}>
-                    <Image
+                    <AutoOrientedImage
                       src={image.url}
                       alt={`Photo from ${countryName}`}
                       width="100%"

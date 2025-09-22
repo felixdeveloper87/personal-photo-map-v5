@@ -285,6 +285,32 @@ export const isValidImageFile = (file) => {
 };
 
 /**
+ * Aplica orientação EXIF a uma imagem usando CSS transform
+ * @param {number} orientation - Valor de orientação EXIF (1-8)
+ * @returns {string} CSS transform string
+ */
+export const getOrientationTransform = (orientation) => {
+  switch (orientation) {
+    case 2:
+      return 'scaleX(-1)'; // Flip horizontal
+    case 3:
+      return 'rotate(180deg)'; // Rotate 180°
+    case 4:
+      return 'scaleY(-1)'; // Flip vertical
+    case 5:
+      return 'rotate(90deg) scaleX(-1)'; // Rotate 90° clockwise + flip horizontal
+    case 6:
+      return 'rotate(90deg)'; // Rotate 90° clockwise
+    case 7:
+      return 'rotate(-90deg) scaleX(-1)'; // Rotate 90° counter-clockwise + flip horizontal
+    case 8:
+      return 'rotate(-90deg)'; // Rotate 90° counter-clockwise
+    default:
+      return 'none'; // Orientation 1 - normal
+  }
+};
+
+/**
  * Cria um preview de uma imagem com orientação correta
  * @param {File} file - Arquivo de imagem
  * @param {number} maxSize - Tamanho máximo do preview (default: 200)
