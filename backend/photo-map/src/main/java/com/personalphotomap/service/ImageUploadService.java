@@ -85,6 +85,49 @@ public class ImageUploadService {
         }
     }
 
+    /**
+     * Synchronous version of uploadAndSaveImage for sequential processing.
+     * Used to avoid memory issues on VPS with limited resources.
+     */
+    public String uploadAndSaveImageSync(MultipartFile file, String countryId, int year, AppUser user) {
+        String threadName = Thread.currentThread().getName();
+
+        try {
+            logger.info("Starting synchronous image upload: {} on thread: {}", file.getOriginalFilename(), threadName);
+
+            // File type validation
+            String mimeType = tika.detect(file.getInputStream());
+            logger.info("🧪 Detected MIME type: {} | File: {}", mimeType, file.getOriginalFilename());
+            if (!isSupportedImageType(mimeType)) {
+                logger.warn("Unsupported file type: {} | MIME: {}", file.getOriginalFilename(), mimeType);
+                return null;
+            }
+
+            // Generate unique file name
+            String fileName = UUID.randomUUID().toString() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+
+            // Upload to local storage with automatic resizing
+            String fileUrl = localFileStorageService.uploadFile(file, fileName);
+
+            logger.info("✅ Local upload complete: {} | URL: {} | Thread: {}", file.getOriginalFilename(), fileUrl,
+                    threadName);
+
+            // Save image metadata to the database
+            Image image = new Image();
+            image.setUser(user);
+            image.setCountryId(countryId);
+            image.setFileName(fileName);
+            image.setFilePath(fileUrl);
+            image.setYear(year);
+            imageRepository.save(image);
+
+            return fileUrl;
+        } catch (IOException e) {
+            logger.error("Image upload error: {}", file.getOriginalFilename(), e);
+            return null;
+        }
+    }
+
     private boolean isSupportedImageType(String mimeType) {
         return mimeType.equalsIgnoreCase("image/jpeg") ||
                 mimeType.equalsIgnoreCase("image/png") ||

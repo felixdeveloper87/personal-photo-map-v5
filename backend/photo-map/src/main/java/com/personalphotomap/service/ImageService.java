@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -106,39 +103,36 @@ public class ImageService {
             throw new IllegalArgumentException("No files were provided.");
         }
 
-        logger.info("🚀 Starting upload of {} files for user: {}", files.size(), user.getEmail());
+        logger.info("🚀 Starting SEQUENTIAL upload of {} files for user: {} (VPS memory optimization)", files.size(), user.getEmail());
 
-        List<CompletableFuture<String>> futures = new ArrayList<>();
+        List<String> successfulUrls = new ArrayList<>();
+        
+        // Process files sequentially to avoid memory issues on VPS
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             if (file == null || file.isEmpty()) {
                 logger.warn("⚠️ Skipping empty file at index {}", i);
                 continue;
             }
-            logger.info("📤 Queuing upload for file {}/{}: {} ({}KB)", 
+            
+            logger.info("📤 Processing file {}/{}: {} ({}KB)", 
                 i + 1, files.size(), file.getOriginalFilename(), file.getSize() / 1024);
-            futures.add(imageUploadService.uploadAndSaveImage(file, countryId, year, user));
-        }
-
-        logger.info("⏳ Waiting for {} upload tasks to complete...", futures.size());
-        
-        // Process results as they complete, don't fail if one fails
-        List<String> successfulUrls = new ArrayList<>();
-        for (int i = 0; i < futures.size(); i++) {
+            
             try {
-                CompletableFuture<String> future = futures.get(i);
-                // Add timeout to prevent hanging uploads
-                String result = future.get(60, TimeUnit.SECONDS);
+                // Process one file at a time to avoid memory overflow
+                String result = imageUploadService.uploadAndSaveImageSync(file, countryId, year, user);
                 if (result != null) {
                     successfulUrls.add(result);
-                    logger.info("✅ Image {}/{} uploaded successfully", i + 1, futures.size());
+                    logger.info("✅ Image {}/{} uploaded successfully", i + 1, files.size());
                 } else {
-                    logger.warn("⚠️ Image {}/{} returned null (unsupported format?)", i + 1, futures.size());
+                    logger.warn("⚠️ Image {}/{} returned null (unsupported format?)", i + 1, files.size());
                 }
-            } catch (TimeoutException e) {
-                logger.error("⏰ Image {}/{} timed out after 60 seconds", i + 1, futures.size());
+                
+                // Small delay between uploads to prevent overwhelming the system
+                Thread.sleep(100);
+                
             } catch (Exception e) {
-                logger.error("❌ Image {}/{} failed: {}", i + 1, futures.size(), e.getMessage());
+                logger.error("❌ Image {}/{} failed: {}", i + 1, files.size(), e.getMessage());
                 // Continue processing other images
             }
         }
