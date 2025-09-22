@@ -61,6 +61,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
   const [isLoading, setIsLoading] = useState(false);
   const [fileProgress, setFileProgress] = useState({}); // Progresso individual de cada arquivo
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState([]); // Resultados detalhados do upload
 
   // Year strategy: 'auto' (per-photo EXIF) | 'manual' (one year for all)
   const [yearStrategy, setYearStrategy] = useState('auto');
@@ -228,6 +229,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       setYearStrategy('auto');
       setManualYear('');
       setFileProgress({}); // Reset progress when new files are selected
+      setUploadResults([]); // Reset upload results
       showToast('Photos analyzed', `${valid.length} photo(s) ready to upload.`, 'success');
     } catch {
       showToast('Analysis error', 'Could not read photo metadata.', 'error');
@@ -282,15 +284,6 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
       clearInterval(progressInterval);
 
-      // Set all files to 100% on success
-      setFileProgress(prev => {
-        const newProgress = { ...prev };
-        files.forEach((file) => {
-          newProgress[file.name] = 100;
-        });
-        return newProgress;
-      });
-
       if (!response.ok) {
         const errorText = await response.text();
         if (response.status === 403) {
@@ -298,8 +291,44 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         }
         throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
+
+      const result = await response.json();
+      const uploadedUrls = result.imageUrls || [];
+      
+      // Calculate success/failure based on backend response
+      const successful = uploadedUrls.length;
+      const failed = files.length - successful;
+      
+      // Set progress based on actual results
+      setFileProgress(prev => {
+        const newProgress = { ...prev };
+        files.forEach((file, index) => {
+          if (index < successful) {
+            newProgress[file.name] = 100; // Success
+          } else {
+            newProgress[file.name] = 0; // Failed
+          }
+        });
+        return newProgress;
+      });
+
+      // Create detailed results
+      const results = files.map((file, index) => ({
+        fileName: file.name,
+        status: index < successful ? 'success' : 'error',
+        message: index < successful ? 'Upload successful' : 'Upload failed - file not processed',
+        imageUrl: index < successful ? uploadedUrls[index] : null
+      }));
+
+      return {
+        successful,
+        failed,
+        results
+      };
+
     } catch (error) {
       clearInterval(progressInterval);
+      
       // Reset progress on error
       setFileProgress(prev => {
         const newProgress = { ...prev };
@@ -308,7 +337,20 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         });
         return newProgress;
       });
-      throw error;
+      
+      // Return all files as failed
+      const results = files.map(file => ({
+        fileName: file.name,
+        status: 'error',
+        message: error.message || 'Upload failed',
+        imageUrl: null
+      }));
+
+      return {
+        successful: 0,
+        failed: files.length,
+        results
+      };
     }
   };
 
@@ -321,29 +363,75 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
     setIsLoading(true);
     setIsUploading(true);
+    
+    let totalUploaded = 0;
+    let totalFailed = 0;
+    const uploadResults = [];
+
     try {
       if (yearStrategy === 'manual') {
         if (!effectiveManualYear) {
           throw new Error('Provide a valid year (1900—current).');
         }
-        await uploadPhotosWithYear(selectedFiles, effectiveManualYear);
+        const result = await uploadPhotosWithYear(selectedFiles, effectiveManualYear);
+        totalUploaded = result.successful;
+        totalFailed = result.failed;
+        uploadResults.push(...result.results);
       } else {
         const entries = Object.entries(groupedFilesByYear);
-        await Promise.all(entries.map(([y, files]) => uploadPhotosWithYear(files, parseInt(y, 10))));
+        const results = await Promise.allSettled(entries.map(([y, files]) => uploadPhotosWithYear(files, parseInt(y, 10))));
+        
+        // Process results from all year groups
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            totalUploaded += result.value.successful;
+            totalFailed += result.value.failed;
+            uploadResults.push(...result.value.results);
+          } else {
+            // If entire year group failed, count all files as failed
+            const yearFiles = entries[index][1];
+            totalFailed += yearFiles.length;
+            uploadResults.push(...yearFiles.map(file => ({
+              fileName: file.name,
+              status: 'error',
+              message: result.reason?.message || 'Upload failed'
+            })));
+          }
+        });
       }
 
-      await refreshCountriesWithPhotos();
-      onUploadSuccess?.();
+      // Store upload results for display
+      setUploadResults(uploadResults);
 
-      showToast('Upload complete', `${selectedFiles.length} photo(s) uploaded successfully.`, 'success');
+      // Refresh data if any uploads were successful
+      if (totalUploaded > 0) {
+        await refreshCountriesWithPhotos();
+        onUploadSuccess?.();
+      }
 
-      // Reset
-      setSelectedFiles([]);
-      setPhotoMetadata({});
-      setFileProgress({});
-      setYearStrategy('auto');
-      setManualYear('');
-      onClose();
+      // Show appropriate success/error message
+      if (totalFailed === 0) {
+        showToast('Upload complete', `${totalUploaded} photo(s) uploaded successfully.`, 'success');
+        // Reset and close only if all uploads were successful
+        setSelectedFiles([]);
+        setPhotoMetadata({});
+        setFileProgress({});
+        setUploadResults([]);
+        setYearStrategy('auto');
+        setManualYear('');
+        onClose();
+      } else if (totalUploaded > 0) {
+        showToast(
+          'Upload completed with errors', 
+          `${totalUploaded} photo(s) uploaded successfully, ${totalFailed} failed.`, 
+          'warning'
+        );
+        // Don't close modal if there were failures - let user see results
+      } else {
+        showToast('Upload failed', 'No photos were uploaded successfully.', 'error');
+        // Don't close modal if all failed - let user retry
+      }
+
     } catch (error) {
       showToast('Upload error', error?.message || 'Try again.', 'error');
     } finally {
@@ -403,6 +491,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         setYearStrategy('auto');
         setManualYear('');
         setFileProgress({});
+        setUploadResults([]);
         setIsUploading(false);
         onClose();
       }}
@@ -521,6 +610,38 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         )}
 
         {selectedFiles.length > 0 && <Divider />}
+
+        {/* Upload Results */}
+        {uploadResults.length > 0 && (
+          <Box>
+            <Text fontWeight="semibold" mb={3}>
+              Upload Results:
+            </Text>
+            <Box maxH="200px" overflowY="auto" borderWidth={1} borderRadius="md" p={3} borderColor={borderCol}>
+              <VStack spacing={2}>
+                {uploadResults.map((result, index) => (
+                  <HStack key={index} w="full" justify="space-between" p={2} borderRadius="md" 
+                    bg={result.status === 'success' ? 'green.50' : 'red.50'}
+                    _dark={{ bg: result.status === 'success' ? 'green.900' : 'red.900' }}
+                  >
+                    <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                      {result.fileName}
+                    </Text>
+                    <Badge 
+                      colorScheme={result.status === 'success' ? 'green' : 'red'} 
+                      variant="solid"
+                      size="sm"
+                    >
+                      {result.status === 'success' ? 'Success' : 'Failed'}
+                    </Badge>
+                  </HStack>
+                ))}
+              </VStack>
+            </Box>
+          </Box>
+        )}
+
+        {uploadResults.length > 0 && <Divider />}
 
         {/* STEP 2 – Year strategy */}
         {selectedFiles.length > 0 && (
