@@ -19,6 +19,7 @@ services:
       - SERVER_PORT=8092
       - APP_UPLOAD_DIR=/photomap/storage/uploads
       - APP_BASE_URL=https://api.personalphotomap.co.uk
+      - JAVA_OPTS=-Xmx2g -Xms1g
     ports:
       - "8092:8092"
     volumes:
