@@ -103,37 +103,62 @@ public class ImageService {
             throw new IllegalArgumentException("No files were provided.");
         }
 
-        logger.info("🚀 Starting SEQUENTIAL upload of {} files for user: {} (VPS memory optimization)", files.size(), user.getEmail());
+        logger.info("🚀 Starting BATCH upload of {} files for user: {} (optimized for multiple files)", files.size(), user.getEmail());
 
         List<String> successfulUrls = new ArrayList<>();
         
-        // Process files sequentially to avoid memory issues on VPS
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
-            if (file == null || file.isEmpty()) {
-                logger.warn("⚠️ Skipping empty file at index {}", i);
-                continue;
-            }
+        // Process files in very small batches for low memory VPS (1.8GB RAM)
+        int batchSize = Math.min(3, files.size()); // Process up to 3 files at a time for low memory
+        int totalBatches = (int) Math.ceil((double) files.size() / batchSize);
+        
+        for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            int startIndex = batchIndex * batchSize;
+            int endIndex = Math.min(startIndex + batchSize, files.size());
             
-            logger.info("📤 Processing file {}/{}: {} ({}KB)", 
-                i + 1, files.size(), file.getOriginalFilename(), file.getSize() / 1024);
+            logger.info("📦 Processing batch {}/{} (files {}-{})", 
+                batchIndex + 1, totalBatches, startIndex + 1, endIndex);
             
-            try {
-                // Process one file at a time to avoid memory overflow
-                String result = imageUploadService.uploadAndSaveImageSync(file, countryId, year, user);
-                if (result != null) {
-                    successfulUrls.add(result);
-                    logger.info("✅ Image {}/{} uploaded successfully", i + 1, files.size());
-                } else {
-                    logger.warn("⚠️ Image {}/{} returned null (unsupported format?)", i + 1, files.size());
+            // Process batch sequentially to avoid memory issues
+            for (int i = startIndex; i < endIndex; i++) {
+                MultipartFile file = files.get(i);
+                if (file == null || file.isEmpty()) {
+                    logger.warn("⚠️ Skipping empty file at index {}", i);
+                    continue;
                 }
                 
-                // Small delay between uploads to prevent overwhelming the system
-                Thread.sleep(100);
+                logger.info("📤 Processing file {}/{}: {} ({}KB)", 
+                    i + 1, files.size(), file.getOriginalFilename(), file.getSize() / 1024);
                 
-            } catch (Exception e) {
-                logger.error("❌ Image {}/{} failed: {}", i + 1, files.size(), e.getMessage());
-                // Continue processing other images
+                try {
+                    // Process one file at a time to avoid memory overflow
+                    String result = imageUploadService.uploadAndSaveImageSync(file, countryId, year, user);
+                    if (result != null) {
+                        successfulUrls.add(result);
+                        logger.info("✅ Image {}/{} uploaded successfully", i + 1, files.size());
+                    } else {
+                        logger.warn("⚠️ Image {}/{} returned null (unsupported format?)", i + 1, files.size());
+                    }
+                    
+                    // Longer delay between uploads for low memory VPS
+                    Thread.sleep(500);
+                    
+                } catch (Exception e) {
+                    logger.error("❌ Image {}/{} failed: {}", i + 1, files.size(), e.getMessage());
+                    // Continue processing other images
+                }
+            }
+            
+            // Longer delay between batches to allow memory cleanup on low memory VPS
+            if (batchIndex < totalBatches - 1) {
+                logger.info("⏳ Batch {}/{} completed, pausing for memory cleanup...", batchIndex + 1, totalBatches);
+                try {
+                    // Force garbage collection on low memory VPS
+                    System.gc();
+                    Thread.sleep(1000); // 1 second pause for memory cleanup
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.warn("Thread interrupted during memory cleanup pause");
+                }
             }
         }
 

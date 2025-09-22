@@ -220,6 +220,13 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     }
     if (valid.length === 0) return;
 
+    // Limit number of files to prevent memory issues on low memory VPS
+    const MAX_FILES = 8;
+    if (valid.length > MAX_FILES) {
+      showToast('Too many files', `Please select no more than ${MAX_FILES} photos at once for better performance.`, 'warning');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const meta = await readAllExif(valid);
@@ -268,19 +275,27 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         const newProgress = { ...prev };
         files.forEach((file) => {
           if (newProgress[file.name] < 90) {
-            newProgress[file.name] = Math.min(newProgress[file.name] + Math.random() * 20, 90);
+            // More gradual progress for better UX with multiple files
+            newProgress[file.name] = Math.min(newProgress[file.name] + Math.random() * 10, 90);
           }
         });
         return newProgress;
       });
-    }, 200);
+    }, 300); // Slower updates for better performance
 
     try {
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout for low memory VPS
+      
       const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: formData,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       clearInterval(progressInterval);
 
@@ -338,11 +353,19 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         return newProgress;
       });
       
+      // Handle different error types
+      let errorMessage = 'Upload failed';
+      if (error.name === 'AbortError') {
+        errorMessage = 'Upload timeout - please try with fewer photos or smaller file sizes';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       // Return all files as failed
       const results = files.map(file => ({
         fileName: file.name,
         status: 'error',
-        message: error.message || 'Upload failed',
+        message: errorMessage,
         imageUrl: null
       }));
 
@@ -534,7 +557,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
           </Button>
 
           <Text fontSize="sm" color={subtleText} mt={2} textAlign="center">
-            You can select multiple photos at once.
+            You can select up to 8 photos at once. For best performance on low memory servers, try uploading 3-5 photos per batch.
           </Text>
         </Box>
 
