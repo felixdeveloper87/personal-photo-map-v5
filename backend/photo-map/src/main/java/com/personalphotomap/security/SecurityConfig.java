@@ -61,7 +61,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        // Permitir tanto o domínio de produção quanto localhost para desenvolvimento
+        
+        // Permitir domínios específicos
         cfg.setAllowedOrigins(List.of(
             "https://www.personalphotomap.co.uk",
             "http://localhost:3000",
@@ -69,12 +70,40 @@ public class SecurityConfig {
             "http://127.0.0.1:3000",
             "http://127.0.0.1:5173"
         ));
-        // Também permitir padrões para subdomínios
+        
+        // Permitir padrões para subdomínios
         cfg.setAllowedOriginPatterns(List.of("https://*.personalphotomap.co.uk"));
+        
+        // Métodos permitidos
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","Origin","X-Requested-With"));
-        cfg.setExposedHeaders(List.of("Authorization","Content-Disposition"));
+        
+        // Headers permitidos
+        cfg.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+            "DNT",
+            "User-Agent",
+            "If-Modified-Since",
+            "Cache-Control",
+            "Range"
+        ));
+        
+        // Headers expostos
+        cfg.setExposedHeaders(List.of(
+            "Authorization",
+            "Content-Disposition",
+            "Content-Length",
+            "Content-Range"
+        ));
+        
+        // Permitir credenciais
         cfg.setAllowCredentials(true);
+        
+        // Cache de preflight
+        cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
