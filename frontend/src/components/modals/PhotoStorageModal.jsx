@@ -32,13 +32,24 @@ const useStorageInfo = () => {
       if (!token) throw new Error('No token available');
       
       // Buscar informações de storage (tamanho dos arquivos)
-      const storageResponse = await fetch(buildApiUrl('/api/images/storage-usage'), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      // TODO: Implementar endpoint no backend
       let storageData = { usedBytes: 0 };
-      if (storageResponse.ok) {
-        storageData = await storageResponse.json();
+      
+      // Por enquanto, usar valor padrão até implementar o endpoint
+      try {
+        // Tentar buscar fotos do usuário para calcular storage
+        const photosResponse = await fetch(buildApiUrl('/api/images/allPictures'), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (photosResponse.ok) {
+          const photos = await photosResponse.json();
+          // Calcular tamanho total baseado no número de fotos (estimativa)
+          storageData.usedBytes = photos.length * 2 * 1024 * 1024; // 2MB por foto estimado
+        }
+      } catch (error) {
+        console.warn('Could not fetch storage info:', error);
+        storageData.usedBytes = 0;
       }
       
       // Calcular storage em GB
