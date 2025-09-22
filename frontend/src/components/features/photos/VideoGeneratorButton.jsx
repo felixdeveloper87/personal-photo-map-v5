@@ -40,9 +40,6 @@ const VideoGeneratorButton = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Color scheme
-  const buttonBg = useColorModeValue('teal.500', 'teal.600');
-  const buttonHoverBg = useColorModeValue('teal.600', 'teal.700');
-  const buttonText = useColorModeValue('white', 'white');
   const modalBg = useColorModeValue('white', 'gray.800');
 
   // Determina o título baseado no contexto
@@ -74,18 +71,16 @@ const VideoGeneratorButton = ({
     <>
       <Button
         leftIcon={<Icon as={FaVideo} />}
-        colorScheme="teal"
+        colorScheme="green"
         variant="solid"
-        size="md"
-        borderRadius="xl"
-        px={6}
-        py={3}
+        size={{ base: "xs", sm: "sm", md: "sm" }}
+        borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
+        px={{ base: 2, sm: 3, md: 4 }}
+        py={{ base: 1, sm: 2, md: 2 }}
         fontWeight="semibold"
-        bg={buttonBg}
-        color={buttonText}
+        boxShadow="md"
         _hover={{
-          bg: buttonHoverBg,
-          transform: 'translateY(-2px)',
+          transform: 'translateY(-1px)',
           boxShadow: 'lg',
         }}
         _active={{
@@ -100,7 +95,7 @@ const VideoGeneratorButton = ({
         <HStack spacing={2}>
           <Icon as={isHovered ? FaPlay : FaVideo} />
           <Text>Generate Video</Text>
-          <Badge colorScheme="teal" variant="subtle" fontSize="xs">
+          <Badge colorScheme="green" variant="subtle" fontSize="xs">
             {images.length}
           </Badge>
         </HStack>
@@ -116,12 +111,12 @@ const VideoGeneratorButton = ({
         >
           <ModalHeader>
             <VStack align="start" spacing={1}>
-              <HStack spacing={3}>
-                <Icon as={FaVideo} color="teal.500" />
-                <Text fontSize="xl" fontWeight="bold">
-                  Video Generator
-                </Text>
-              </HStack>
+                  <HStack spacing={3}>
+                    <Icon as={FaVideo} color="green.500" />
+                    <Text fontSize="xl" fontWeight="bold">
+                      Video Generator
+                    </Text>
+                  </HStack>
               <Text fontSize="md" color="gray.600" fontWeight="normal">
                 {getContextTitle()} • {getContextSubtitle()}
               </Text>
