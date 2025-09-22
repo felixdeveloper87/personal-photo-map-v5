@@ -39,6 +39,9 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/**").permitAll()                 // login/registro públicos
                     .requestMatchers("/health").permitAll()                      // health público
                     .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
+                    .requestMatchers("/favicon.ico").permitAll()                 // favicon público
+                    .requestMatchers("/robots.txt").permitAll()                  // robots.txt público
+                    .requestMatchers("/sitemap.xml").permitAll()                 // sitemap público
                     .requestMatchers(HttpMethod.PUT, "/api/users/make-premium").authenticated()
                     .anyRequest().authenticated();
                 System.out.println("🔧 Authorization rules configured");

@@ -48,14 +48,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/photomap",
             "/api/other-public-endpoint",
             "/health",
-            "/api/images/uploads/**"
+            "/api/images/uploads/**",
+            "/favicon.ico",
+            "/robots.txt",
+            "/sitemap.xml"
     );
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getRequestURI();
         boolean shouldNotFilter = isExcluded(requestPath);
-        logger.info("🔍 shouldNotFilter for path {}: {}", requestPath, shouldNotFilter);
+        // Only log for non-excluded paths to reduce log noise
+        if (!shouldNotFilter) {
+            logger.debug("🔍 Path requires authentication: {}", requestPath);
+        }
         return shouldNotFilter;
     }
 
@@ -67,11 +73,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestPath = request.getRequestURI();
         String requestMethod = request.getMethod();
 
-        logger.info(String.format("🔍 Processing request: %s %s from %s", requestMethod, requestPath, request.getRemoteAddr()));
-
         // Skip auth for public endpoints FIRST
         if (isExcluded(requestPath)) {
-            logger.info(String.format("✅ Skipping authentication for excluded path: %s", requestPath));
             filterChain.doFilter(request, response);
             return;
         }
@@ -82,18 +85,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        logger.info(String.format("🔍 Authorization header: %s", request.getHeader("Authorization")));
-        logger.info(String.format("🔐 Path not excluded, requiring authentication: %s", requestPath));
-
         // Extract JWT
         String token = extractJwtFromRequest(request);
         String email = null;
 
         if (StringUtils.hasText(token)) {
-            logger.info(String.format("🔑 Token extracted successfully, length: %d", token.length()));
             try {
                 email = jwtUtil.extractUsername(token);
-                logger.info(String.format("👤 Email extracted from token: %s", email));
             } catch (Exception e) {
                 logger.error("❌ Failed to extract email from JWT token", e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -102,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         } else {
-            logger.warn("⚠️ No token found in request for protected endpoint");
+            logger.warn("⚠️ No token found in request for protected endpoint: {}", requestPath);
             // Missing token for a protected endpoint → 401
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
