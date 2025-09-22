@@ -47,14 +47,19 @@ public class LocalFileStorageService {
     private String baseUrl;
 
     // If true, store original bytes (preserve EXIF/orientation/format)
-    @Value("${app.images.passthrough:true}")
+    @Value("${app.images.passthrough:false}")
     private boolean passthroughStore;
+    
+    // Removed @PostConstruct to avoid initialization issues
 
     // Image size configurations
     private static final int MAX_SIZE = 1920;
     private static final int MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1MB
     private static final float INITIAL_QUALITY = 0.9f;
     private static final float MIN_QUALITY = 0.3f;
+    
+    // Flag to log configuration only once
+    private static boolean configurationLogged = false;
 
     /**
      * Uploads a file to local storage with an auto-generated filename.
@@ -76,6 +81,17 @@ public class LocalFileStorageService {
      * @return The public URL of the uploaded file.
      */
     public String uploadFile(MultipartFile file, String customFileName) {
+        // Log configuration on first upload
+        if (!configurationLogged) {
+            logger.info("🔧 LocalFileStorageService configuration:");
+            logger.info("   - Upload directory: {}", uploadDir);
+            logger.info("   - Base URL: {}", baseUrl);
+            logger.info("   - Passthrough mode: {}", passthroughStore);
+            logger.info("   - Max image size: {}px", MAX_SIZE);
+            logger.info("   - Max file size: {}KB", MAX_FILE_SIZE_BYTES / 1024);
+            configurationLogged = true;
+        }
+        
         try {
             // Ensure upload directory exists
             Path uploadPath = Paths.get(uploadDir);
@@ -83,24 +99,26 @@ public class LocalFileStorageService {
                 Files.createDirectories(uploadPath);
             }
 
-            // Fast path: passthrough store (no re-encode, preserve EXIF and format)
-            if (isImageFile(file) && (passthroughStore || !canDecodeImage(file))) {
+            // Check if it's an image file
+            if (!isImageFile(file)) {
+                throw new RuntimeException("Only image files are supported");
+            }
+
+            // Force passthrough only if explicitly enabled AND image cannot be decoded
+            if (passthroughStore && !canDecodeImage(file)) {
+                logger.info("🔄 Passthrough enabled and image cannot be decoded, storing original: {}", file.getOriginalFilename());
                 String finalFileName = storeOriginalFile(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
-                logger.info("Stored original image (passthrough): {} -> {}", file.getOriginalFilename(), fileUrl);
                 return fileUrl;
             }
 
-            // Process and save only if it's an image
-            if (isImageFile(file)) {
-                String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
-                String fileUrl = "/api/images/uploads/" + finalFileName;
-                
-                logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
-                return fileUrl;
-            } else {
-                throw new RuntimeException("Only image files are supported");
-            }
+            // Process and optimize image (default behavior when passthrough is disabled)
+            logger.info("🔄 Processing and optimizing image: {} (passthrough: {})", file.getOriginalFilename(), passthroughStore);
+            String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
+            String fileUrl = "/api/images/uploads/" + finalFileName;
+            
+            logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
+            return fileUrl;
 
         } catch (IOException e) {
             logger.error("Failed to upload file: {}", file.getOriginalFilename(), e);
@@ -118,6 +136,9 @@ public class LocalFileStorageService {
      * @return The final filename that was saved.
      */
     private String createOptimizedImage(MultipartFile file, String fileName, Path uploadPath) throws IOException {
+        logger.info("🔄 Starting image optimization for: {} (original size: {}KB)", 
+            file.getOriginalFilename(), file.getSize() / 1024);
+            
         String nameWithoutExt = getFileNameWithoutExtension(fileName);
         
         // Force JPEG format for better compression
@@ -128,9 +149,10 @@ public class LocalFileStorageService {
         BufferedImage resizedImage;
         try {
             resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
-            logger.debug("Image resized to {}x{}", resizedImage.getWidth(), resizedImage.getHeight());
+            logger.info("📐 Image resized to {}x{} (max size: {})", 
+                resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
         } catch (Exception e) {
-            logger.error("Error resizing image: {}", e.getMessage());
+            logger.error("❌ Error resizing image: {}", e.getMessage());
             throw new IOException("Failed to resize image", e);
         }
 
@@ -173,8 +195,11 @@ public class LocalFileStorageService {
         Files.write(finalPath, optimizedImageBytes);
         
         long finalSizeKB = optimizedImageBytes.length / 1024;
-        logger.info("✅ Created optimized image: {} ({}KB, quality: {})", 
-            finalFileName, finalSizeKB, quality);
+        long originalSizeKB = file.getSize() / 1024;
+        float compressionRatio = (float) finalSizeKB / originalSizeKB * 100;
+        
+        logger.info("✅ Created optimized image: {} ({}KB -> {}KB, quality: {}, compression: {:.1f}%)", 
+            finalFileName, originalSizeKB, finalSizeKB, quality, compressionRatio);
 
         return finalFileName;
     }
