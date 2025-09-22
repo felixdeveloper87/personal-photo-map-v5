@@ -16,7 +16,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,27 +205,23 @@ public class LocalFileStorageService {
         int orientation = 1;
         BufferedImage originalImage;
         
-        // Create a buffered input stream that supports mark/reset
-        try (BufferedInputStream bufferedStream = new BufferedInputStream(file.getInputStream())) {
-            // Mark the beginning of the stream
-            bufferedStream.mark(Integer.MAX_VALUE);
-            
-            // Read EXIF orientation
-            try {
-                Metadata metadata = ImageMetadataReader.readMetadata(bufferedStream);
-                Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-                if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
-                    orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-                }
-            } catch (Exception e) {
-                logger.debug("❌ Could not read EXIF orientation: {}", e.getMessage());
+        // Read the entire file into bytes first to avoid stream issues
+        byte[] fileBytes = file.getBytes();
+        
+        // Read EXIF orientation from bytes
+        try (ByteArrayInputStream metaStream = new ByteArrayInputStream(fileBytes)) {
+            Metadata metadata = ImageMetadataReader.readMetadata(metaStream);
+            Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
             }
-            
-            // Reset to the beginning of the stream
-            bufferedStream.reset();
-            
-            // Read the image
-            originalImage = ImageIO.read(bufferedStream);
+        } catch (Exception e) {
+            logger.debug("❌ Could not read EXIF orientation: {}", e.getMessage());
+        }
+        
+        // Read the image from bytes
+        try (ByteArrayInputStream imageStream = new ByteArrayInputStream(fileBytes)) {
+            originalImage = ImageIO.read(imageStream);
         }
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
