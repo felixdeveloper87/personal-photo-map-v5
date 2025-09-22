@@ -40,7 +40,7 @@ public class LocalFileStorageService {
     private boolean passthroughStore;
 
     private static final int MAX_SIZE = 1920;
-    private static final int MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1MB
+    private static final int MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
     private static final float INITIAL_QUALITY = 0.9f;
     private static final float MIN_QUALITY = 0.3f;
 
@@ -121,12 +121,12 @@ public class LocalFileStorageService {
         do {
             optimizedImageBytes = imageToBytes(resizedImage, quality);
             attempts++;
-            if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && attempts < 3) {
-                quality -= 0.15f;
+            if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && attempts < 5) {
+                quality -= 0.1f;
                 logger.debug("Image {}KB > {}KB, reducing quality to {}",
                         optimizedImageBytes.length / 1024, MAX_FILE_SIZE_BYTES / 1024, quality);
             }
-        } while (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && quality >= MIN_QUALITY && attempts < 3);
+        } while (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && quality >= MIN_QUALITY && attempts < 5);
 
         if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES) {
             logger.warn("Image still too large at minimum quality, reducing dimensions");
@@ -164,10 +164,13 @@ public class LocalFileStorageService {
     }
 
     private byte[] createSmallerImage(MultipartFile file) throws IOException {
-        int[] dimensions = {1200, 800};
-        float quality = 0.6f;
+        int[] dimensions = {1600, 1200, 800, 600};
+        float[] qualities = {0.7f, 0.6f, 0.5f, 0.4f};
 
-        for (int maxDim : dimensions) {
+        for (int i = 0; i < dimensions.length; i++) {
+            int maxDim = dimensions[i];
+            float quality = qualities[i];
+            
             BufferedImage resizedImage = resizeImage(file, maxDim);
             byte[] imageBytes = imageToBytes(resizedImage, quality);
             if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
@@ -176,7 +179,8 @@ public class LocalFileStorageService {
             }
         }
 
-        BufferedImage lastResort = resizeImage(file, 600);
+        // Last resort: very small size with minimum quality
+        BufferedImage lastResort = resizeImage(file, 400);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
