@@ -173,7 +173,9 @@ public class LocalFileStorageService {
         // Optimize: Read image only once, then adjust quality
         BufferedImage resizedImage;
         try {
-            resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+            // Create a copy of the input stream to avoid mark/reset issues
+            byte[] inputBytes = file.getInputStream().readAllBytes();
+            resizedImage = resizeImage(new ByteArrayInputStream(inputBytes), MAX_SIZE);
             logger.info("📐 Image resized to {}x{} (max size: {})",
                     resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
         } catch (Exception e) {
