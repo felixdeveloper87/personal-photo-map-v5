@@ -16,6 +16,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.UUID;
 import org.w3c.dom.NodeList;
+import net.coobird.thumbnailator.Thumbnails;
 
 /**
  * LocalFileStorageService
@@ -163,7 +165,7 @@ public class LocalFileStorageService {
         // Optimize: Read image only once, then adjust quality
         BufferedImage resizedImage;
         try {
-            resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+            resizedImage = resizeImageWithoutOrientation(file.getInputStream(), MAX_SIZE);
             logger.info("📐 Image resized to {}x{} (max size: {})",
                     resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
         } catch (Exception e) {
@@ -253,7 +255,7 @@ public class LocalFileStorageService {
 
         for (int maxDim : dimensions) {
             try {
-                BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
+                BufferedImage resizedImage = resizeImageWithoutOrientation(file.getInputStream(), maxDim);
                 byte[] imageBytes = imageToBytes(resizedImage, quality);
                 if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
                     logger.info("Achieved target size with {}px max dimension at quality {}", maxDim, quality);
@@ -265,8 +267,59 @@ public class LocalFileStorageService {
         }
 
         // Last resort - small image with low quality
-        BufferedImage lastResort = resizeImage(file.getInputStream(), 600);
+        BufferedImage lastResort = resizeImageWithoutOrientation(file.getInputStream(), 600);
         return imageToBytes(lastResort, MIN_QUALITY);
+    }
+
+    /**
+     * Resizes an image to fit within the specified maximum dimension WITHOUT applying EXIF orientation.
+     * Uses Thumbnailator for memory-efficient processing. This preserves the original orientation as captured by the camera.
+     */
+    private BufferedImage resizeImageWithoutOrientation(InputStream inputStream, int maxDimension) throws IOException {
+        try {
+            // Use Thumbnailator for memory-efficient image processing
+            // It handles large images much better than ImageIO.read()
+            BufferedImage resizedImage = Thumbnails.of(inputStream)
+                .size(maxDimension, maxDimension)  // Maintains aspect ratio automatically
+                .asBufferedImage();
+            
+            logger.debug("📐 Thumbnailator resized image to {}x{} (max size: {}) - preserving original orientation",
+                    resizedImage.getWidth(), resizedImage.getHeight(), maxDimension);
+            
+            return resizedImage;
+        } catch (Exception e) {
+            logger.error("❌ Thumbnailator failed, falling back to ImageIO: {}", e.getMessage());
+            
+            // Fallback to original method if Thumbnailator fails
+            byte[] inputBytes = inputStream.readAllBytes();
+            BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(inputBytes));
+            if (originalImage == null) {
+                throw new IOException("Unsupported image format or unreadable image");
+            }
+
+            int originalWidth = originalImage.getWidth();
+            int originalHeight = originalImage.getHeight();
+
+            // Calculate new dimensions maintaining aspect ratio; never upscale
+            double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
+            ratio = Math.min(1.0, ratio);
+            int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
+            int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
+
+            // Create resized image
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = resizedImage.createGraphics();
+
+            // Set rendering hints for better quality
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+            g2d.dispose();
+
+            return resizedImage;
+        }
     }
 
     /**
