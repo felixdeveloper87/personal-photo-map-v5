@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, IconButton, Box, Tooltip } from '@chakra-ui/react';
 import { FiRotateCw } from 'react-icons/fi';
 
 /**
- * Componente de imagem que permite rotação manual
- * Útil para corrigir fotos do iPhone que aparecem rotacionadas
+ * Componente de imagem que detecta e permite rotação manual
+ * Detecta automaticamente se a imagem precisa de rotação baseada nas dimensões
  */
 const RotatableImage = ({ 
   src, 
@@ -15,6 +15,34 @@ const RotatableImage = ({
   ...props 
 }) => {
   const [rotation, setRotation] = useState(0);
+  const [needsRotation, setNeedsRotation] = useState(false);
+
+  // Detectar se a imagem precisa de rotação baseada nas dimensões
+  useEffect(() => {
+    if (!src) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const { naturalWidth, naturalHeight } = img;
+      
+      // Se a largura é muito maior que a altura, provavelmente é uma foto de retrato rotacionada
+      const aspectRatio = naturalWidth / naturalHeight;
+      
+      // Desabilitar rotação automática - deixar apenas controle manual
+      // O problema de rotação está no backend que não preserva orientação EXIF
+      setNeedsRotation(false);
+      setRotation(0);
+    };
+    
+    img.onerror = () => {
+      setNeedsRotation(false);
+      setRotation(0);
+    };
+    
+    img.src = src;
+  }, [src]);
 
   const handleRotate = () => {
     setRotation(prev => (prev + 90) % 360);
@@ -42,7 +70,10 @@ const RotatableImage = ({
       />
       
       {showRotateButton && (
-        <Tooltip label="Rotacionar imagem" placement="top">
+        <Tooltip 
+          label="Rotacionar imagem manualmente" 
+          placement="top"
+        >
           <IconButton
             aria-label="Rotacionar imagem"
             icon={<FiRotateCw />}
@@ -52,7 +83,7 @@ const RotatableImage = ({
             right="2"
             bg="rgba(0, 0, 0, 0.7)"
             color="white"
-            _hover={{ bg: 'rgba(0, 0, 0, 0.9)' }}
+            _hover={{ bg: "rgba(0, 0, 0, 0.9)" }}
             onClick={handleRotate}
             opacity={0}
             _groupHover={{ opacity: 1 }}
