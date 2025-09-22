@@ -59,6 +59,8 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [photoMetadata, setPhotoMetadata] = useState({}); // { [file.name]: { year, date, hasGPS, original } }
   const [isLoading, setIsLoading] = useState(false);
+  const [fileProgress, setFileProgress] = useState({}); // Progresso individual de cada arquivo
+  const [isUploading, setIsUploading] = useState(false);
 
   // Year strategy: 'auto' (per-photo EXIF) | 'manual' (one year for all)
   const [yearStrategy, setYearStrategy] = useState('auto');
@@ -124,6 +126,18 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
   const asInt = (v) => {
     const n = typeof v === 'string' ? parseInt(v, 10) : v;
     return Number.isNaN(n) ? null : n;
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getTotalFileSize = () => {
+    return selectedFiles.reduce((total, file) => total + file.size, 0);
   };
 
   // ----- derived -----
@@ -213,6 +227,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       // Reset strategy on new selection
       setYearStrategy('auto');
       setManualYear('');
+      setFileProgress({}); // Reset progress when new files are selected
       showToast('Photos analyzed', `${valid.length} photo(s) ready to upload.`, 'success');
     } catch {
       showToast('Analysis error', 'Could not read photo metadata.', 'error');
@@ -231,6 +246,13 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       throw new Error('You must be logged in to upload photos.');
     }
 
+    // Initialize progress for all files in this batch
+    const initialProgress = {};
+    files.forEach((file) => {
+      initialProgress[file.name] = 0;
+    });
+    setFileProgress(prev => ({ ...prev, ...initialProgress }));
+
     const formData = new FormData();
     files.forEach((file) => formData.append('images', file));
     formData.append('year', year);
@@ -238,18 +260,55 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
     const uploadUrl = buildApiUrl('/api/images/upload');
 
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: formData,
-    });
+    // Simulate progress for each file (since we can't get real progress from fetch)
+    const progressInterval = setInterval(() => {
+      setFileProgress(prev => {
+        const newProgress = { ...prev };
+        files.forEach((file) => {
+          if (newProgress[file.name] < 90) {
+            newProgress[file.name] = Math.min(newProgress[file.name] + Math.random() * 20, 90);
+          }
+        });
+        return newProgress;
+      });
+    }, 200);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      if (response.status === 403) {
-        throw new Error('Access denied. Please log in and try again.');
+    try {
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      // Set all files to 100% on success
+      setFileProgress(prev => {
+        const newProgress = { ...prev };
+        files.forEach((file) => {
+          newProgress[file.name] = 100;
+        });
+        return newProgress;
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 403) {
+          throw new Error('Access denied. Please log in and try again.');
+        }
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
-      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    } catch (error) {
+      clearInterval(progressInterval);
+      // Reset progress on error
+      setFileProgress(prev => {
+        const newProgress = { ...prev };
+        files.forEach((file) => {
+          newProgress[file.name] = 0;
+        });
+        return newProgress;
+      });
+      throw error;
     }
   };
 
@@ -261,6 +320,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     }
 
     setIsLoading(true);
+    setIsUploading(true);
     try {
       if (yearStrategy === 'manual') {
         if (!effectiveManualYear) {
@@ -280,6 +340,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       // Reset
       setSelectedFiles([]);
       setPhotoMetadata({});
+      setFileProgress({});
       setYearStrategy('auto');
       setManualYear('');
       onClose();
@@ -287,6 +348,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       showToast('Upload error', error?.message || 'Try again.', 'error');
     } finally {
       setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
@@ -340,6 +402,8 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       onClose={() => {
         setYearStrategy('auto');
         setManualYear('');
+        setFileProgress({});
+        setIsUploading(false);
         onClose();
       }}
       title="Upload Photos"
@@ -388,40 +452,68 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         {/* Selected previews */}
         {selectedFiles.length > 0 && (
           <Box>
-            <Text fontWeight="semibold" mb={3}>
-              Selected ({selectedFiles.length}):
-            </Text>
+            <HStack justify="space-between" mb={3}>
+              <Text fontWeight="semibold">
+                Selected ({selectedFiles.length}):
+              </Text>
+              <Badge colorScheme="teal" variant="solid" fontSize="sm">
+                Total: {formatFileSize(getTotalFileSize())}
+              </Badge>
+            </HStack>
             <Box maxH="300px" overflowY="auto" borderWidth={1} borderRadius="md" p={3} borderColor={borderCol}>
               <VStack spacing={3}>
                 {selectedFiles.map((file, idx) => (
-                  <HStack key={`${file.name}-${idx}`} w="full" justify="space-between">
-                    <HStack spacing={3}>
-                      <Image
-                        src={URL.createObjectURL(file)}
-                        alt={`Preview ${idx + 1}`}
-                        boxSize="60px"
-                        objectFit="cover"
-                        borderRadius="md"
-                      />
-                      <VStack align="start" spacing={1}>
-                        <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                          {file.name}
-                        </Text>
-                        {photoMetadata[file.name] && (
+                  <Box key={`${file.name}-${idx}`} w="full">
+                    <HStack w="full" justify="space-between" mb={2}>
+                      <HStack spacing={3}>
+                        <Image
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${idx + 1}`}
+                          boxSize="60px"
+                          objectFit="cover"
+                          borderRadius="md"
+                        />
+                        <VStack align="start" spacing={1}>
+                          <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                            {file.name}
+                          </Text>
                           <HStack spacing={2}>
-                            <Badge colorScheme="blue" size="sm">
-                              {photoMetadata[file.name].year}
-                            </Badge>
-                            {photoMetadata[file.name].hasGPS && (
-                              <Badge colorScheme="green" size="sm">
-                                GPS
-                              </Badge>
+                            <Text fontSize="xs" color={subtleText}>
+                              {formatFileSize(file.size)}
+                            </Text>
+                            {photoMetadata[file.name] && (
+                              <>
+                                <Badge colorScheme="blue" size="sm">
+                                  {photoMetadata[file.name].year}
+                                </Badge>
+                                {photoMetadata[file.name].hasGPS && (
+                                  <Badge colorScheme="green" size="sm">
+                                    GPS
+                                  </Badge>
+                                )}
+                              </>
                             )}
                           </HStack>
-                        )}
-                      </VStack>
+                        </VStack>
+                      </HStack>
                     </HStack>
-                  </HStack>
+                    
+                    {/* Individual progress bar for each file */}
+                    {isUploading && fileProgress[file.name] !== undefined && (
+                      <Box w="full">
+                        <Progress
+                          value={fileProgress[file.name]}
+                          size="sm"
+                          colorScheme="teal"
+                          borderRadius="md"
+                          mb={1}
+                        />
+                        <Text fontSize="xs" color={subtleText} textAlign="right">
+                          {Math.round(fileProgress[file.name])}%
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
                 ))}
               </VStack>
             </Box>
@@ -610,15 +702,19 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
               colorScheme="green"
               size="lg"
               onClick={handleUpload}
-              isLoading={isLoading}
+              isLoading={isLoading || isUploading}
+              loadingText={isUploading ? "Uploading..." : "Processing..."}
               leftIcon={<FaCloudUploadAlt />}
               w="full"
               h="56px"
               fontSize="lg"
               mt={3}
-              isDisabled={yearStrategy === 'manual' && !effectiveManualYear}
+              isDisabled={(yearStrategy === 'manual' && !effectiveManualYear) || isUploading}
             >
               {(() => {
+                if (isUploading) {
+                  return `Uploading ${selectedFiles.length} photo(s)...`;
+                }
                 if (yearStrategy === 'manual') {
                   return effectiveManualYear
                     ? `Upload ${selectedFiles.length} photo(s) with year ${effectiveManualYear}`
@@ -633,7 +729,9 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
             </Button>
 
             <Text fontSize="xs" color={subtleText} mt={2} textAlign="center">
-              {yearStrategy === 'manual'
+              {isUploading
+                ? 'Please wait while your photos are being uploaded...'
+                : yearStrategy === 'manual'
                 ? effectiveManualYear
                   ? `All photos will be uploaded with year ${effectiveManualYear}.`
                   : 'Choose a year to continue.'

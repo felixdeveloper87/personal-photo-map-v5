@@ -50,6 +50,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileProgress, setFileProgress] = useState({}); // Progresso individual de cada arquivo
   const fileInputRef = useRef(null);
   const toast = useToast();
   
@@ -78,7 +79,11 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
 
   const handleFileSelection = (event) => {
     const selectedFiles = event.target.files;
-    setFiles(selectedFiles.length > 0 ? Array.from(selectedFiles) : []);
+    const newFiles = selectedFiles.length > 0 ? Array.from(selectedFiles) : [];
+    setFiles(newFiles);
+    
+    // Reset progress when new files are selected
+    setFileProgress({});
   };
 
   const getAuthHeaders = () => {

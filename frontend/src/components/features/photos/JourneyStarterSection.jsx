@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { FaRocket, FaWikipediaW } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import SequentialImageUploaderModal from '../../modals/SequentialImageUploaderModal';
+import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { fetchWikipediaData } from '../CountryDetails/services';
 import { getName } from 'i18n-iso-countries';
 
@@ -500,7 +500,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         </Box>
       </Box>
 
-      <SequentialImageUploaderModal
+      <EnhancedImageUploaderModal
         countryId={countryId}
         onUploadSuccess={onUploadSuccess}
         isOpen={isImageUploaderOpen}
