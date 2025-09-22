@@ -175,8 +175,8 @@ public class LocalFileStorageService {
         try {
             // Create a copy of the input stream to avoid mark/reset issues
             byte[] inputBytes = file.getInputStream().readAllBytes();
-            resizedImage = resizeImage(new ByteArrayInputStream(inputBytes), MAX_SIZE);
-            logger.info("📐 Image resized to {}x{} (max size: {})",
+            resizedImage = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), MAX_SIZE);
+            logger.info("📐 Image resized to {}x{} (max size: {}) - preserving original orientation",
                     resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
         } catch (Exception e) {
             logger.error("❌ Error resizing image: {}", e.getMessage());
@@ -272,10 +272,10 @@ public class LocalFileStorageService {
 
         for (int maxDim : dimensions) {
             try {
-                BufferedImage resizedImage = resizeImage(new ByteArrayInputStream(inputBytes), maxDim);
+                BufferedImage resizedImage = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), maxDim);
                 byte[] imageBytes = imageToBytes(resizedImage, quality);
                 if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
-                    logger.info("Achieved target size with {}px max dimension at quality {}", maxDim, quality);
+                    logger.info("Achieved target size with {}px max dimension at quality {} - preserving original orientation", maxDim, quality);
                     return imageBytes;
                 }
             } catch (Exception e) {
@@ -284,7 +284,7 @@ public class LocalFileStorageService {
         }
 
         // Last resort - small image with low quality
-        BufferedImage lastResort = resizeImage(new ByteArrayInputStream(inputBytes), 600);
+        BufferedImage lastResort = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), 600);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
@@ -298,6 +298,44 @@ public class LocalFileStorageService {
         
         // First, read the image with EXIF orientation applied
         BufferedImage originalImage = readImageWithOrientation(new ByteArrayInputStream(inputBytes));
+        if (originalImage == null) {
+            throw new IOException("Unsupported image format or unreadable image");
+        }
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        // Calculate new dimensions maintaining aspect ratio; never upscale
+        double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
+        ratio = Math.min(1.0, ratio);
+        int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
+        int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
+
+        // Create resized image
+        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        // Set rendering hints for better quality
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+        g2d.dispose();
+
+        return resizedImage;
+    }
+
+    /**
+     * Resizes an image to fit within the specified maximum dimension WITHOUT applying EXIF orientation.
+     * This preserves the original orientation as captured by the camera.
+     */
+    private BufferedImage resizeImageWithoutOrientation(InputStream inputStream, int maxDimension) throws IOException {
+        // Create a copy of the input stream to avoid mark/reset issues
+        byte[] inputBytes = inputStream.readAllBytes();
+        
+        // Read the image directly without EXIF orientation correction
+        BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(inputBytes));
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
         }
