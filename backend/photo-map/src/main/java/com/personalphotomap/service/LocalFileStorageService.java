@@ -16,7 +16,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,14 +100,8 @@ public class LocalFileStorageService {
         try {
             // Ensure upload directory exists
             Path uploadPath = Paths.get(uploadDir);
-            logger.info("🔍 Upload path: {}", uploadPath.toAbsolutePath());
-            logger.info("🔍 Upload path exists: {}", Files.exists(uploadPath));
-            logger.info("🔍 Upload path is writable: {}", Files.isWritable(uploadPath));
-            
             if (!Files.exists(uploadPath)) {
-                logger.info("🔧 Creating upload directory: {}", uploadPath.toAbsolutePath());
                 Files.createDirectories(uploadPath);
-                logger.info("✅ Upload directory created successfully");
             }
 
             // Check if it's an image file
@@ -144,10 +137,7 @@ public class LocalFileStorageService {
             }
 
         } catch (IOException e) {
-            logger.error("❌ IOException during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
-            throw new RuntimeException("Failed to upload file to local storage", e);
-        } catch (Exception e) {
-            logger.error("❌ Unexpected error during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
+            logger.error("Failed to upload file: {}", file.getOriginalFilename(), e);
             throw new RuntimeException("Failed to upload file to local storage", e);
         }
     }
@@ -173,10 +163,8 @@ public class LocalFileStorageService {
         // Optimize: Read image only once, then adjust quality
         BufferedImage resizedImage;
         try {
-            // Create a copy of the input stream to avoid mark/reset issues
-            byte[] inputBytes = file.getInputStream().readAllBytes();
-            resizedImage = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), MAX_SIZE);
-            logger.info("📐 Image resized to {}x{} (max size: {}) - preserving original orientation",
+            resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+            logger.info("📐 Image resized to {}x{} (max size: {})",
                     resizedImage.getWidth(), resizedImage.getHeight(), MAX_SIZE);
         } catch (Exception e) {
             logger.error("❌ Error resizing image: {}", e.getMessage());
@@ -217,9 +205,7 @@ public class LocalFileStorageService {
         }
 
         // Save the optimized image
-        logger.info("🔧 Writing optimized image to: {}", finalPath.toAbsolutePath());
         Files.write(finalPath, optimizedImageBytes);
-        logger.info("✅ Successfully wrote optimized image file");
 
         long finalSizeKB = optimizedImageBytes.length / 1024;
         long originalSizeKB = file.getSize() / 1024;
@@ -249,11 +235,9 @@ public class LocalFileStorageService {
         }
 
         Path finalPath = uploadPath.resolve(targetName);
-        logger.info("🔧 Storing original file to: {}", finalPath.toAbsolutePath());
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, finalPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
-        logger.info("✅ Successfully stored original file");
 
         return finalPath.getFileName().toString();
     }
@@ -263,19 +247,16 @@ public class LocalFileStorageService {
      * Optimized to reduce file reading and processing iterations.
      */
     private byte[] createSmallerImage(MultipartFile file) throws IOException {
-        // Create a copy of the input stream to avoid mark/reset issues
-        byte[] inputBytes = file.getInputStream().readAllBytes();
-        
         // Try only 2 smaller sizes with moderate quality
         int[] dimensions = {1200, 800};
         float quality = 0.6f; // Start with moderate quality
 
         for (int maxDim : dimensions) {
             try {
-                BufferedImage resizedImage = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), maxDim);
+                BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
                 byte[] imageBytes = imageToBytes(resizedImage, quality);
                 if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
-                    logger.info("Achieved target size with {}px max dimension at quality {} - preserving original orientation", maxDim, quality);
+                    logger.info("Achieved target size with {}px max dimension at quality {}", maxDim, quality);
                     return imageBytes;
                 }
             } catch (Exception e) {
@@ -284,7 +265,7 @@ public class LocalFileStorageService {
         }
 
         // Last resort - small image with low quality
-        BufferedImage lastResort = resizeImageWithoutOrientation(new ByteArrayInputStream(inputBytes), 600);
+        BufferedImage lastResort = resizeImage(file.getInputStream(), 600);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
@@ -293,49 +274,8 @@ public class LocalFileStorageService {
      * Applies EXIF orientation correction to preserve the correct image orientation.
      */
     private BufferedImage resizeImage(InputStream inputStream, int maxDimension) throws IOException {
-        // Create a copy of the input stream to avoid mark/reset issues
-        byte[] inputBytes = inputStream.readAllBytes();
-        
         // First, read the image with EXIF orientation applied
-        BufferedImage originalImage = readImageWithOrientation(new ByteArrayInputStream(inputBytes));
-        if (originalImage == null) {
-            throw new IOException("Unsupported image format or unreadable image");
-        }
-
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
-
-        // Calculate new dimensions maintaining aspect ratio; never upscale
-        double ratio = Math.min((double) maxDimension / originalWidth, (double) maxDimension / originalHeight);
-        ratio = Math.min(1.0, ratio);
-        int newWidth = Math.max(1, (int) Math.round(originalWidth * ratio));
-        int newHeight = Math.max(1, (int) Math.round(originalHeight * ratio));
-
-        // Create resized image
-        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = resizedImage.createGraphics();
-
-        // Set rendering hints for better quality
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-        g2d.dispose();
-
-        return resizedImage;
-    }
-
-    /**
-     * Resizes an image to fit within the specified maximum dimension WITHOUT applying EXIF orientation.
-     * This preserves the original orientation as captured by the camera.
-     */
-    private BufferedImage resizeImageWithoutOrientation(InputStream inputStream, int maxDimension) throws IOException {
-        // Create a copy of the input stream to avoid mark/reset issues
-        byte[] inputBytes = inputStream.readAllBytes();
-        
-        // Read the image directly without EXIF orientation correction
-        BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(inputBytes));
+        BufferedImage originalImage = readImageWithOrientation(inputStream);
         if (originalImage == null) {
             throw new IOException("Unsupported image format or unreadable image");
         }
@@ -369,14 +309,11 @@ public class LocalFileStorageService {
      * This ensures images from mobile devices (especially iPhones) are displayed correctly.
      */
     private BufferedImage readImageWithOrientation(InputStream inputStream) throws IOException {
-        // Create a new InputStream for fallback since ImageInputStream consumes the original
-        byte[] inputBytes = inputStream.readAllBytes();
-        
-        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(inputBytes))) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) {
                 // Fallback to simple ImageIO.read if no specialized reader is available
-                return ImageIO.read(new ByteArrayInputStream(inputBytes));
+                return ImageIO.read(inputStream);
             }
 
             ImageReader reader = readers.next();
