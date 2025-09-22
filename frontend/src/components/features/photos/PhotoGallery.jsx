@@ -24,7 +24,6 @@ import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
-import RotatableImage from '../../ui/RotatableImage';
 import { motion } from 'framer-motion';
 
 // Registrar nomes de países
@@ -405,7 +404,7 @@ const PhotoGallery = memo(function PhotoGallery({
 
                   {/* Imagem */}
                   <Box position="relative" overflow="hidden" borderRadius={isMobile ? '8px' : '12px'}>
-                    <RotatableImage
+                    <Image
                       src={image.url}
                       alt={`Photo from ${countryName}`}
                       width="100%"
@@ -415,7 +414,6 @@ const PhotoGallery = memo(function PhotoGallery({
                       fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
                       onLoad={() => console.log('✅ Image loaded successfully:', image.url)}
                       onError={(e) => console.error('❌ Image failed to load:', image.url, e)}
-                      showRotateButton={!isSelectionMode}
                       sx={{
                         aspectRatio: '1/1',
                         minHeight: isMobile ? '120px' : '200px',

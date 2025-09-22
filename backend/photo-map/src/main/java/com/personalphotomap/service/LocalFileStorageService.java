@@ -29,7 +29,8 @@ import org.w3c.dom.NodeList;
 /**
  * LocalFileStorageService
  *
- * Manages file uploads to local storage with automatic image resizing and EXIF orientation correction.
+ * Manages file uploads to local storage with automatic image resizing and EXIF
+ * orientation correction.
  * Replaces AWS S3 functionality with local VPS storage.
  *
  * Features:
@@ -79,7 +80,7 @@ public class LocalFileStorageService {
      * Uploads a file to local storage using a custom filename.
      * Creates only resized versions (no original) with 1MB max size.
      *
-     * @param file The MultipartFile to upload.
+     * @param file           The MultipartFile to upload.
      * @param customFileName The exact filename to store locally.
      * @return The public URL of the uploaded file.
      */
@@ -102,7 +103,7 @@ public class LocalFileStorageService {
             logger.info("🔍 Upload path: {}", uploadPath.toAbsolutePath());
             logger.info("🔍 Upload path exists: {}", Files.exists(uploadPath));
             logger.info("🔍 Upload path is writable: {}", Files.isWritable(uploadPath));
-            
+
             if (!Files.exists(uploadPath)) {
                 logger.info("🔧 Creating upload directory: {}", uploadPath.toAbsolutePath());
                 Files.createDirectories(uploadPath);
@@ -118,44 +119,50 @@ public class LocalFileStorageService {
             long fileSizeBytes = file.getSize();
             long fileSizeKB = fileSizeBytes / 1024;
             long fileSizeMB = fileSizeBytes / (1024 * 1024);
-            
+
             // Reject files larger than 10MB
             if (fileSizeBytes > MAX_UPLOAD_SIZE_BYTES) {
                 throw new RuntimeException("File too large: " + fileSizeMB + "MB. Maximum allowed: 10MB");
             }
-            
+
             logger.info("🔍 Image size: {}KB ({}MB), needs processing: {}", fileSizeKB, fileSizeMB, fileSizeKB > 1024);
 
             if (fileSizeKB > 1024) {
                 // Process if larger than 1MB
-                logger.info("🔄 Image is larger than 1MB, processing and optimizing to ≤1MB: {}", file.getOriginalFilename());
+                logger.info("🔄 Image is larger than 1MB, processing and optimizing to ≤1MB: {}",
+                        file.getOriginalFilename());
                 String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
                 logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
                 return fileUrl;
             } else {
-                logger.info("📁 Image is 1MB or smaller, storing with orientation correction: {}", file.getOriginalFilename());
+                logger.info("📁 Image is 1MB or smaller, storing with orientation correction: {}",
+                        file.getOriginalFilename());
                 String finalFileName = storeOriginalFileWithOrientation(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
-                logger.info("✅ Original image stored with orientation correction: {} -> {}", file.getOriginalFilename(), fileUrl);
+                logger.info("✅ Original image stored with orientation correction: {} -> {}", file.getOriginalFilename(),
+                        fileUrl);
                 return fileUrl;
             }
 
         } catch (IOException e) {
-            logger.error("❌ IOException during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
+            logger.error("❌ IOException during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(),
+                    e);
             throw new RuntimeException("Failed to upload file to local storage", e);
         } catch (Exception e) {
-            logger.error("❌ Unexpected error during file upload: {} | Error: {}", file.getOriginalFilename(), e.getMessage(), e);
+            logger.error("❌ Unexpected error during file upload: {} | Error: {}", file.getOriginalFilename(),
+                    e.getMessage(), e);
             throw new RuntimeException("Failed to upload file to local storage", e);
         }
     }
 
     /**
-     * Creates an optimized image with maximum 1MB size and correct EXIF orientation.
+     * Creates an optimized image with maximum 1MB size and correct EXIF
+     * orientation.
      * Only stores the main optimized image (no original, no multiple sizes).
      *
-     * @param file The uploaded file.
-     * @param fileName The target filename.
+     * @param file       The uploaded file.
+     * @param fileName   The target filename.
      * @param uploadPath The upload directory path.
      * @return The final filename that was saved.
      */
@@ -234,7 +241,8 @@ public class LocalFileStorageService {
     /**
      * Store original file with EXIF orientation correction applied.
      */
-    private String storeOriginalFileWithOrientation(MultipartFile file, String desiredFileName, Path uploadPath) throws IOException {
+    private String storeOriginalFileWithOrientation(MultipartFile file, String desiredFileName, Path uploadPath)
+            throws IOException {
         String targetName = sanitizeFileName(desiredFileName != null ? desiredFileName : file.getOriginalFilename());
         if (targetName == null || targetName.isBlank()) {
             targetName = UUID.randomUUID().toString();
@@ -246,7 +254,7 @@ public class LocalFileStorageService {
         Path finalPath = uploadPath.resolve(finalFileName);
 
         logger.info("🔧 Storing small image with orientation correction to: {}", finalPath.toAbsolutePath());
-        
+
         // Read with orientation correction
         BufferedImage correctedImage;
         try (InputStream inputStream = file.getInputStream()) {
@@ -259,13 +267,14 @@ public class LocalFileStorageService {
         // Convert to bytes and save
         byte[] imageBytes = imageToBytes(correctedImage, 0.95f); // High quality for small images
         Files.write(finalPath, imageBytes);
-        
+
         logger.info("✅ Successfully stored image with orientation correction");
         return finalFileName;
     }
 
     /**
-     * Resize image from BufferedImage (already loaded in memory with correct orientation).
+     * Resize image from BufferedImage (already loaded in memory with correct
+     * orientation).
      */
     private BufferedImage resizeImageFromBuffered(BufferedImage originalImage, int maxDimension) {
         int originalWidth = originalImage.getWidth();
@@ -298,11 +307,12 @@ public class LocalFileStorageService {
     }
 
     /**
-     * Creates a smaller image from BufferedImage when quality reduction isn't enough.
+     * Creates a smaller image from BufferedImage when quality reduction isn't
+     * enough.
      */
     private byte[] createSmallerImageFromBuffered(BufferedImage originalImage) throws IOException {
         // Try only 2 smaller sizes with moderate quality
-        int[] dimensions = {1200, 800};
+        int[] dimensions = { 1200, 800 };
         float quality = 0.6f; // Start with moderate quality
 
         for (int maxDim : dimensions) {
@@ -325,20 +335,21 @@ public class LocalFileStorageService {
 
     /**
      * Reads an image and applies EXIF orientation correction.
-     * This ensures images from mobile devices (especially iPhones) are displayed correctly.
+     * This ensures images from mobile devices (especially iPhones) are displayed
+     * correctly.
      */
     private BufferedImage readImageWithOrientation(InputStream inputStream) throws IOException {
         BufferedImage image = null;
         int orientation = 1; // Default orientation
-        
+
         // Mark the InputStream to allow reset
         if (!inputStream.markSupported()) {
             inputStream = new java.io.BufferedInputStream(inputStream);
         }
-        
+
         try {
             inputStream.mark(Integer.MAX_VALUE);
-            
+
             // Try to read EXIF metadata first
             try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
                 Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
@@ -354,14 +365,14 @@ public class LocalFileStorageService {
                     }
                 }
             }
-            
+
             // If couldn't read with ImageReader, use ImageIO.read
             if (image == null) {
                 inputStream.reset();
                 image = ImageIO.read(inputStream);
                 logger.debug("📷 Image read with ImageIO.read (no EXIF orientation)");
             }
-            
+
         } catch (Exception e) {
             logger.debug("Error reading image with EXIF: {}", e.getMessage());
             // Fallback: reset and read without EXIF
@@ -383,8 +394,9 @@ public class LocalFileStorageService {
 
         // Apply orientation correction
         BufferedImage correctedImage = applyOrientation(image, orientation);
-        
-        logger.info("📱 Image dimensions after orientation: {}x{}", correctedImage.getWidth(), correctedImage.getHeight());
+
+        logger.info("📱 Image dimensions after orientation: {}x{}", correctedImage.getWidth(),
+                correctedImage.getHeight());
         logger.info("🔄 Orientation correction applied: {}", orientation != 1 ? "YES" : "NO");
 
         return correctedImage;
@@ -404,13 +416,13 @@ public class LocalFileStorageService {
             // Try different metadata formats
             String[] formats = metadata.getMetadataFormatNames();
             logger.debug("Available metadata formats: {}", String.join(", ", formats));
-            
+
             for (String format : formats) {
                 logger.debug("Checking metadata format: {}", format);
-                
+
                 try {
                     IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(format);
-                    
+
                     // For JPEG images
                     if (format.contains("jpeg")) {
                         NodeList orientationNodes = root.getElementsByTagName("Orientation");
@@ -424,7 +436,7 @@ public class LocalFileStorageService {
                             }
                         }
                     }
-                    
+
                     // For TIFF-based images (including HEIC converted to TIFF)
                     if (format.contains("tiff")) {
                         NodeList ifdNodes = root.getElementsByTagName("TIFFIFD");
@@ -449,7 +461,7 @@ public class LocalFileStorageService {
                             }
                         }
                     }
-                    
+
                 } catch (Exception e) {
                     logger.debug("Error reading format {}: {}", format, e.getMessage());
                 }
@@ -457,17 +469,18 @@ public class LocalFileStorageService {
         } catch (Exception e) {
             logger.debug("Could not read EXIF orientation: {}", e.getMessage());
         }
-        
+
         logger.debug("📱 No EXIF orientation found, using default (1)");
         return 1; // Default orientation
     }
 
     /**
-     * Applies orientation transformation to the image based on EXIF orientation value.
+     * Applies orientation transformation to the image based on EXIF orientation
+     * value.
      */
     private BufferedImage applyOrientation(BufferedImage image, int orientation) {
         logger.debug("🔄 Applying EXIF orientation: {}", orientation);
-        
+
         if (orientation == 1) {
             logger.debug("✅ No orientation correction needed");
             return image; // No rotation needed
@@ -490,8 +503,9 @@ public class LocalFileStorageService {
             case 3: // Rotate 180 degrees
                 rotatedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
                 g2d = rotatedImage.createGraphics();
-                g2d.rotate(Math.PI, width / 2.0, height / 2.0);
-                g2d.drawImage(image, 0, 0, null);
+                g2d.translate(height, 0); // Move o origem
+                g2d.rotate(Math.PI / 2); // Rotaciona
+                g2d.drawImage(image, 0, 0, null); // Desenha na posição correta
                 g2d.dispose();
                 logger.info("✅ Applied 180° rotation (orientation 3)");
                 return rotatedImage;
@@ -606,7 +620,7 @@ public class LocalFileStorageService {
      * Since we only store one optimized version, this always returns the same URL.
      *
      * @param originalUrl The image URL.
-     * @param size The desired size (ignored - only one size available).
+     * @param size        The desired size (ignored - only one size available).
      * @return The URL for the optimized image.
      */
     public String getImageUrl(String originalUrl, String size) {
@@ -633,7 +647,8 @@ public class LocalFileStorageService {
      * Sanitizes a filename by removing or replacing invalid characters.
      */
     private String sanitizeFileName(String fileName) {
-        if (fileName == null) return "unknown";
+        if (fileName == null)
+            return "unknown";
         return fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
@@ -652,15 +667,23 @@ public class LocalFileStorageService {
      * Map content-type to a typical file extension.
      */
     private String getExtensionFromContentType(String contentType) {
-        if (contentType == null) return null;
+        if (contentType == null)
+            return null;
         String ct = contentType.toLowerCase();
-        if (ct.equals("image/jpeg")) return "jpg";
-        if (ct.equals("image/png")) return "png";
-        if (ct.equals("image/webp")) return "webp";
-        if (ct.equals("image/gif")) return "gif";
-        if (ct.equals("image/bmp")) return "bmp";
-        if (ct.equals("image/heic")) return "heic";
-        if (ct.equals("image/heif")) return "heif";
+        if (ct.equals("image/jpeg"))
+            return "jpg";
+        if (ct.equals("image/png"))
+            return "png";
+        if (ct.equals("image/webp"))
+            return "webp";
+        if (ct.equals("image/gif"))
+            return "gif";
+        if (ct.equals("image/bmp"))
+            return "bmp";
+        if (ct.equals("image/heic"))
+            return "heic";
+        if (ct.equals("image/heif"))
+            return "heif";
         return null;
     }
 
