@@ -8,6 +8,8 @@ import com.personalphotomap.repository.ImageRepository;
 import com.personalphotomap.repository.UserRepository;
 import com.personalphotomap.security.JwtUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +40,8 @@ import java.util.stream.Collectors;
 @Service
 public class ImageService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
+    
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -93,20 +97,37 @@ public class ImageService {
             throw new IllegalArgumentException("No files were provided.");
         }
 
+        logger.info("🚀 Starting upload of {} files for user: {}", files.size(), user.getEmail());
+
         List<CompletableFuture<String>> futures = new ArrayList<>();
-        for (MultipartFile file : files) {
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
             if (file == null || file.isEmpty()) {
-                throw new IllegalArgumentException("One or more files are empty.");
+                logger.warn("⚠️ Skipping empty file at index {}", i);
+                continue;
             }
+            logger.info("📤 Queuing upload for file {}/{}: {} ({}KB)", 
+                i + 1, files.size(), file.getOriginalFilename(), file.getSize() / 1024);
             futures.add(imageUploadService.uploadAndSaveImage(file, countryId, year, user));
         }
 
+        logger.info("⏳ Waiting for {} upload tasks to complete...", futures.size());
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        return futures.stream()
-                .map(CompletableFuture::join)
+        List<String> successfulUrls = futures.stream()
+                .map(future -> {
+                    try {
+                        return future.join();
+                    } catch (Exception e) {
+                        logger.error("❌ Failed to process one image upload: {}", e.getMessage(), e);
+                        return null;
+                    }
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+        logger.info("✅ Upload completed: {}/{} files successful", successfulUrls.size(), files.size());
+        return successfulUrls;
     }
 
     // ===============================

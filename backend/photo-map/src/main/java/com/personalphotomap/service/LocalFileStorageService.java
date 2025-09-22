@@ -124,31 +124,44 @@ public class LocalFileStorageService {
         String finalFileName = nameWithoutExt + ".jpg";
         Path finalPath = uploadPath.resolve(finalFileName);
 
-        // Start with initial quality and reduce until under 1MB
+        // Optimize: Read image only once, then adjust quality
+        BufferedImage resizedImage;
+        try {
+            resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
+            logger.debug("Image resized to {}x{}", resizedImage.getWidth(), resizedImage.getHeight());
+        } catch (Exception e) {
+            logger.error("Error resizing image: {}", e.getMessage());
+            throw new IOException("Failed to resize image", e);
+        }
+
+        // Smart quality selection: start lower for large images
         float quality = INITIAL_QUALITY;
+        int pixels = resizedImage.getWidth() * resizedImage.getHeight();
+        if (pixels > 2000000) { // > 2MP
+            quality = 0.7f;
+        } else if (pixels > 1000000) { // > 1MP  
+            quality = 0.75f;
+        }
+        
         byte[] optimizedImageBytes;
+        int attempts = 0;
         
         do {
             try {
-                // Read and resize image (no EXIF rotation)
-                BufferedImage resizedImage = resizeImage(file.getInputStream(), MAX_SIZE);
-                
-                // Convert to bytes with specified quality
                 optimizedImageBytes = imageToBytes(resizedImage, quality);
-
+                attempts++;
+                
+                if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && attempts < 3) {
+                    quality -= 0.15f; // Bigger steps to reduce iterations
+                    logger.debug("Image {}KB > {}KB, reducing quality to {}", 
+                        optimizedImageBytes.length / 1024, MAX_FILE_SIZE_BYTES / 1024, quality);
+                }
             } catch (Exception e) {
-                logger.error("Error creating optimized image with quality {}: {}", quality, e.getMessage());
-                throw new IOException("Failed to optimize image", e);
+                logger.error("Error compressing image with quality {}: {}", quality, e.getMessage());
+                throw new IOException("Failed to compress image", e);
             }
 
-            // If still too large, reduce quality
-            if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES) {
-                quality -= 0.1f;
-                logger.debug("Image still {}KB, reducing quality to {}", 
-                    optimizedImageBytes.length / 1024, quality);
-            }
-
-        } while (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && quality >= MIN_QUALITY);
+        } while (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES && quality >= MIN_QUALITY && attempts < 3);
 
         // If still too large even at minimum quality, try smaller dimensions
         if (optimizedImageBytes.length > MAX_FILE_SIZE_BYTES) {
@@ -190,29 +203,30 @@ public class LocalFileStorageService {
 
     /**
      * Creates a smaller image when quality reduction isn't enough.
+     * Optimized to reduce file reading and processing iterations.
      */
     private byte[] createSmallerImage(MultipartFile file) throws IOException {
-        int[] dimensions = {1600, 1200, 800, 600, 400};
+        // Try only 2 smaller sizes with moderate quality
+        int[] dimensions = {1200, 800};
+        float quality = 0.6f; // Start with moderate quality
         
         for (int maxDim : dimensions) {
-            float quality = INITIAL_QUALITY;
-            
-            do {
+            try {
                 BufferedImage resizedImage = resizeImage(file.getInputStream(), maxDim);
                 byte[] imageBytes = imageToBytes(resizedImage, quality);
                 
                 if (imageBytes.length <= MAX_FILE_SIZE_BYTES) {
-                    logger.info("Achieved target size with {}x{} dimensions at quality {}", 
-                        maxDim, maxDim, quality);
+                    logger.info("Achieved target size with {}px max dimension at quality {}", 
+                        maxDim, quality);
                     return imageBytes;
                 }
-                
-                quality -= 0.1f;
-            } while (quality >= MIN_QUALITY);
+            } catch (Exception e) {
+                logger.warn("Failed to resize to {}px: {}", maxDim, e.getMessage());
+            }
         }
         
-        // Last resort - very small image with minimum quality
-        BufferedImage lastResort = resizeImage(file.getInputStream(), 300);
+        // Last resort - small image with low quality
+        BufferedImage lastResort = resizeImage(file.getInputStream(), 600);
         return imageToBytes(lastResort, MIN_QUALITY);
     }
 
