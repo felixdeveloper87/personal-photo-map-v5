@@ -388,6 +388,8 @@ public class ImageService {
      * Converts an Image entity to a DTO.
      */
     public ImageDTO convertToDTO(Image image) { // ✅
+        logger.info("🔍 Converting image to DTO: ID={}, filePath={}, fileName={}", 
+            image.getId(), image.getFilePath(), image.getFileName());
         return new ImageDTO(
                 image.getId(),
                 image.getCountryId(),

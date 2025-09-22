@@ -77,6 +77,9 @@ public class ImageUploadService {
             image.setFilePath(fileUrl);
             image.setYear(year);
             imageRepository.save(image);
+            
+            logger.info("💾 Image saved to database (async): ID={}, filePath={}, fileName={}", 
+                image.getId(), image.getFilePath(), image.getFileName());
 
             return CompletableFuture.completedFuture(fileUrl);
         } catch (IOException e) {
@@ -120,6 +123,9 @@ public class ImageUploadService {
             image.setFilePath(fileUrl);
             image.setYear(year);
             imageRepository.save(image);
+            
+            logger.info("💾 Image saved to database: ID={}, filePath={}, fileName={}", 
+                image.getId(), image.getFilePath(), image.getFileName());
 
             return fileUrl;
         } catch (IOException e) {
