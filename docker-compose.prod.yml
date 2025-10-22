@@ -44,7 +44,7 @@ services:
       
       # Server
       - SERVER_ADDRESS=0.0.0.0
-      - SERVER_PORT=8092
+      - SERVER_PORT=8080
       
       # App config
       - APP_UPLOAD_DIR=/photomap/storage/uploads
@@ -64,42 +64,6 @@ services:
     restart: unless-stopped
     networks:
       - photomap-network
-
-  # Frontend React/Vite (Production Build)
-  # ======================================
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.prod
-  #     args:
-  #       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
-  #   container_name: photomap-frontend-prod
-  #   ports:
-  #     - "3000:80"
-  #   depends_on:
-  #     - backend
-  #   restart: unless-stopped
-  #   networks:
-  #     - photomap-network
-
-  # Nginx Reverse Proxy (Opcional para produção)
-  # ============================================
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: photomap-nginx-prod
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
-  #     - ./nginx/certs:/etc/nginx/certs:ro
-  #     - ./nginx/snippets:/etc/nginx/snippets:ro
-  #   depends_on:
-  #     - frontend
-  #     - backend
-  #   restart: unless-stopped
-  #   networks:
-  #     - photomap-network
 
 volumes:
   dbdata:
