@@ -54,7 +54,7 @@ public class LocalFileStorageService {
     // Image size configurations
     private static final int MAX_SIZE = 1920;
     private static final int MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1MB
-    private static final int MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final int MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
     private static final float INITIAL_QUALITY = 0.9f;
     private static final float MIN_QUALITY = 0.3f;
 
@@ -110,9 +110,9 @@ public class LocalFileStorageService {
             long fileSizeKB = fileSizeBytes / 1024;
             long fileSizeMB = fileSizeBytes / (1024 * 1024);
             
-            // Reject files larger than 10MB
+            // Reject files larger than 50MB
             if (fileSizeBytes > MAX_UPLOAD_SIZE_BYTES) {
-                throw new RuntimeException("File too large: " + fileSizeMB + "MB. Maximum allowed: 10MB");
+                throw new RuntimeException("File too large: " + fileSizeMB + "MB. Maximum allowed: 50MB");
             }
             
             logger.info("🔍 Image size: {}KB ({}MB), needs processing: {}", fileSizeKB, fileSizeMB, fileSizeKB > 1024);
