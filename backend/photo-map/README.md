@@ -144,7 +144,7 @@ You’ll use these in your backend configuration
 6. Dockerfile path: Dockerfile.prod
 7. Leave start command blank
 Set environment variables (important!) Add variables like:
-8. SPRING_DATASOURCE_URL=jdbc:postgresql://your-host:5432/your-db
+8. SPRING_DATASOURCE_URL=jdbc:postgresql://your-host:5433/your-db
 9. SPRING_DATASOURCE_USERNAME=your-user
 10. SPRING_DATASOURCE_PASSWORD=your-password
 11. SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -310,7 +310,7 @@ You can use the `.env.example` file as a reference:
 ```bash
 .env.example .env
 # PostgreSQL Configuration
-SPRING_DATASOURCE_URL=jdbc:postgresql://your-host:5432/your-db
+SPRING_DATASOURCE_URL=jdbc:postgresql://your-host:5433/your-db
 SPRING_DATASOURCE_USERNAME=your-username
 SPRING_DATASOURCE_PASSWORD=your-password
 SPRING_JPA_HIBERNATE_DDL_AUTO=update

@@ -1,0 +1,115 @@
+services:
+  # Comandos úteis:
+  #   docker compose -f docker-compose.prod.yml up
+  #   docker compose -f docker-compose.prod.yml up -d
+  #   docker compose -f docker-compose.prod.yml down
+  #   docker compose -f docker-compose.prod.yml logs -f
+
+  # Database PostgreSQL
+  # ===================
+  db:
+    image: postgres:16
+    container_name: photomap-db-prod
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - photomap-network
+
+  # Backend Spring Boot
+  # ===================
+  backend:
+    build:
+      context: ./backend/photo-map
+      dockerfile: Dockerfile
+    container_name: photomap-backend-prod
+    ports:
+      - "8092:8092"
+    environment:
+      # Database
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      
+      # Server
+      - SERVER_ADDRESS=0.0.0.0
+      - SERVER_PORT=8092
+      
+      # App config
+      - APP_UPLOAD_DIR=/photomap/storage/uploads
+      - APP_BASE_URL=${APP_BASE_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      
+      # JWT
+      - JWT_SECRET=${JWT_SECRET}
+      
+      # Java optimization for production
+      - JAVA_OPTS=-Xmx2g -Xms1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat
+    volumes:
+      - ./storage:/photomap/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - photomap-network
+
+  # Frontend React/Vite (Production Build)
+  # ======================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+    container_name: photomap-frontend-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - photomap-network
+
+  # Nginx Reverse Proxy (Opcional para produção)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: photomap-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - photomap-network
+
+volumes:
+  dbdata:
+
+networks:
+  photomap-network:
+    name: photomap-prod-network
+    driver: bridge
+
+
+
+
