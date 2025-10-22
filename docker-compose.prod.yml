@@ -75,7 +75,7 @@ services:
         - VITE_BACKEND_URL=${VITE_BACKEND_URL}
     container_name: photomap-frontend-prod
     ports:
-      - "80:80"
+      - "3000:80"
       - "443:443"
     depends_on:
       - backend
@@ -85,22 +85,22 @@ services:
 
   # Nginx Reverse Proxy (Opcional para produção)
   # ============================================
-  nginx:
-    image: nginx:alpine
-    container_name: photomap-nginx-prod
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
-      - ./nginx/snippets:/etc/nginx/snippets:ro
-    depends_on:
-      - frontend
-      - backend
-    restart: unless-stopped
-    networks:
-      - photomap-network
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: photomap-nginx-prod
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #     - ./nginx/certs:/etc/nginx/certs:ro
+  #     - ./nginx/snippets:/etc/nginx/snippets:ro
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   restart: unless-stopped
+  #   networks:
+  #     - photomap-network
 
 volumes:
   dbdata:
