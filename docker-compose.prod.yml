@@ -67,20 +67,20 @@ services:
 
   # Frontend React/Vite (Production Build)
   # ======================================
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-      args:
-        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
-    container_name: photomap-frontend-prod
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
-    networks:
-      - photomap-network
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.prod
+  #     args:
+  #       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+  #   container_name: photomap-frontend-prod
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
+  #   networks:
+  #     - photomap-network
 
   # Nginx Reverse Proxy (Opcional para produção)
   # ============================================

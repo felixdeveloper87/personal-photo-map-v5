@@ -1,13 +1,18 @@
 {
-    "rewrites": [
-      { "source": "/api/:path*", "destination": "https://api.personalphotomap.co.uk/api/:path*" },
-  
-      { "source": "/countries/:countryId", "destination": "/index.html" },
-      { "source": "/map/private", "destination": "/index.html" },
-      { "source": "/timeline/:year", "destination": "/index.html" },
-      { "source": "/timeline", "destination": "/index.html" },
-  
-      { "source": "/:path*", "destination": "/index.html" }
-    ]
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "env": {
+    "VITE_BACKEND_URL": "https://api.personalphotomap.co.uk"
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://api.personalphotomap.co.uk/api/:path*" },
+    { "source": "/countries/:countryId", "destination": "/index.html" },
+    { "source": "/map/private", "destination": "/index.html" },
+    { "source": "/timeline/:year", "destination": "/index.html" },
+    { "source": "/timeline", "destination": "/index.html" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}
   
