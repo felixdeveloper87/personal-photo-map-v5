@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
     container_name: photomap-backend-prod
     ports:
-      - "8092:8092"
+      - "8092:8080"
     environment:
       # Database
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
