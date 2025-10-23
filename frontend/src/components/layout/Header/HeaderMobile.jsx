@@ -46,6 +46,7 @@ const HeaderMobile = ({
   photoCount,
   countryCount,
   countriesWithPhotos,
+  buttonSize = "xs",
   onProfileClick,
   onPremiumClick,
   onPhotoStorageClick,
@@ -168,35 +169,25 @@ const HeaderMobile = ({
                   {/* Photo Storage Button */}
                   <ModernPhotoStorageButton
                     onClick={onPhotoStorageClick}
+                    size={buttonSize}
                     w="full"
-                    h={{ base: "36px", sm: "38px" }}
-                    size="xs"
                     borderRadius="md"
                     display="flex"
                     flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={{ base: 0, sm: 1 }}
-                    fontSize={{ base: "10px", sm: "xs" }}
-                    fontWeight="500"
-                    px={{ base: 1, sm: 1.5 }}
                   />
 
                   {/* User Profile Button */}
                   <ModernUserProfileButton
                     onClick={onProfileClick}
+                    size={buttonSize}
                     w="full"
-                    h={{ base: "36px", sm: "38px" }}
-                    size="xs"
                     borderRadius="md"
                     display="flex"
                     flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={{ base: 0, sm: 1 }}
-                    fontSize={{ base: "10px", sm: "xs" }}
-                    fontWeight="500"
-                    px={{ base: 1, sm: 1.5 }}
                   />
 
                   {/* Search Button */}
@@ -207,35 +198,25 @@ const HeaderMobile = ({
                         searchTrigger.click();
                       }
                     }}
+                    size={buttonSize}
                     w="full"
-                    h={{ base: "36px", sm: "38px" }}
-                    size="xs"
                     borderRadius="md"
                     display="flex"
                     flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={{ base: 0, sm: 1 }}
-                    fontSize={{ base: "10px", sm: "xs" }}
-                    fontWeight="500"
-                    px={{ base: 1, sm: 1.5 }}
                   />
 
                   {/* Timeline Button */}
                   <ModernTimelineButton
                     onClick={onTimelineClick}
+                    size={buttonSize}
                     w="full"
-                    h={{ base: "36px", sm: "38px" }}
-                    size="xs"
                     borderRadius="md"
                     display="flex"
                     flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={{ base: 0, sm: 1 }}
-                    fontSize={{ base: "10px", sm: "xs" }}
-                    fontWeight="500"
-                    px={{ base: 1, sm: 1.5 }}
                   />
                 </Box>
               </Box>
@@ -247,11 +228,8 @@ const HeaderMobile = ({
                     onPremiumClick();
                     onClose?.();
                   }}
+                  size={buttonSize}
                   w="full"
-                  size="xs"
-                  h={{ base: "30px", sm: "32px" }}
-                  fontSize={{ base: "10px", sm: "xs" }}
-                  fontWeight="600"
                 />
               )}
 

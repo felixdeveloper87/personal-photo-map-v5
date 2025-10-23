@@ -6,12 +6,48 @@ import { FaMoon, FaSun, FaCrown, FaImages, FaMap, FaSignOutAlt, FaClock, FaSearc
 const MotionButton = motion.create ? motion.create(Button) : motion(Button);
 
 /* =========================
+   UTILITY FUNCTIONS
+   ========================= */
+
+/**
+ * Retorna o tamanho responsivo do ícone baseado no tamanho do botão
+ * @param {string} size - Tamanho do botão (xs, sm, md, lg)
+ * @param {string} variant - Variante do tamanho (small, normal, large)
+ * @returns {string} Tamanho do ícone em pixels
+ */
+const getResponsiveIconSize = (size, variant = "normal") => {
+  const sizeMap = {
+    small: {
+      xs: "10px",
+      sm: "12px",
+      md: "14px",
+      lg: "16px",
+    },
+    normal: {
+      xs: "14px",
+      sm: "16px",
+      md: "20px",
+      lg: "24px",
+    },
+    large: {
+      xs: "12px",
+      sm: "14px",
+      md: "16px",
+      lg: "18px",
+    }
+  };
+
+  return sizeMap[variant]?.[size] || sizeMap.normal[size] || "16px";
+};
+
+/* =========================
    ModernThemeToggleButton
    ========================= */
 export const ModernThemeToggleButton = ({
   colorMode,
   toggleColorMode,
   styles,
+  size = "sm",
   ...props
 }) => {
   const bgGradient = useColorModeValue(
@@ -28,17 +64,15 @@ export const ModernThemeToggleButton = ({
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const hoverBorderColor = useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(255, 255, 255, 0.4)");
 
+  const iconSize = getResponsiveIconSize(size, "small");
+
   return (
     <MotionButton
       onClick={toggleColorMode}
       bgGradient={bgGradient}
       color="white"
-      size="xs"
-      px={1.5}
-      py={1.5}
-      minW="36px"
-      h="28px"
-      borderRadius="md"
+      size={size}
+      borderRadius="2xl"
       fontWeight="500"
       letterSpacing="normal"
       position="relative"
@@ -85,7 +119,7 @@ export const ModernThemeToggleButton = ({
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        {colorMode === "light" ? <FaMoon size="12px" /> : <FaSun size="12px" />}
+        {colorMode === "light" ? <FaMoon size={iconSize} /> : <FaSun size={iconSize} />}
       </Box>
     </MotionButton>
   );
@@ -94,7 +128,7 @@ export const ModernThemeToggleButton = ({
 /* =========================
    ModernUpgradeToPremiumButton
    ========================= */
-export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to Premium", ...props }) => {
+export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to Premium", size = "md", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #fbbf24 50%, #f59e0b 75%, #fbbf24 100%)",
     "linear-gradient(135deg, #fcd34d 0%, #fbbf24 25%, #fcd34d 50%, #fbbf24 75%, #fcd34d 100%)"
@@ -109,14 +143,14 @@ export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to P
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "gray.800");
 
+  const iconSize = getResponsiveIconSize(size, "large");
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="md"
-      px={6}
-      py={3}
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -160,7 +194,7 @@ export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to P
       {...props}
     >
       <HStack spacing={3} position="relative" zIndex={2}>
-        <Icon as={FaCrown} boxSize="16px" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))" />
+        <Icon as={FaCrown} boxSize={iconSize} filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))" />
         <Text fontSize="sm" fontWeight="600">{children}</Text>
       </HStack>
     </MotionButton>
@@ -170,7 +204,7 @@ export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to P
 /* =========================
    ModernPhotoStorageButton
    ========================= */
-export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", ...props }) => {
+export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", size = "sm", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #ec4899 0%, #8b5cf6 25%, #ec4899 50%, #8b5cf6 75%, #ec4899 100%)",
     "linear-gradient(135deg, #f472b6 0%, #a78bfa 25%, #f472b6 50%, #a78bfa 75%, #f472b6 100%)"
@@ -185,15 +219,14 @@ export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", 
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -237,7 +270,7 @@ export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", 
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaImages size="20px" />
+        <FaImages size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -246,7 +279,7 @@ export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", 
 /* =========================
    ModernUserProfileButton
    ========================= */
-export const ModernUserProfileButton = ({ onClick, children = "Profile", ...props }) => {
+export const ModernUserProfileButton = ({ onClick, children = "Profile", size = "sm", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 25%, #3b82f6 50%, #1d4ed8 75%, #3b82f6 100%)",
     "linear-gradient(135deg, #60a5fa 0%, #3b82f6 25%, #60a5fa 50%, #3b82f6 75%, #60a5fa 100%)"
@@ -261,15 +294,14 @@ export const ModernUserProfileButton = ({ onClick, children = "Profile", ...prop
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -313,7 +345,7 @@ export const ModernUserProfileButton = ({ onClick, children = "Profile", ...prop
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaUserCircle size="20px" />
+        <FaUserCircle size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -322,7 +354,7 @@ export const ModernUserProfileButton = ({ onClick, children = "Profile", ...prop
 /* =========================
    ModernLogoutButton
    ========================= */
-export const ModernLogoutButton = ({ onClick, children = "Logout", ...props }) => {
+export const ModernLogoutButton = ({ onClick, children = "Logout", size = "sm", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #ef4444 0%, #dc2626 25%, #ef4444 50%, #dc2626 75%, #ef4444 100%)",
     "linear-gradient(135deg, #f87171 0%, #ef4444 25%, #f87171 50%, #ef4444 75%, #f87171 100%)"
@@ -337,17 +369,15 @@ export const ModernLogoutButton = ({ onClick, children = "Logout", ...props }) =
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="xs"
-      px={1.5}
-      py={1.5}
-      minW="36px"
-      h="28px"
-      borderRadius="md"
+      size={size}
+      borderRadius="2xl"
       fontWeight="500"
       letterSpacing="normal"
       position="relative"
@@ -390,7 +420,7 @@ export const ModernLogoutButton = ({ onClick, children = "Logout", ...props }) =
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaSignOutAlt size="20px" />
+        <FaSignOutAlt size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -399,7 +429,7 @@ export const ModernLogoutButton = ({ onClick, children = "Logout", ...props }) =
 /* =========================
    ModernTimelineButton
    ========================= */
-export const ModernTimelineButton = ({ onClick, children = "Timeline", ...props }) => {
+export const ModernTimelineButton = ({ onClick, children = "Timeline", size = "sm", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #f97316 0%, #ea580c 25%, #f97316 50%, #ea580c 75%, #f97316 100%)",
     "linear-gradient(135deg, #fb923c 0%, #f97316 25%, #fb923c 50%, #f97316 75%, #fb923c 100%)"
@@ -414,15 +444,14 @@ export const ModernTimelineButton = ({ onClick, children = "Timeline", ...props 
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -466,7 +495,7 @@ export const ModernTimelineButton = ({ onClick, children = "Timeline", ...props 
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaClock size="20px" />
+        <FaClock size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -475,7 +504,7 @@ export const ModernTimelineButton = ({ onClick, children = "Timeline", ...props 
 /* =========================
    ModernSearchButton
    ========================= */
-export const ModernSearchButton = ({ onClick, children = "Search", ...props }) => {
+export const ModernSearchButton = ({ onClick, children = "Search", size = "sm", ...props }) => {
   const bgGradient = useColorModeValue(
     "linear-gradient(135deg, #93c5fd 0%, #7dd3fc 25%, #93c5fd 50%, #7dd3fc 75%, #93c5fd 100%)",
     "linear-gradient(135deg, #60a5fa 0%, #38bdf8 25%, #60a5fa 50%, #38bdf8 75%, #60a5fa 100%)"
@@ -490,15 +519,14 @@ export const ModernSearchButton = ({ onClick, children = "Search", ...props }) =
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -542,7 +570,7 @@ export const ModernSearchButton = ({ onClick, children = "Search", ...props }) =
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaSearch size="20px" />
+        <FaSearch size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -552,7 +580,7 @@ export const ModernSearchButton = ({ onClick, children = "Search", ...props }) =
    ModernMapButton
    ========================= */
 // Botão Map moderno seguindo o padrão dos contadores
-export const ModernMapButton = ({ onClick, isLoggedIn = true, children = "Map", ...props }) => {
+export const ModernMapButton = ({ onClick, isLoggedIn = true, children = "Map", size = "sm", ...props }) => {
   if (!isLoggedIn) return null; // ⬅️ não mostra se não estiver logado
 
   const bgGradient = useColorModeValue(
@@ -577,17 +605,15 @@ export const ModernMapButton = ({ onClick, isLoggedIn = true, children = "Map", 
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="xs"
-      px={1.5}
-      py={1.5}
-      minW="36px"
-      h="28px"
-      borderRadius="md"
+      size={size}
+      borderRadius="2xl"
       fontWeight="500"
       letterSpacing="normal"
       position="relative"
@@ -630,7 +656,7 @@ export const ModernMapButton = ({ onClick, isLoggedIn = true, children = "Map", 
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaGlobe size="20px" />
+        <FaGlobe size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -645,6 +671,7 @@ export const ModernHeaderUserButton = ({
   fullname,
   isPremium,
   styles,
+  size = "sm",
   ...props
 }) => {
   const bgGradient = useColorModeValue(
@@ -661,15 +688,14 @@ export const ModernHeaderUserButton = ({
   const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -713,7 +739,7 @@ export const ModernHeaderUserButton = ({
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        <FaUser size="20px" />
+        <FaUser size={iconSize} />
       </Box>
     </MotionButton>
   );
@@ -722,7 +748,7 @@ export const ModernHeaderUserButton = ({
 /* =========================
    ModernLoginButton
    ========================= */
-export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => {
+export const ModernLoginButton = ({ onClick, children = "Login", size = "md", ...props }) => {
   const bgGradient = useColorModeValue(
     // Light Mode: Gradiente azul suave e elegante
     "linear-gradient(135deg, #ffffff 0%, #f0f9ff 25%, #e0f2fe 50%, #bae6fd 75%, #7dd3fc 100%)",
@@ -746,10 +772,7 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="md"
-      px={4}
-      py={4}
-      minW="80px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -802,7 +825,7 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
 /* =========================
    ModernRegisterButton
    ========================= */
-export const ModernRegisterButton = ({ onClick, children = "Register", ...props }) => {
+export const ModernRegisterButton = ({ onClick, children = "Register", size = "md", ...props }) => {
   const bgGradient = useColorModeValue(
     // Light Mode: Gradiente azul mais intenso para destaque
     "linear-gradient(135deg, #3b82f6 0%, #2563eb 25%, #1d4ed8 50%, #1e40af 75%, #1e3a8a 100%)",
@@ -826,10 +849,7 @@ export const ModernRegisterButton = ({ onClick, children = "Register", ...props 
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="md"
-      px={4}
-      py={4}
-      minW="80px"
+      size={size}
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"

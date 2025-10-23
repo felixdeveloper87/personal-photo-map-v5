@@ -1,5 +1,5 @@
 import React from 'react';
-import { HStack, VStack, Box } from '@chakra-ui/react';
+import { HStack, Box } from '@chakra-ui/react';
 import {
   ModernLoginButton,
   ModernRegisterButton,
@@ -9,44 +9,13 @@ const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...pr
 
   return (
     <Box display={display} {...props}>
-      {/* Mobile: Vertical (um em cima do outro) */}
-      <VStack 
-        display={{ base: size === "xs" ? "flex" : "none", md: "none" }} 
-        spacing={0.5}
-        align="stretch"
-        w="62px"
-      >
-        <ModernLoginButton 
-          onClick={onLoginClick} 
-          size="xs" 
-          h="22px"
-          fontSize="6px"
-          px={0.5}
-          py={0}
-          minW="auto"
-          w="full"
-        />
-        <ModernRegisterButton 
-          onClick={onRegisterClick} 
-          size="xs"
-          h="22px"
-          fontSize="6px"
-          px={0.5}
-          py={0}
-          minW="auto"
-          w="full"
-        />
-      </VStack>
-
-      {/* Desktop: Horizontal (lado a lado) */}
+      {/* Horizontal (lado a lado) em todas as telas */}
       <HStack 
-        display={{ base: size === "xs" ? "none" : "flex", md: "flex" }} 
-        spacing={0}
+        spacing={{ base: 1, sm: 2, md: 3 }}
       >
         <ModernLoginButton 
           onClick={onLoginClick} 
-          size={size} 
-          mr={8}
+          size={size}
         />
         <ModernRegisterButton 
           onClick={onRegisterClick} 

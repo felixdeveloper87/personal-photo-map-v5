@@ -171,18 +171,22 @@ const Header = () => {
     }
   };
 
-  // ====== Responsividade (somente desktop) ======
-  // Tamanhos de botões aumentam conforme os breakpoints (lg, xl, 2xl)
+  // ====== Responsividade completa para todos os botões ======
+  // Tamanhos de botões responsivos para TODAS as telas
   const buttonSize = useBreakpointValue({
-    base: "sm", // não afeta pois desktop está oculto no base, mas mantém coerência
-    lg: "sm",
-    xl: "md",
-    "2xl": "lg",
+    base: "xs",    // Mobile pequeno
+    sm: "sm",      // Mobile médio
+    md: "sm",      // Tablet
+    lg: "sm",      // Desktop pequeno
+    xl: "md",      // Desktop médio
+    "2xl": "lg",   // Desktop grande
   });
 
   // Espaçamento dos HStacks em desktop
   const stackSpacing = useBreakpointValue({
-    base: 4, // idem acima
+    base: 2,
+    sm: 3,
+    md: 4,
     lg: 4,
     xl: 6,
     "2xl": 8,
@@ -210,24 +214,18 @@ const Header = () => {
 
           {/* CENTRO: 3 botões (Map, Theme, Logout) para mobile quando logado */}
           {isLoggedIn && isCompact && (
-            <HStack spacing={1.5} align="center" flex="0 0 auto">
+            <HStack spacing={{ base: 1, sm: 1.5, md: 2 }} align="center" flex="0 0 auto">
               <ModernMapButton
                 isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
-                size="sm"
-                minW="42px"
-                h="30px"
-                borderRadius="lg"
+                size={buttonSize}
                 aria-label="Go to Map"
               />
               <ModernThemeToggleButton
                 colorMode={colorMode}
                 toggleColorMode={toggleColorMode}
                 styles={styles}
-                size="sm"
-                minW="42px"
-                h="30px"
-                borderRadius="lg"
+                size={buttonSize}
               />
               <ModernLogoutButton
                 onClick={() => {
@@ -239,10 +237,7 @@ const Header = () => {
                     duration: 3000,
                   });
                 }}
-                size="sm"
-                minW="42px"
-                h="30px"
-                borderRadius="lg"
+                size={buttonSize}
               />
             </HStack>
           )}
@@ -297,7 +292,7 @@ const Header = () => {
 
           {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
-            spacing={isCompact ? 0.25 : 2}
+            spacing={isCompact ? 0.25 : stackSpacing}
             align="center"
             flex="0 0 auto"
             display={isLoggedIn && isCompact ? "none" : "flex"}
@@ -307,7 +302,7 @@ const Header = () => {
               colorMode={colorMode}
               toggleColorMode={toggleColorMode}
               styles={styles}
-              size={isCompact ? "xs" : buttonSize}
+              size={buttonSize}
             />
 
             {/* Auth buttons - sempre visível */}
@@ -316,7 +311,7 @@ const Header = () => {
                 styles={styles}
                 onLoginClick={loginModal.onOpen}
                 onRegisterClick={registerModal.onOpen}
-                size={isCompact ? "xs" : buttonSize}
+                size={buttonSize}
               />
             ) : (
               <ModernLogoutButton
@@ -330,7 +325,7 @@ const Header = () => {
                     isClosable: true,
                   });
                 }}
-                size={isCompact ? "xs" : buttonSize}
+                size={buttonSize}
               />
             )}
           </HStack>
@@ -345,32 +340,26 @@ const Header = () => {
             borderTop="1px solid"
             borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
           >
-            <VStack spacing={1} w="100%">
+            <VStack spacing={{ base: 1, sm: 1.5 }} w="100%">
               {/* Grid de 4 botões principais */}
               <Box
                 display="grid"
                 gridTemplateColumns="repeat(4, 1fr)"
-                gap={1}
+                gap={{ base: 1, sm: 1.5, md: 2 }}
                 w="100%"
               >
                 <ModernPhotoStorageButton
                   onClick={photoStorageModal.onOpen}
-                  size="xs"
-                  h="32px"
+                  size={buttonSize}
                   display="flex"
                   flexDirection="column"
-                  fontSize="2xs"
-                  px={1}
                 />
                 
                 <ModernUserProfileButton
                   onClick={profileModal.onOpen}
-                  size="xs"
-                  h="32px"
+                  size={buttonSize}
                   display="flex"
                   flexDirection="column"
-                  fontSize="2xs"
-                  px={1}
                 />
                 
                 <ModernSearchButton
@@ -379,22 +368,16 @@ const Header = () => {
                     const searchInput = document.querySelector('[data-search-trigger]');
                     if (searchInput) searchInput.click();
                   }}
-                  size="xs"
-                  h="32px"
+                  size={buttonSize}
                   display="flex"
                   flexDirection="column"
-                  fontSize="2xs"
-                  px={1}
                 />
                 
                 <ModernTimelineButton
                   onClick={() => navigate("/timeline")}
-                  size="xs"
-                  h="32px"
+                  size={buttonSize}
                   display="flex"
                   flexDirection="column"
-                  fontSize="2xs"
-                  px={1}
                 />
               </Box>
 
@@ -403,9 +386,7 @@ const Header = () => {
                 <ModernUpgradeToPremiumButton
                   onClick={premiumModal.onOpen}
                   w="100%"
-                  size="sm"
-                  h="34px"
-                  fontSize="2xs"
+                  size={buttonSize}
                 />
               )}
             </VStack>
@@ -426,6 +407,7 @@ const Header = () => {
         photoCount={photoCount}
         countryCount={countryCount}
         countriesWithPhotos={countriesWithPhotos}
+        buttonSize={buttonSize}
         onProfileClick={() => {
           profileModal.onOpen();
           mobileMenu.onClose();
