@@ -292,7 +292,7 @@ const Header = () => {
 
           {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
-            spacing={isCompact ? 0.25 : stackSpacing}
+            spacing={isCompact ? 1 : stackSpacing}
             align="center"
             flex="0 0 auto"
             display={isLoggedIn && isCompact ? "none" : "flex"}

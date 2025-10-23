@@ -767,6 +767,8 @@ export const ModernLoginButton = ({ onClick, children = "Login", size = "md", ..
   const borderColor = useColorModeValue("rgba(59, 130, 246, 0.2)", "rgba(147, 197, 253, 0.3)");
   const textColor = useColorModeValue("blue.600", "blue.100");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
@@ -815,9 +817,9 @@ export const ModernLoginButton = ({ onClick, children = "Login", size = "md", ..
       transition={{ duration: 0.4, ease: "easeOut" }}
       {...props}
     >
-      <Text fontSize="sm" fontWeight="600" position="relative" zIndex={2}>
-        {children}
-      </Text>
+      <Box position="relative" zIndex={2}>
+        <FaSignInAlt size={iconSize} />
+      </Box>
     </MotionButton>
   );
 };
@@ -844,6 +846,8 @@ export const ModernRegisterButton = ({ onClick, children = "Register", size = "m
   const borderColor = useColorModeValue("rgba(59, 130, 246, 0.4)", "rgba(96, 165, 250, 0.5)");
   const textColor = useColorModeValue("white", "white");
 
+  const iconSize = getResponsiveIconSize(size);
+
   return (
     <MotionButton
       onClick={onClick}
@@ -892,9 +896,9 @@ export const ModernRegisterButton = ({ onClick, children = "Register", size = "m
       transition={{ duration: 0.4, ease: "easeOut" }}
       {...props}
     >
-      <Text fontSize="sm" fontWeight="600" position="relative" zIndex={2}>
-        {children}
-      </Text>
+      <Box position="relative" zIndex={2}>
+        <FaUserPlus size={iconSize} />
+      </Box>
     </MotionButton>
   );
 };
