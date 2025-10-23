@@ -213,11 +213,11 @@ const Header = () => {
                 display={isCompact ? "inline-flex" : "none"}
                 variant="ghost"
                 color={styles.textColor}
-                fontSize="1.5rem"
-                p={1}
-                size="sm"
-                minW="28px"
-                h="28px"
+                fontSize={{ base: "1rem", sm: "1.2rem", md: "1.5rem" }}
+                p={{ base: 0.5, sm: 0.75, md: 1 }}
+                size={{ base: "xs", sm: "sm", md: "sm" }}
+                minW={{ base: "24px", sm: "26px", md: "28px" }}
+                h={{ base: "24px", sm: "26px", md: "28px" }}
               />
             )}
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />

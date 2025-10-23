@@ -126,31 +126,8 @@ const HeaderMobile = ({
                   </Box>
                 </Flex>
 
-                {/* Lado direito: Controles (Tema e Fechar) */}
+                {/* Lado direito: Controle de Fechar */}
                 <HStack spacing={1} ml={2}>
-                  {/* Botão de Tema */}
-                  <IconButton
-                    aria-label="Toggle color mode"
-                    icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
-                    onClick={toggleColorMode}
-                    size="xs"
-                    variant="ghost"
-                    color={styles.textColor}
-                    borderRadius="lg"
-                    bg="rgba(255, 255, 255, 0.1)"
-                    border="1px solid"
-                    borderColor="rgba(255, 255, 255, 0.15)"
-                    _hover={{
-                      bg: "rgba(255, 255, 255, 0.15)",
-                      transform: "scale(1.05)",
-                      borderColor: "rgba(255, 255, 255, 0.25)"
-                    }}
-                    w="28px"
-                    h="28px"
-                    minW="28px"
-                    minH="28px"
-                  />
-                  
                   {/* Botão de Fechar */}
                   <IconButton
                     aria-label="Close menu"
@@ -277,38 +254,6 @@ const HeaderMobile = ({
                   fontWeight="600"
                 />
               )}
-
-              {/* Logout - Compacto */}
-              <Flex
-                w="full"
-                bg={styles.cardBg}
-                color={styles.warningColor}
-                border="1px solid"
-                borderColor={styles.cardBorder}
-                borderRadius="md"
-                p={{ base: 1, sm: 1.5 }}
-                align="center"
-                justify="center"
-                cursor="pointer"
-                h={{ base: "26px", sm: "28px" }}
-                onClick={() => {
-                  onLogout();
-                  navigate('/');
-                  onClose?.();
-                }}
-                _hover={{
-                  bg: styles.cardHover,
-                  transform: "translateY(-0.5px)",
-                  boxShadow: styles.cardShadowHover,
-                }}
-                transition="all 0.15s cubic-bezier(0.4, 0, 0.2, 1)"
-                backdropFilter="blur(20px)"
-              >
-                <FaSignOutAlt size={12} />
-                <Text ml={{ base: 1, sm: 1.5 }} fontWeight="500" fontSize={{ base: "9px", sm: "10px" }}>
-                  Logout
-                </Text>
-              </Flex>
 
               {/* SearchForm para usuários logados */}
               <SearchForm
