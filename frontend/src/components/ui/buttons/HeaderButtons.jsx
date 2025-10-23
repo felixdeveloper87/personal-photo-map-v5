@@ -34,12 +34,12 @@ export const ModernThemeToggleButton = ({
       bgGradient={bgGradient}
       color="white"
       size="xs"
-      px={2}
-      py={2}
-      minW="40px"
-      h="32px"
-      borderRadius="lg"
-      fontWeight="600"
+      px={1.5}
+      py={1.5}
+      minW="36px"
+      h="28px"
+      borderRadius="md"
+      fontWeight="500"
       letterSpacing="normal"
       position="relative"
       overflow="hidden"
@@ -85,7 +85,7 @@ export const ModernThemeToggleButton = ({
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        {colorMode === "light" ? <FaMoon size="14px" /> : <FaSun size="14px" />}
+        {colorMode === "light" ? <FaMoon size="12px" /> : <FaSun size="12px" />}
       </Box>
     </MotionButton>
   );
@@ -122,9 +122,9 @@ export const ModernUpgradeToPremiumButton = ({ onClick, children = "Upgrade to P
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -199,9 +199,9 @@ export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", 
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -275,9 +275,9 @@ export const ModernUserProfileButton = ({ onClick, children = "Profile", ...prop
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -342,18 +342,19 @@ export const ModernLogoutButton = ({ onClick, children = "Logout", ...props }) =
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
-      borderRadius="2xl"
-      fontWeight="700"
-      letterSpacing="wider"
+      size="xs"
+      px={1.5}
+      py={1.5}
+      minW="36px"
+      h="28px"
+      borderRadius="md"
+      fontWeight="500"
+      letterSpacing="normal"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -427,9 +428,9 @@ export const ModernTimelineButton = ({ onClick, children = "Timeline", ...props 
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -503,9 +504,9 @@ export const ModernSearchButton = ({ onClick, children = "Search", ...props }) =
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -581,18 +582,19 @@ export const ModernMapButton = ({ onClick, isLoggedIn = true, children = "Map", 
       onClick={onClick}
       bgGradient={bgGradient}
       color={textColor}
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
-      borderRadius="2xl"
-      fontWeight="700"
-      letterSpacing="wider"
+      size="xs"
+      px={1.5}
+      py={1.5}
+      minW="36px"
+      h="28px"
+      borderRadius="md"
+      fontWeight="500"
+      letterSpacing="normal"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -673,9 +675,9 @@ export const ModernHeaderUserButton = ({
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -753,9 +755,9 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -833,9 +835,9 @@ export const ModernRegisterButton = ({ onClick, children = "Register", ...props 
       letterSpacing="wider"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",

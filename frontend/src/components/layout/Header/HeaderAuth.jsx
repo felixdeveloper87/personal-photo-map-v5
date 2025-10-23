@@ -14,13 +14,13 @@ const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...pr
         display={{ base: size === "xs" ? "flex" : "none", md: "none" }} 
         spacing={0.5}
         align="stretch"
-        w="65px"
+        w="62px"
       >
         <ModernLoginButton 
           onClick={onLoginClick} 
           size="xs" 
-          h="20px"
-          fontSize="7px"
+          h="22px"
+          fontSize="6px"
           px={0.5}
           py={0}
           minW="auto"
@@ -29,8 +29,8 @@ const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...pr
         <ModernRegisterButton 
           onClick={onRegisterClick} 
           size="xs"
-          h="20px"
-          fontSize="7px"
+          h="22px"
+          fontSize="6px"
           px={0.5}
           py={0}
           minW="auto"

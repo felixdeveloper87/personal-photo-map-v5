@@ -204,7 +204,7 @@ const Header = () => {
               onClick={() =>
                 isLoggedIn ? navigate("/map/private") : navigate("/map")
               }
-              size={buttonSize}
+              size={isCompact ? "xs" : buttonSize}
               aria-label="Go to Map"
               display={isCompact ? "inline-flex" : "none"}
             />
@@ -260,7 +260,7 @@ const Header = () => {
 
           {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
-            spacing={isCompact ? 1 : stackSpacing}
+            spacing={isCompact ? 0.5 : stackSpacing}
             align="center"
             flex="0 0 auto"
           >
@@ -292,7 +292,7 @@ const Header = () => {
                     isClosable: true,
                   });
                 }}
-                size={buttonSize}
+                size={isCompact ? "xs" : buttonSize}
               />
             )}
           </HStack>
