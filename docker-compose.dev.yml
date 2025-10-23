@@ -71,7 +71,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         - BUILD_ENV=development
         - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:8092}
@@ -80,14 +80,21 @@ services:
       - "5173:5173"
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:8092}
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     volumes:
-      - ./frontend:/app  # Volume mount para hot reload
-      - /app/node_modules  # Excluir node_modules do volume
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+      - ./frontend/package.json:/app/package.json
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - photomap-network
+    stdin_open: true
+    tty: true
 
 volumes:
   dbdata:

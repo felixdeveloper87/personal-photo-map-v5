@@ -25,21 +25,26 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
 
   return (
     <Box
-      bgGradient="linear(135deg, blue.600 0%, purple.700 50%, indigo.800 100%)"
+      bgGradient="linear(135deg, #1e40af 0%, #7c3aed 50%, #4338ca 100%)"
       color="white"
-      pt={12}
-      pb={28}
+      pt={{ base: 20, md: 24, lg: 28 }}
+      pb={{ base: 20, md: 28, lg: 32 }}
       position="relative"
       overflow="hidden"
+      minH={{ base: "auto", lg: "90vh" }}
+      display="flex"
+      alignItems="center"
+      mt="-1px"
       _before={{
         content: '""',
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
-        bg: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        opacity: 0.4
+        height: '100px',
+        bgGradient: 'linear(to-b, rgba(0, 0, 0, 0.05) 0%, transparent 100%)',
+        zIndex: 2,
+        pointerEvents: 'none'
       }}
       _after={{
         content: '""',
@@ -48,182 +53,189 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 50%, rgba(79, 70, 229, 0.1) 100%)',
+        bg: 'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+        opacity: 0.5,
+        animation: 'subtleFloat 20s ease-in-out infinite',
         zIndex: 0
       }}
     >
       <Container maxW="container.xl" position="relative" zIndex={1}>
         <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={16} alignItems="center">
-          <VStack align="start" spacing={10}>
-            <Badge
-              colorScheme="blue"
-              variant="solid"
-              px={6}
-              py={3}
-              borderRadius="full"
-              fontSize="md"
-              fontWeight="bold"
-              bg={useColorModeValue('blue.600', 'blue.400')}
-              color="white"
-              boxShadow="sm"
+          <VStack align="start" spacing={{ base: 6, md: 8, lg: 10 }} w="full">
+            <MotionBox
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              🎓 Educational Platform
-            </Badge>
+              <Badge
+                variant="solid"
+                px={{ base: 4, md: 6 }}
+                py={{ base: 2, md: 3 }}
+                borderRadius="full"
+                fontSize={{ base: "sm", md: "md" }}
+                fontWeight="bold"
+                bgGradient="linear(135deg, rgba(59, 130, 246, 0.95), rgba(147, 51, 234, 0.95))"
+                color="white"
+                boxShadow="0 8px 25px rgba(59, 130, 246, 0.4)"
+                backdropFilter="blur(10px)"
+                border="1px solid"
+                borderColor="whiteAlpha.300"
+                _hover={{
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 12px 35px rgba(59, 130, 246, 0.5)'
+                }}
+                transition="all 0.3s ease"
+              >
+                📸 Travel Photo Organizer
+              </Badge>
+            </MotionBox>
 
             <Heading
-              size="2xl"
-              lineHeight="1.2"
+              as="h1"
+              lineHeight={{ base: "1.1", md: "1.2" }}
               fontWeight="extrabold"
               letterSpacing="tight"
-              fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-              color={headingColor}
+              fontSize={{ base: '3xl', sm: '4xl', md: '5xl', lg: '6xl' }}
+              color="white"
+              textShadow="0 4px 20px rgba(0,0,0,0.2)"
             >
-              Discoverrrr the world through{' '}
+              Organize your travel photos by{' '}
               <Text
                 as="span"
-                bgGradient="linear(to-r, yellow.400, orange.400)"
+                bgGradient="linear(to-r, #fbbf24, #f59e0b, #fb923c)"
                 bgClip="text"
+                textShadow="0 2px 15px rgba(251, 191, 36, 0.3)"
               >
-                data-driven learning
-              </Text>{' '}
-              and interactive exploration
+                countries and dates
+              </Text>
+              {' '}while learning about the world and creating{' '}
+              <Text
+                as="span"
+                bgGradient="linear(to-r, #fbbf24, #f59e0b, #fb923c)"
+                bgClip="text"
+                textShadow="0 2px 15px rgba(251, 191, 36, 0.4)"
+              >
+                social media ready videos
+              </Text>
             </Heading>
 
             <Text
-              fontSize={{ base: 'lg', md: 'xl' }}
-              color={textColor}
-              lineHeight="1.7"
-              maxW="600px"
+              fontSize={{ base: 'md', sm: 'lg', md: 'xl' }}
+              color="whiteAlpha.900"
+              lineHeight={{ base: "1.6", md: "1.8" }}
+              maxW="650px"
               fontWeight="medium"
+              textShadow="0 2px 10px rgba(0,0,0,0.1)"
             >
-              Access comprehensive economic, social, and cultural data for every
-              country, organize your travel memories, and transform your global
-              understanding through interactive learning experiences.
+              Upload and organize your travel photos by countries and dates, learn about each destination 
+              with comprehensive educational data, and create professional videos ready to share on social media.
             </Text>
 
-            <HStack spacing={6} flexWrap="wrap">
+            <HStack spacing={{ base: 3, md: 4 }} flexWrap="wrap" w="full">
               <Button
-                size="lg"
-                bgGradient={useColorModeValue(
-                  'linear(135deg, blue.600, cyan.500)',
-                  'linear(135deg, blue.400, cyan.400)'
-                )}
+                size={{ base: "md", md: "lg" }}
+                bgGradient="linear(135deg, #3b82f6, #06b6d4)"
                 color="white"
                 variant="solid"
                 _hover={{
-                  transform: 'translateY(-3px)',
-                  boxShadow: 'xl'
+                  bgGradient: "linear(135deg, #2563eb, #0891b2)",
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 20px 40px rgba(59, 130, 246, 0.4)'
                 }}
-                _active={{ transform: 'translateY(0)' }}
+                _active={{ 
+                  transform: 'translateY(0)',
+                  boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)'
+                }}
                 leftIcon={<FaRocket />}
                 onClick={onOpenRegister}
-                px={10}
-                py={7}
-                fontSize="lg"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 7 }}
+                fontSize={{ base: "md", md: "lg" }}
                 fontWeight="bold"
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 borderRadius="xl"
+                boxShadow="0 10px 30px rgba(59, 130, 246, 0.3)"
+                flex={{ base: "1 1 auto", md: "0 0 auto" }}
+                minW={{ base: "140px", md: "auto" }}
               >
                 Start Learning
               </Button>
 
               <Button
-                size="lg"
+                size={{ base: "md", md: "lg" }}
                 variant="outline"
-                borderColor={useColorModeValue('blue.600', 'blue.300')}
-                color={useColorModeValue('blue.600', 'blue.300')}
+                borderWidth="2px"
+                borderColor="white"
+                color="white"
+                bg="whiteAlpha.100"
+                backdropFilter="blur(10px)"
                 _hover={{
-                  bg: useColorModeValue('blue.50', 'whiteAlpha.100'),
-                  transform: 'translateY(-3px)',
-                  boxShadow: 'lg'
+                  bg: 'whiteAlpha.200',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 10px 30px rgba(255, 255, 255, 0.2)',
+                  borderColor: 'whiteAlpha.900'
                 }}
-                _active={{ transform: 'translateY(0)' }}
+                _active={{ 
+                  transform: 'translateY(0)',
+                  bg: 'whiteAlpha.300'
+                }}
                 leftIcon={<FaGlobe />}
                 onClick={() => navigate('/map')}
-                px={10}
-                py={7}
-                fontSize="lg"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 7 }}
+                fontSize={{ base: "md", md: "lg" }}
                 fontWeight="bold"
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 borderRadius="xl"
+                flex={{ base: "1 1 auto", md: "0 0 auto" }}
+                minW={{ base: "140px", md: "auto" }}
               >
-                Explore Data
+                Explore Map
               </Button>
             </HStack>
           </VStack>
 
-          <Box position="relative">
+          <Box position="relative" display={{ base: "none", lg: "block" }}>
             <MotionBox
-              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1, ease: 'easeOut' }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
             >
-              {/* Container principal com gradiente e efeitos modernos */}
+              {/* Container principal com efeitos modernos */}
               <Box
                 position="relative"
-                borderRadius="3xl"
+                borderRadius="2xl"
                 overflow="hidden"
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: '-20px',
-                  left: '-20px',
-                  right: '-20px',
-                  bottom: '-20px',
-                  bgGradient: useColorModeValue(
-                    'linear(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.08))',
-                    'linear(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15))'
-                  ),
-                  borderRadius: '3xl',
-                  zIndex: -1,
-                  filter: 'blur(20px)'
-                }}
-                _after={{
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  bgGradient: useColorModeValue(
-                    'linear(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8))',
-                    'linear(135deg, rgba(26, 32, 44, 0.9), rgba(45, 55, 72, 0.8))'
-                  ),
-                  borderRadius: '3xl',
-                  zIndex: -1
-                }}
+                boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                border="1px solid"
+                borderColor="whiteAlpha.200"
+                bg="white"
+                _dark={{ bg: "gray.800" }}
               >
-                {/* Header informativo sobre o mapa - mais fino */}
+                {/* Header do mapa */}
                 <Box
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  right={0}
-                  zIndex={5}
-                  bgGradient={useColorModeValue(
-                    'linear(135deg, rgba(59, 130, 246, 0.95), rgba(147, 51, 234, 0.95))',
-                    'linear(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9))'
-                  )}
+                  bgGradient="linear(135deg, rgba(59, 130, 246, 0.95), rgba(147, 51, 234, 0.95))"
                   color="white"
-                  p={3}
+                  px={6}
+                  py={4}
                   textAlign="center"
                   backdropFilter="blur(10px)"
                   borderBottom="1px solid"
-                  borderColor={useColorModeValue('rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)')}
+                  borderColor="whiteAlpha.200"
                 >
                   <VStack spacing={1}>
-                    <Text fontSize="md" fontWeight="bold" letterSpacing="wide" color="white">
-                      🌍 Explore the World
+                    <Text fontSize="lg" fontWeight="bold" letterSpacing="wide">
+                      🌍 Interactive World Map
                     </Text>
-                    <Text fontSize="xs" opacity={0.9} color="white" fontWeight="medium">
-                      Interactive map with 195+ countries and real-time data
+                    <Text fontSize="sm" opacity={0.9} fontWeight="medium">
+                      195+ countries • Real-time data • Educational insights
                     </Text>
                   </VStack>
                 </Box>
 
-                {/* Mapa com padding ajustado para o header mais fino */}
-                <Box pt="60px" p={6}>
-                  <MiniMap width="100%" height="500px" />
+                {/* Mapa */}
+                <Box p={6}>
+                  <MiniMap width="100%" height="480px" />
                 </Box>
               </Box>
             </MotionBox>

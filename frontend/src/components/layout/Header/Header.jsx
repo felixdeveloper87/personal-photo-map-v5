@@ -194,27 +194,9 @@ const Header = () => {
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
       <Container maxW="container.xl" {...headerContainerStyles(styles)}>
-        <Flex align="center" justify="space-between" w="100%" h="auto" gap={6}>
+        <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 2, sm: 4, md: 6 }}>
           {/* ESQUERDA: Logo (canto esquerdo) */}
-          <HStack spacing={4} align="center" flex="0 0 auto">
-            {/* Botão Hamburguer (mobile) */}
-            <IconButton
-              aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
-              icon={mobileMenu.isOpen ? <CloseIcon /> : <HamburgerIcon />}
-              onClick={() => {
-                console.log('Hamburger menu clicked');
-                if (mobileMenu.isOpen) {
-                  mobileMenu.onClose();
-                } else {
-                  mobileMenu.onOpen();
-                }
-              }}
-              display={isCompact ? "inline-flex" : "none"}
-              variant="ghost"
-              color={styles.textColor}
-              fontSize="2.2rem"
-              p={2}
-            />
+          <HStack spacing={{ base: 2, sm: 3, md: 4 }} align="center" flex="0 0 auto">
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
             {/* Map button next to logo for compact layouts */}
             <ModernMapButton
@@ -276,27 +258,27 @@ const Header = () => {
             )}
           </HStack>
 
-          {/* DIREITA: Theme Toggle + Auth/Logout (desktop) */}
+          {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
-            spacing={stackSpacing}
+            spacing={isCompact ? 1 : stackSpacing}
             align="center"
             flex="0 0 auto"
-            display={isCompact ? "none" : "flex"}
           >
+            {/* Theme toggle - sempre visível */}
             <ModernThemeToggleButton
               colorMode={colorMode}
               toggleColorMode={toggleColorMode}
               styles={styles}
-              size={buttonSize}
+              size={isCompact ? "xs" : buttonSize}
             />
 
+            {/* Auth buttons - sempre visível */}
             {!isLoggedIn ? (
               <HeaderAuth
                 styles={styles}
                 onLoginClick={loginModal.onOpen}
                 onRegisterClick={registerModal.onOpen}
-                // Caso o componente repasse para botões internos
-                size={buttonSize}
+                size={isCompact ? "xs" : buttonSize}
               />
             ) : (
               <ModernLogoutButton

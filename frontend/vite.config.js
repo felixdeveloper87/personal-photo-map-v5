@@ -25,7 +25,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: Number(env.VITE_PORT) || 5173,
       host: true,
-      watch: { usePolling: true },
+      strictPort: true,
+      watch: {
+        usePolling: true,
+        interval: 1000,
+      },
+      hmr: {
+        overlay: true,
+        clientPort: 5173,
+      },
       proxy: {
         '/api': {
           target: 'http://backend:8092', // nome do serviço no docker-compose

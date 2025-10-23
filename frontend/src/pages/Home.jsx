@@ -9,7 +9,8 @@ import HowItWorksSection from '../components/features/landing/HowItWorksSection'
 import BenefitsSection from '../components/features/landing/BenefitsSection';
 import { 
   features, 
-  educationalFeatures
+  educationalFeatures,
+  videoFeatures
 } from '../data/homeData';
 import LoginModal from '../components/modals/LoginModal';
 import RegisterModal from '../components/modals/RegisterModal';
@@ -40,6 +41,18 @@ function Home() {
         features={features}
         badgeText="🚀 Core Features"
         columns={{ base: 1, md: 2, lg: 4 }}
+        spacing={8}
+        bg="gray.50"
+        bgDark="gray.900"
+      />
+
+      {/* Video Features Section */}
+      <FeaturesSection
+        title="Social Media Video Creation"
+        description="Create professional videos from your travel photos, optimized for Instagram, TikTok, YouTube and other social platforms"
+        features={videoFeatures}
+        badgeText="🎬 Video Features"
+        columns={{ base: 1, md: 2, lg: 3 }}
         spacing={8}
         bg="gray.50"
         bgDark="gray.900"

@@ -1,10 +1,10 @@
 import { useColorModeValue } from '@chakra-ui/react';
 
 export const useHeaderStyles = () => {
-  // Gradientes em tons de oceano para ambos os temas
+  // Gradientes suaves para ambos os temas
   const bgGradient = useColorModeValue(
-    // Light Mode: Gradiente suave em tons de oceano
-    "linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 25%, #81d4fa 50%, #4fc3f7 75%, #29b6f6 100%)",
+    // Light Mode: Gradiente muito claro e suave
+    "linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #f1f5f9 50%, #e2e8f0 75%, #e0e7ef 100%)",
     // Dark Mode: Gradiente profundo em tons de oceano escuro
     "linear-gradient(135deg, #0c1e35 0%, #1a365d 25%, #2d5a87 50%, #1e4a8a 75%, #0f3a5f 100%)"
   );

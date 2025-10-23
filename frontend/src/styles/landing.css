@@ -1,5 +1,11 @@
 /* Estilos personalizados para a Landing Page */
 
+/* Smooth Performance */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Gradientes e efeitos especiais */
 .hero-gradient {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -12,6 +18,22 @@
 .feature-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Floating Animation */
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
 }
 
 /* Animações de entrada */
@@ -86,6 +108,23 @@
 /* Efeitos de scroll suave */
 html {
   scroll-behavior: smooth;
+}
+
+/* Transição suave entre header e conteúdo */
+body {
+  scroll-padding-top: 80px;
+}
+
+/* Reduz motion para usuários que preferem menos animação */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Estilos para o badge de nova versão */

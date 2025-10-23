@@ -16,8 +16,6 @@ import {
 import { FaImages, FaMap, FaUser, FaSignOutAlt, FaMoon, FaSun, FaTimes, FaUserCircle } from "react-icons/fa";
 import { 
   ModernUpgradeToPremiumButton, 
-  ModernLoginButton, 
-  ModernRegisterButton,
   ModernPhotoStorageButton,
   ModernUserProfileButton,
   ModernSearchButton,
@@ -320,32 +318,9 @@ const HeaderMobile = ({
               />
             </VStack>
           ) : (
-            <VStack spacing={{ base: 1.5, sm: 2 }} px={2} pt={0.5} pb={2}>
-              <HStack justify="center" w="full" py={1}>
-                <Text 
-                  color={styles.textColor} 
-                  fontSize={{ base: "xs", sm: "sm" }} 
-                  fontWeight="600"
-                  textAlign="center"
-                >
-                  Welcome to Photomap
-                </Text>
-              </HStack>
-              <ModernLoginButton
-                onClick={onLoginClick}
-                w="full"
-                size="xs"
-                h={{ base: "32px", sm: "35px" }}
-                fontSize={{ base: "xs", sm: "sm" }}
-              />
-              <ModernRegisterButton
-                onClick={onRegisterClick}
-                w="full"
-                size="xs"
-                h={{ base: "32px", sm: "35px" }}
-                fontSize={{ base: "xs", sm: "sm" }}
-              />
-            </VStack>
+            // Usuário não logado - não mostra nada no menu hamburguer
+            // Os botões de Login/Register estão no header principal
+            <Box display="none" />
           )}
         </Box>
       </Collapse>

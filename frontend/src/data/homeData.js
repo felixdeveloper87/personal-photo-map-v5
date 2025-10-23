@@ -11,7 +11,14 @@ import {
   FaBookOpen,
   FaGlobeAmericas,
   FaLightbulb,
-  FaBrain
+  FaBrain,
+  FaVideo,
+  FaPlay,
+  FaMusic,
+  FaMagic,
+  FaFilm,
+  FaShare,
+  FaDownload
 } from 'react-icons/fa';
 
 export const features = [
@@ -31,8 +38,8 @@ export const features = [
   },
   {
     icon: FaCamera,
-    title: 'Photo Organization',
-    description: 'Organize your travel photos by country and create visual memories with educational context and learning insights.',
+    title: 'Photo Organization by Country & Date',
+    description: 'Automatically organize your travel photos by country and date, creating a chronological journey of your adventures with smart categorization.',
     color: 'green',
     gradient: 'linear(135deg, green.400, teal.500)'
   },
@@ -73,6 +80,51 @@ export const educationalFeatures = [
     description: 'Real-time weather, time zones, population statistics, and regional classifications with interactive maps.',
     color: 'cyan',
     gradient: 'linear(135deg, cyan.400, blue.500)'
+  }
+];
+
+export const videoFeatures = [
+  {
+    icon: FaVideo,
+    title: 'Video Generation',
+    description: 'Transform your travel photos into stunning videos with smooth transitions, effects, and intelligent photo sequencing.',
+    color: 'red',
+    gradient: 'linear(135deg, red.400, pink.500)'
+  },
+  {
+    icon: FaMusic,
+    title: 'Smart Audio Matching',
+    description: 'Automatically sync background music with your video content, creating perfect audio-visual harmony for your travel memories.',
+    color: 'purple',
+    gradient: 'linear(135deg, purple.400, indigo.500)'
+  },
+  {
+    icon: FaMagic,
+    title: 'Smooth Transitions',
+    description: 'Create smooth transitions between photos with smart timing and visual effects that enhance your storytelling.',
+    color: 'blue',
+    gradient: 'linear(135deg, blue.400, cyan.500)'
+  },
+  {
+    icon: FaFilm,
+    title: 'Professional Templates',
+    description: 'Choose from multiple video templates designed for different travel styles - adventure, cultural, nature, and urban exploration.',
+    color: 'green',
+    gradient: 'linear(135deg, green.400, teal.500)'
+  },
+  {
+    icon: FaPlay,
+    title: 'Real-time Preview',
+    description: 'Preview your video creation in real-time as you adjust settings, music, and transitions for the perfect result.',
+    color: 'orange',
+    gradient: 'linear(135deg, orange.400, red.500)'
+  },
+  {
+    icon: FaShare,
+    title: 'Social Media Ready',
+    description: 'Export your travel videos in formats optimized for Instagram, TikTok, YouTube, and other social platforms with perfect aspect ratios.',
+    color: 'yellow',
+    gradient: 'linear(135deg, yellow.400, orange.500)'
   }
 ];
 
@@ -128,26 +180,46 @@ export const testimonials = [
     text: "I love how I can explore cultural data alongside my travel photos. It's like having a comprehensive world encyclopedia!",
     rating: 5,
     avatar: '👩‍🎓'
+  },
+  {
+    name: 'Alex Thompson',
+    location: 'Travel Blogger, Sydney',
+    text: 'The video creation feature is absolutely amazing! I can turn my travel photos into professional videos in minutes. The music sync is perfect!',
+    rating: 5,
+    avatar: '📹'
+  },
+  {
+    name: 'Maria Santos',
+    location: 'Photographer, Rio de Janeiro',
+    text: 'Creating videos from my travel photos has never been easier. The smooth transitions and templates make my content look incredibly professional.',
+    rating: 5,
+    avatar: '📸'
   }
 ];
 
 export const learningSteps = [
   {
     step: '01',
-    title: 'Explore Countries',
-    description: 'Click on any country to access comprehensive educational data and statistics',
-    icon: FaGlobe
+    title: 'Upload & Organize',
+    description: 'Upload your travel photos and automatically organize them by country and date',
+    icon: FaCamera
   },
   {
     step: '02',
-    title: 'Analyze Data',
-    description: 'Study economic indicators, social metrics, and cultural information from trusted sources',
-    icon: FaChartLine
+    title: 'Learn About Destinations',
+    description: 'Explore comprehensive educational data and statistics for each country you visit',
+    icon: FaGlobe
   },
   {
     step: '03',
-    title: 'Document & Learn',
-    description: 'Upload photos and create a personal learning journey with visual context',
-    icon: FaCamera
+    title: 'Create Social Videos',
+    description: 'Transform your photos into videos optimized for social media platforms',
+    icon: FaVideo
+  },
+  {
+    step: '04',
+    title: 'Share Your Journey',
+    description: 'Export and share your travel stories across Instagram, TikTok, and YouTube',
+    icon: FaShare
   }
 ];

@@ -18,12 +18,9 @@ const CTASection = ({ onOpenRegister }) => {
 
   return (
     <Box
-      bgGradient={useColorModeValue(
-        'linear(135deg, blue.600 0%, purple.700 50%, indigo.800 100%)',
-        'linear(135deg, blue.700 0%, purple.800 50%, indigo.900 100%)'
-      )}
+      bgGradient="linear(135deg, #1e40af 0%, #7c3aed 50%, #4338ca 100%)"
       color="white"
-      py={32}
+      py={{ base: 16, md: 24, lg: 32 }}
       position="relative"
       overflow="hidden"
       _before={{
@@ -33,11 +30,8 @@ const CTASection = ({ onOpenRegister }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        bg: useColorModeValue(
-          'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.05\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.08\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-        ),
-        opacity: useColorModeValue(0.3, 0.4)
+        bg: 'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+        opacity: 0.5
       }}
     >
       {/* Decorative Elements */}
@@ -93,91 +87,91 @@ const CTASection = ({ onOpenRegister }) => {
             </Badge>
 
             <Heading
-              size="2xl"
-              lineHeight="1.1"
+              as="h2"
+              fontSize={{ base: '2xl', sm: '3xl', md: '4xl', lg: '5xl' }}
+              lineHeight={{ base: "1.2", md: "1.1" }}
               fontWeight="extrabold"
               letterSpacing="tight"
-              color={useColorModeValue('gray.900', 'white')}
-              filter={useColorModeValue('none', 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))')}
+              color="white"
+              textShadow="0 4px 20px rgba(0,0,0,0.2)"
             >
-              Ready to Start Your Global Learning Journey?
+              Ready to Create Amazing Videos & Learn Globally?
             </Heading>
 
             <Text
-              fontSize="2xl"
-              color={useColorModeValue('gray.800', 'white')}
-              lineHeight="1.5"
-              maxW="800px"
+              fontSize={{ base: 'md', sm: 'lg', md: 'xl', lg: '2xl' }}
+              color="whiteAlpha.900"
+              lineHeight={{ base: "1.6", md: "1.7" }}
+              maxW="850px"
               fontWeight="medium"
-              textShadow={useColorModeValue('none', '0 2px 4px rgba(0,0,0,0.3)')}
+              textShadow="0 2px 10px rgba(0,0,0,0.1)"
             >
-              Join thousands of learners, researchers, and travelers who have already
-              transformed their understanding of the world through data-driven exploration
+              Join thousands of creators, learners, and travelers who are already
+              transforming their travel memories into stunning videos and expanding their understanding of the world through data-driven exploration
             </Text>
           </VStack>
 
-          <VStack spacing={8}>
-            <HStack spacing={8} flexWrap="wrap" justify="center">
+          <VStack spacing={{ base: 6, md: 8 }}>
+            <HStack spacing={{ base: 3, md: 6 }} flexWrap="wrap" justify="center">
               <Button
-                size="xl"
-                bgGradient={useColorModeValue('linear(135deg, green.600, teal.600)', 'linear(135deg, green.500, teal.500)')}
+                size={{ base: "md", md: "lg" }}
+                bgGradient="linear(135deg, #10b981, #14b8a6)"
                 color="white"
                 variant="solid"
                 _hover={{
-                  bgGradient: useColorModeValue('linear(135deg, green.700, teal.700)', 'linear(135deg, green.600, teal.600)'),
-                  transform: 'translateY(-3px)',
-                  boxShadow: '2xl'
+                  bgGradient: "linear(135deg, #059669, #0d9488)",
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 20px 40px rgba(16, 185, 129, 0.4)'
                 }}
-                _active={{ transform: 'translateY(-1px)' }}
+                _active={{ 
+                  transform: 'translateY(0)',
+                  boxShadow: '0 10px 20px rgba(16, 185, 129, 0.3)'
+                }}
                 leftIcon={<FaRocket />}
                 onClick={onOpenRegister}
-                px={10}
-                py={8}
-                fontSize="xl"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 8 }}
+                fontSize={{ base: "md", md: "lg", lg: "xl" }}
                 fontWeight="bold"
-                transition="all 0.3s ease"
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 borderRadius="xl"
-                boxShadow="xl"
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: '-2px',
-                  left: '-2px',
-                  right: '-2px',
-                  bottom: '-2px',
-                  bg: useColorModeValue('rgba(0,0,0,0.2)', 'rgba(255,255,255,0.2)'),
-                  borderRadius: 'xl',
-                  zIndex: -1
-                }}
-                position="relative"
+                boxShadow="0 10px 30px rgba(16, 185, 129, 0.3)"
+                flex={{ base: "1 1 100%", sm: "0 0 auto" }}
+                minW={{ base: "full", sm: "200px" }}
               >
                 Create Free Account
               </Button>
 
               <Button
-                size="xl"
+                size={{ base: "md", md: "lg" }}
                 variant="outline"
-                borderColor={useColorModeValue('gray.600', 'whiteAlpha.400')}
-                borderWidth="3px"
-                color={useColorModeValue('gray.800', 'white')}
+                borderColor="white"
+                borderWidth="2px"
+                color="white"
+                bg="whiteAlpha.100"
+                backdropFilter="blur(10px)"
                 _hover={{
-                  bg: useColorModeValue('gray.100', 'whiteAlpha.200'),
-                  borderColor: useColorModeValue('gray.800', 'white'),
-                  transform: 'translateY(-3px)',
-                  boxShadow: '2xl'
+                  bg: 'whiteAlpha.200',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 10px 30px rgba(255, 255, 255, 0.2)',
+                  borderColor: 'whiteAlpha.900'
                 }}
-                _active={{ transform: 'translateY(-1px)' }}
+                _active={{ 
+                  transform: 'translateY(0)',
+                  bg: 'whiteAlpha.300'
+                }}
                 leftIcon={<FaBrain />}
                 onClick={() => navigate('/map')}
-                px={10}
-                py={8}
-                fontSize="xl"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 8 }}
+                fontSize={{ base: "md", md: "lg", lg: "xl" }}
                 fontWeight="bold"
-                transition="all 0.3s ease"
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 borderRadius="xl"
-                boxShadow="xl"
+                flex={{ base: "1 1 100%", sm: "0 0 auto" }}
+                minW={{ base: "full", sm: "200px" }}
               >
-                Start Learning
+                Explore Now
               </Button>
             </HStack>
 

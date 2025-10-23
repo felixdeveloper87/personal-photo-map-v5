@@ -33,18 +33,19 @@ export const ModernThemeToggleButton = ({
       onClick={toggleColorMode}
       bgGradient={bgGradient}
       color="white"
-      size="sm"
-      px={3}
-      py={4}
-      minW="70px"
-      borderRadius="2xl"
-      fontWeight="700"
-      letterSpacing="wider"
+      size="xs"
+      px={2}
+      py={2}
+      minW="40px"
+      h="32px"
+      borderRadius="lg"
+      fontWeight="600"
+      letterSpacing="normal"
       position="relative"
       overflow="hidden"
-      border="2px solid"
+      border="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      backdropFilter="blur(10px)"
       _before={{
         content: '""',
         position: "absolute",
@@ -84,7 +85,7 @@ export const ModernThemeToggleButton = ({
       {...props}
     >
       <Box position="relative" zIndex={2}>
-        {colorMode === "light" ? <FaMoon size="20px" /> : <FaSun size="20px" />}
+        {colorMode === "light" ? <FaMoon size="14px" /> : <FaSun size="14px" />}
       </Box>
     </MotionButton>
   );
@@ -721,22 +722,22 @@ export const ModernHeaderUserButton = ({
    ========================= */
 export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => {
   const bgGradient = useColorModeValue(
-    // Light Mode: Gradiente azul-esverdeado elegante
-    "linear-gradient(135deg, #06b6d4 0%, #0891b2 25%, #06b6d4 50%, #0891b2 75%, #06b6d4 100%)",
-    // Dark Mode: Gradiente azul-esverdeado mais vibrante
-    "linear-gradient(135deg, #22d3ee 0%, #06b6d4 25%, #22d3ee 50%, #06b6d4 75%, #22d3ee 100%)"
+    // Light Mode: Gradiente azul suave e elegante
+    "linear-gradient(135deg, #ffffff 0%, #f0f9ff 25%, #e0f2fe 50%, #bae6fd 75%, #7dd3fc 100%)",
+    // Dark Mode: Gradiente azul escuro elegante
+    "linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #3b82f6 50%, #60a5fa 75%, #93c5fd 100%)"
   );
 
   const hoverGradient = useColorModeValue(
-    // Light Mode: Versão mais escura e rica
-    "linear-gradient(135deg, #0891b2 0%, #0e7490 25%, #0891b2 50%, #0e7490 75%, #0891b2 100%)",
-    // Dark Mode: Versão mais intensa
-    "linear-gradient(135deg, #06b6d4 0%, #0891b2 25%, #06b6d4 50%, #0891b2 75%, #06b6d4 100%)"
+    // Light Mode: Versão mais escura
+    "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #bae6fd 50%, #7dd3fc 75%, #38bdf8 100%)",
+    // Dark Mode: Versão mais clara
+    "linear-gradient(135deg, #1e40af 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #bfdbfe 100%)"
   );
 
-  const shadowColor = useColorModeValue("rgba(6, 182, 212, 0.35)", "rgba(34, 211, 238, 0.4)");
-  const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
-  const textColor = useColorModeValue("white", "white");
+  const shadowColor = useColorModeValue("rgba(59, 130, 246, 0.15)", "rgba(147, 197, 253, 0.25)");
+  const borderColor = useColorModeValue("rgba(59, 130, 246, 0.2)", "rgba(147, 197, 253, 0.3)");
+  const textColor = useColorModeValue("blue.600", "blue.100");
 
   return (
     <MotionButton
@@ -744,9 +745,9 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
       bgGradient={bgGradient}
       color={textColor}
       size="md"
-      px={6}
-      py={6}
-      minW="100px"
+      px={4}
+      py={4}
+      minW="80px"
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -789,12 +790,9 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
       transition={{ duration: 0.4, ease: "easeOut" }}
       {...props}
     >
-      <HStack spacing={3} position="relative" zIndex={2}>
-        <FaSignInAlt size="18px" />
-        <Text fontSize="sm" fontWeight="600">
-          {children}
-        </Text>
-      </HStack>
+      <Text fontSize="sm" fontWeight="600" position="relative" zIndex={2}>
+        {children}
+      </Text>
     </MotionButton>
   );
 };
@@ -804,21 +802,21 @@ export const ModernLoginButton = ({ onClick, children = "Login", ...props }) => 
    ========================= */
 export const ModernRegisterButton = ({ onClick, children = "Register", ...props }) => {
   const bgGradient = useColorModeValue(
-    // Light Mode: Gradiente verde/teal elegante
-    "linear-gradient(135deg, #10b981 0%, #059669 25%, #10b981 50%, #059669 75%, #10b981 100%)",
-    // Dark Mode: Gradiente verde/teal mais vibrante
-    "linear-gradient(135deg, #34d399 0%, #10b981 25%, #34d399 50%, #10b981 75%, #34d399 100%)"
+    // Light Mode: Gradiente azul mais intenso para destaque
+    "linear-gradient(135deg, #3b82f6 0%, #2563eb 25%, #1d4ed8 50%, #1e40af 75%, #1e3a8a 100%)",
+    // Dark Mode: Gradiente azul vibrante
+    "linear-gradient(135deg, #60a5fa 0%, #3b82f6 25%, #2563eb 50%, #1d4ed8 75%, #1e40af 100%)"
   );
 
   const hoverGradient = useColorModeValue(
-    // Light Mode: Versão mais escura e rica
-    "linear-gradient(135deg, #059669 0%, #047857 25%, #059669 50%, #047857 75%, #059669 100%)",
-    // Dark Mode: Versão mais intensa
-    "linear-gradient(135deg, #10b981 0%, #059669 25%, #10b981 50%, #059669 75%, #10b981 100%)"
+    // Light Mode: Versão mais escura
+    "linear-gradient(135deg, #2563eb 0%, #1d4ed8 25%, #1e40af 50%, #1e3a8a 75%, #1e3a8a 100%)",
+    // Dark Mode: Versão mais clara
+    "linear-gradient(135deg, #93c5fd 0%, #60a5fa 25%, #3b82f6 50%, #2563eb 75%, #1d4ed8 100%)"
   );
 
-  const shadowColor = useColorModeValue("rgba(16, 185, 129, 0.35)", "rgba(52, 211, 153, 0.4)");
-  const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
+  const shadowColor = useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(96, 165, 250, 0.4)");
+  const borderColor = useColorModeValue("rgba(59, 130, 246, 0.4)", "rgba(96, 165, 250, 0.5)");
   const textColor = useColorModeValue("white", "white");
 
   return (
@@ -827,9 +825,9 @@ export const ModernRegisterButton = ({ onClick, children = "Register", ...props 
       bgGradient={bgGradient}
       color={textColor}
       size="md"
-      px={6}
-      py={6}
-      minW="100px"
+      px={4}
+      py={4}
+      minW="80px"
       borderRadius="2xl"
       fontWeight="700"
       letterSpacing="wider"
@@ -872,12 +870,9 @@ export const ModernRegisterButton = ({ onClick, children = "Register", ...props 
       transition={{ duration: 0.4, ease: "easeOut" }}
       {...props}
     >
-      <HStack spacing={3} position="relative" zIndex={2}>
-        <FaUserPlus size="18px" />
-        <Text fontSize="sm" fontWeight="600">
-          {children}
-        </Text>
-      </HStack>
+      <Text fontSize="sm" fontWeight="600" position="relative" zIndex={2}>
+        {children}
+      </Text>
     </MotionButton>
   );
 };

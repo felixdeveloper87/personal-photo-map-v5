@@ -97,19 +97,25 @@ const TestimonialsSection = () => {
               >
                 <Box
                   bg={cardBg}
-                  p={8}
-                  borderRadius="3xl"
-                  boxShadow={useColorModeValue('xl', '2xl')}
+                  p={{ base: 6, md: 8 }}
+                  borderRadius="2xl"
+                  boxShadow={useColorModeValue(
+                    '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                  )}
                   border="1px solid"
                   borderColor={borderColor}
                   h="full"
                   _hover={{
-                    transform: 'translateY(-6px)',
-                    boxShadow: useColorModeValue('2xl', '3xl'),
+                    transform: { base: 'translateY(-4px)', md: 'translateY(-6px)' },
+                    boxShadow: useColorModeValue(
+                      '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                      '0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
+                    ),
                     borderColor: 'pink.400',
                     _before: { opacity: 1 }
                   }}
-                  transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                   position="relative"
                   overflow="hidden"
                   _before={{
@@ -118,10 +124,10 @@ const TestimonialsSection = () => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    h: '4px',
+                    h: '3px',
                     bgGradient: 'linear(135deg, pink.400, purple.500)',
                     opacity: 0,
-                    transition: 'opacity 0.4s ease'
+                    transition: 'opacity 0.3s ease'
                   }}
                 >
                   <VStack spacing={6} align="start" h="full">
