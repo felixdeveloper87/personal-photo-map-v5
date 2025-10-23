@@ -193,26 +193,69 @@ const Header = () => {
 
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
-      <Container maxW="container.xl" {...headerContainerStyles(styles)}>
-        <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 2, sm: 4, md: 6 }}>
+      <Container maxW="container.xl" px={{ base: 2, sm: 4, md: 6 }} {...headerContainerStyles(styles)}>
+        <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 1, sm: 2, md: 4 }}>
           {/* ESQUERDA: Logo (canto esquerdo) */}
-          <HStack spacing={{ base: 2, sm: 3, md: 4 }} align="center" flex="0 0 auto">
+          <HStack spacing={{ base: 0.5, sm: 2, md: 3 }} align="center" flex="0 0 auto">
+            {/* Botão Hamburguer (mobile) - só aparece se usuário está logado */}
+            {isLoggedIn && (
+              <IconButton
+                aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
+                icon={mobileMenu.isOpen ? <CloseIcon /> : <HamburgerIcon />}
+                onClick={() => {
+                  console.log('Hamburger menu clicked');
+                  if (mobileMenu.isOpen) {
+                    mobileMenu.onClose();
+                  } else {
+                    mobileMenu.onOpen();
+                  }
+                }}
+                display={isCompact ? "inline-flex" : "none"}
+                variant="ghost"
+                color={styles.textColor}
+                fontSize="1.5rem"
+                p={1}
+                size="sm"
+                minW="28px"
+                h="28px"
+              />
+            )}
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
-            {/* Map button next to logo for compact layouts */}
-            <ModernMapButton
-              isLoggedIn={isLoggedIn}
-              onClick={() =>
-                isLoggedIn ? navigate("/map/private") : navigate("/map")
-              }
-              size={isCompact ? "xs" : buttonSize}
-              aria-label="Go to Map"
-              display={isCompact ? "inline-flex" : "none"}
-            />
           </HStack>
+
+          {/* CENTRO: 3 botões (Map, Theme, Logout) para mobile quando logado */}
+          {isLoggedIn && isCompact && (
+            <HStack spacing={1} align="center" flex="0 0 auto">
+              <ModernMapButton
+                isLoggedIn={isLoggedIn}
+                onClick={() => navigate("/map/private")}
+                size="xs"
+                aria-label="Go to Map"
+              />
+              <ModernThemeToggleButton
+                colorMode={colorMode}
+                toggleColorMode={toggleColorMode}
+                styles={styles}
+                size="xs"
+              />
+              <ModernLogoutButton
+                onClick={() => {
+                  logout();
+                  navigate("/");
+                  toast({
+                    title: "Logged out",
+                    status: "info",
+                    duration: 3000,
+                  });
+                }}
+                size="xs"
+              />
+            </HStack>
+          )}
 
           {/* CENTRO: Navegação e ações principais (desktop) */}
           <HStack
-            spacing={stackSpacing}
+            spacing={2}
             align="center"
             flex="1"
             justify="center"
@@ -260,9 +303,10 @@ const Header = () => {
 
           {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
-            spacing={isCompact ? 0.5 : stackSpacing}
+            spacing={isCompact ? 0.25 : 2}
             align="center"
             flex="0 0 auto"
+            display={isLoggedIn && isCompact ? "none" : "flex"}
           >
             {/* Theme toggle - sempre visível */}
             <ModernThemeToggleButton

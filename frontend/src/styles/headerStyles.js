@@ -120,7 +120,7 @@ export const headerContainerStyles = (backgroundPattern) => ({
   backdropFilter: "blur(24px)",
   borderBottom: "1px solid",
   borderColor: "rgba(226, 232, 240, 0.2)",
-  py: 2, // Reduced from default padding
+  py: { base: 1, sm: 1.5, md: 2 }, // Responsive padding
   _before: {
     content: '""',
     position: 'absolute',
@@ -203,7 +203,7 @@ export const logoStyles = (themeStyles = {}) => ({
   },
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   flexShrink: 0,
-  minW: "220px"
+  minW: { base: "auto", sm: "220px" }
 });
 
 export const themeToggleStyles = (themeStyles = {}) => ({
