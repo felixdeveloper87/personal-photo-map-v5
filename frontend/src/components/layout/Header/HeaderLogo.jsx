@@ -27,9 +27,9 @@ const HeaderLogo = ({ styles }) => {
       <Image
         src={logo}
         alt="Photomap Logo"
-        h={{ base: "32px", sm: "40px", md: "48px" }}
-        w={{ base: "32px", sm: "40px", md: "48px" }}
-        mr={{ base: 1, sm: 2.5, md: 3 }}
+        h={{ base: "40px", sm: "44px", md: "48px" }}
+        w={{ base: "40px", sm: "44px", md: "48px" }}
+        mr={{ base: 2, sm: 2.5, md: 3 }}
         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
         transition="all 0.3s ease"
         _hover={{
@@ -40,7 +40,7 @@ const HeaderLogo = ({ styles }) => {
       <Box>
         <Heading
           as="h1"
-          size={{ base: "md", sm: "lg", md: "lg" }}
+          size={{ base: "lg", sm: "lg", md: "lg" }}
           color={styles.logoTextColor}
           fontWeight="800"
           letterSpacing="tight"
@@ -56,7 +56,7 @@ const HeaderLogo = ({ styles }) => {
         </Heading>
         <Text
           color={styles.logoSubtextColor}
-          fontSize={{ base: "2xs", sm: "xs", md: "xs" }}
+          fontSize={{ base: "xs", sm: "xs", md: "xs" }}
           fontWeight="500"
           letterSpacing="wide"
           lineHeight="1.1"

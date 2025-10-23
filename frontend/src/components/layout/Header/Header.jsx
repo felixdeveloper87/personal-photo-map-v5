@@ -9,8 +9,10 @@ import {
   useMediaQuery,
   useColorMode,
   useBreakpointValue,
+  useColorModeValue,
   Container,
   HStack,
+  VStack,
   Text,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
@@ -35,6 +37,11 @@ import {
   ModernThemeToggleButton,
   ModernLogoutButton,
   ModernMapButton,
+  ModernPhotoStorageButton,
+  ModernUserProfileButton,
+  ModernSearchButton,
+  ModernTimelineButton,
+  ModernUpgradeToPremiumButton,
 } from "../../ui/buttons/HeaderButtons";
 
 // Modais
@@ -194,49 +201,33 @@ const Header = () => {
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
       <Container maxW="container.xl" px={{ base: 2, sm: 4, md: 6 }} {...headerContainerStyles(styles)}>
+        {/* Primeira linha do header */}
         <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 1, sm: 2, md: 4 }}>
           {/* ESQUERDA: Logo (canto esquerdo) */}
           <HStack spacing={{ base: 0.5, sm: 2, md: 3 }} align="center" flex="0 0 auto">
-            {/* Botão Hamburguer (mobile) - só aparece se usuário está logado */}
-            {isLoggedIn && (
-              <IconButton
-                aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
-                icon={mobileMenu.isOpen ? <CloseIcon /> : <HamburgerIcon />}
-                onClick={() => {
-                  console.log('Hamburger menu clicked');
-                  if (mobileMenu.isOpen) {
-                    mobileMenu.onClose();
-                  } else {
-                    mobileMenu.onOpen();
-                  }
-                }}
-                display={isCompact ? "inline-flex" : "none"}
-                variant="ghost"
-                color={styles.textColor}
-                fontSize={{ base: "1rem", sm: "1.2rem", md: "1.5rem" }}
-                p={{ base: 0.5, sm: 0.75, md: 1 }}
-                size={{ base: "xs", sm: "sm", md: "sm" }}
-                minW={{ base: "24px", sm: "26px", md: "28px" }}
-                h={{ base: "24px", sm: "26px", md: "28px" }}
-              />
-            )}
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
           </HStack>
 
           {/* CENTRO: 3 botões (Map, Theme, Logout) para mobile quando logado */}
           {isLoggedIn && isCompact && (
-            <HStack spacing={1} align="center" flex="0 0 auto">
+            <HStack spacing={1.5} align="center" flex="0 0 auto">
               <ModernMapButton
                 isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
-                size="xs"
+                size="sm"
+                minW="42px"
+                h="30px"
+                borderRadius="lg"
                 aria-label="Go to Map"
               />
               <ModernThemeToggleButton
                 colorMode={colorMode}
                 toggleColorMode={toggleColorMode}
                 styles={styles}
-                size="xs"
+                size="sm"
+                minW="42px"
+                h="30px"
+                borderRadius="lg"
               />
               <ModernLogoutButton
                 onClick={() => {
@@ -248,7 +239,10 @@ const Header = () => {
                     duration: 3000,
                   });
                 }}
-                size="xs"
+                size="sm"
+                minW="42px"
+                h="30px"
+                borderRadius="lg"
               />
             </HStack>
           )}
@@ -341,6 +335,82 @@ const Header = () => {
             )}
           </HStack>
         </Flex>
+
+        {/* Segunda linha do header - Botões de ação para mobile quando logado */}
+        {isLoggedIn && isCompact && (
+          <Box
+            w="100%"
+            pt={2}
+            pb={2}
+            borderTop="1px solid"
+            borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
+          >
+            <VStack spacing={1} w="100%">
+              {/* Grid de 4 botões principais */}
+              <Box
+                display="grid"
+                gridTemplateColumns="repeat(4, 1fr)"
+                gap={1}
+                w="100%"
+              >
+                <ModernPhotoStorageButton
+                  onClick={photoStorageModal.onOpen}
+                  size="xs"
+                  h="32px"
+                  display="flex"
+                  flexDirection="column"
+                  fontSize="2xs"
+                  px={1}
+                />
+                
+                <ModernUserProfileButton
+                  onClick={profileModal.onOpen}
+                  size="xs"
+                  h="32px"
+                  display="flex"
+                  flexDirection="column"
+                  fontSize="2xs"
+                  px={1}
+                />
+                
+                <ModernSearchButton
+                  onClick={() => {
+                    // Trigger search form
+                    const searchInput = document.querySelector('[data-search-trigger]');
+                    if (searchInput) searchInput.click();
+                  }}
+                  size="xs"
+                  h="32px"
+                  display="flex"
+                  flexDirection="column"
+                  fontSize="2xs"
+                  px={1}
+                />
+                
+                <ModernTimelineButton
+                  onClick={() => navigate("/timeline")}
+                  size="xs"
+                  h="32px"
+                  display="flex"
+                  flexDirection="column"
+                  fontSize="2xs"
+                  px={1}
+                />
+              </Box>
+
+              {/* Botão Premium (se não for premium) */}
+              {!isPremium && (
+                <ModernUpgradeToPremiumButton
+                  onClick={premiumModal.onOpen}
+                  w="100%"
+                  size="sm"
+                  h="34px"
+                  fontSize="2xs"
+                />
+              )}
+            </VStack>
+          </Box>
+        )}
       </Container>
 
       {/* MENU MOBILE (aparece somente no base…lg) */}

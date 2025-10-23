@@ -1,6 +1,6 @@
 import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
 import { MapContainer, GeoJSON, Rectangle } from 'react-leaflet';
-import { Box, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { Box, useColorMode, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
@@ -54,7 +54,7 @@ const MapContainerComponent = React.memo(({
     maxBoundsViscosity={maxBoundsViscosity}
     worldCopyJump={worldCopyJump}
     style={{
-      height: '1000px',
+      height: '100%',
       width: '100%',
       overflow: 'hidden'
     }}
@@ -68,6 +68,10 @@ const Map = () => {
   const { countriesWithPhotos } = useContext(CountriesContext);
   const [geoJsonKey, setGeoJsonKey] = useState(0);
   const { colorMode } = useColorMode();
+
+  // Zoom responsivo usando Chakra UI
+  const initialZoom = useBreakpointValue({ base: 2.0, md: 2.6 });
+  const initialMinZoom = useBreakpointValue({ base: 1.8, md: 2.3 });
 
   const colors = useMemo(() => ({ primary: '#3B82F6', secondary: '#10B981' }), []);
 
@@ -115,17 +119,17 @@ const Map = () => {
     setGeoJsonKey(prevKey => prevKey + 1);
   }, [countriesWithPhotos, highlightedCountries]);
 
-  // Configurações do mapa memoizadas
+  // Configurações do mapa memoizadas (responsivas)
   const mapConfig = useMemo(() => ({
     bounds: [[-85, -180], [85, 180]],
     oceanBounds: [[-90, -180], [90, 180]],
     center: [20, 0],
-    zoom: 2.6,
-    minZoom: 2.3,
+    zoom: initialZoom || 2.6,
+    minZoom: initialMinZoom || 2.3,
     maxZoom: 7.5,
     maxBoundsViscosity: 1.0,
     worldCopyJump: false
-  }), []);
+  }), [initialZoom, initialMinZoom]);
 
   // Estilos do oceano centralizados
   const oceanStyles = useMemo(() => getOceanStyles(colorMode), [colorMode]);
@@ -135,6 +139,7 @@ const Map = () => {
       <Box
         position="relative"
         data-theme={colorMode}
+        h={{ base: "500px", sm: "600px", md: "700px", lg: "900px", xl: "1000px" }}
       >
         <MapContainerComponent {...mapConfig}>
           <OceanRectangle 
