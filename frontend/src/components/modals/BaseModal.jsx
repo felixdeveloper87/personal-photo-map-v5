@@ -130,7 +130,7 @@ const BaseModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={size}
+      size={{ base: "full", sm: size }}
       isCentered={isCentered}
       motionPreset={motionPreset}
       closeOnOverlayClick={closeOnOverlayClick}
@@ -151,14 +151,16 @@ const BaseModal = ({
         backdropFilter="blur(24px)"
         border="1px solid"
         borderColor={borderColor}
-        borderRadius={variant === 'minimal' ? "xl" : "2xl"}
+        borderRadius={{ base: "none", sm: variant === 'minimal' ? "xl" : "2xl" }}
         shadow={shadowConfig.xl}
-        maxHeight={maxHeight}
+        maxHeight={{ base: "calc(100vh - 2rem)", sm: maxHeight }}
         overflow="hidden"
-        mx={4}
+        mx={{ base: 0, sm: 4 }}
+        my={{ base: 4, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
+        h={{ base: "calc(100vh - 2rem)", sm: "auto" }}
         _before={showShimmer ? {
           content: '""',
           position: "absolute",
@@ -185,16 +187,19 @@ const BaseModal = ({
         <ModalHeader
           display="flex"
           alignItems="center"
-          gap={4}
-          fontSize={variant === 'minimal' ? "xl" : "2xl"}
+          gap={{ base: 3, sm: 4 }}
+          fontSize={{ base: "lg", sm: variant === 'minimal' ? "xl" : "2xl" }}
           fontWeight={variant === 'minimal' ? "semibold" : "bold"}
           color={useColorModeValue("gray.900", "gray.50")}
-          borderBottom={variant === 'minimal' ? "none" : "1px solid"}
+          borderBottom="1px solid"
           borderColor={borderColor}
-          pb={variant === 'minimal' ? 2 : 4}
-          pt={variant === 'minimal' ? 4 : 6}
-          px={6}
+          pb={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
+          pt={{ base: 6, sm: variant === 'minimal' ? 4 : 6 }}
+          px={{ base: 4, sm: 6 }}
           position="relative"
+          bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(30, 41, 59, 0.8)")}
+          backdropFilter="blur(10px)"
+          boxShadow={useColorModeValue("0 2px 8px rgba(0, 0, 0, 0.1)", "0 2px 8px rgba(0, 0, 0, 0.3)")}
           _after={variant === 'minimal' ? {} : {
             content: '""',
             position: "absolute",
@@ -209,7 +214,7 @@ const BaseModal = ({
         >
           {icon && (
             <Box
-              p={variant === 'minimal' ? 1.5 : 2}
+              p={{ base: 1.5, sm: variant === 'minimal' ? 1.5 : 2 }}
               borderRadius={variant === 'minimal' ? "md" : "lg"}
               bg={useColorModeValue(
                 variant === 'premium' ? "blue.50" : "gray.50", 
@@ -228,7 +233,7 @@ const BaseModal = ({
                 )
               }}
             >
-              <Icon as={icon} boxSize={variant === 'minimal' ? 5 : 6} />
+              <Icon as={icon} boxSize={{ base: 4, sm: variant === 'minimal' ? 5 : 6 }} />
             </Box>
           )}
           <Text
@@ -244,7 +249,7 @@ const BaseModal = ({
         {/* Modern Close Button */}
         {showCloseButton && (
           <ModalCloseButton
-            size="lg"
+            size={{ base: "md", sm: "lg" }}
             borderRadius="full"
             bg={useColorModeValue("white", "gray.800")}
             color={useColorModeValue("gray.500", "gray.400")}
@@ -261,18 +266,21 @@ const BaseModal = ({
               transform: "scale(0.95)"
             }}
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-            top={4}
-            right={4}
+            top={{ base: 3, sm: 4 }}
+            right={{ base: 3, sm: 4 }}
             zIndex={2}
           />
         )}
 
         {/* Modern Body */}
         <ModalBody
-          px={6}
-          py={variant === 'minimal' ? 4 : 6}
+          px={{ base: 4, sm: 6 }}
+          py={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
           overflowY="auto"
           position="relative"
+          flex="1"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(26, 32, 44, 0.5)")}
+          backdropFilter="blur(5px)"
           css={{
             '&::-webkit-scrollbar': {
               width: '8px',
@@ -313,10 +321,10 @@ const BaseModal = ({
           <ModalFooter
             borderTop={variant === 'minimal' ? "none" : "1px solid"}
             borderColor={borderColor}
-            pt={variant === 'minimal' ? 2 : 4}
-            px={6}
-            pb={variant === 'minimal' ? 4 : 6}
-            bg={useColorModeValue("rgba(248, 250, 252, 0.5)", "rgba(30, 41, 59, 0.3)")}
+            pt={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
+            px={{ base: 4, sm: 6 }}
+            pb={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
+            bg={useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(30, 41, 59, 0.6)")}
             backdropFilter="blur(8px)"
             position="relative"
             _before={variant === 'minimal' ? {} : {

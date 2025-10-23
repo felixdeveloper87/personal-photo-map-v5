@@ -131,22 +131,33 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const handleCloseResetModal = () => setShowResetModal(false);
 
   const footer = (
-    <VStack spacing={3} w="full">
+    <VStack spacing={{ base: 2, sm: 3 }} w="full">
       <ModalButton
         variant="primary"
         onClick={handleSubmit}
         isLoading={isLoading}
         leftIcon={<FaSignInAlt />}
         w="full"
+        size={{ base: "md", sm: "lg" }}
       >
         Sign In
       </ModalButton>
       
-      <HStack spacing={3} w="full">
-        <ModalButton variant="outline" onClick={handleForgotPassword} w="full">
+      <HStack spacing={{ base: 2, sm: 3 }} w="full">
+        <ModalButton 
+          variant="outline" 
+          onClick={handleForgotPassword} 
+          w="full"
+          size={{ base: "sm", sm: "md" }}
+        >
           Forgot Password?
         </ModalButton>
-        <ModalButton variant="secondary" onClick={onSwitchToRegister} w="full">
+        <ModalButton 
+          variant="secondary" 
+          onClick={onSwitchToRegister} 
+          w="full"
+          size={{ base: "sm", sm: "md" }}
+        >
           Create Account
         </ModalButton>
       </HStack>
@@ -162,12 +173,13 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         icon={FaUser}
         footer={footer}
         size="md"
+        variant="premium"
         closeOnOverlayClick={false}
       >
-        <VStack spacing={6} align="stretch">
+        <VStack spacing={{ base: 4, sm: 6 }} align="stretch">
           <Box
             textAlign="center"
-            p={4}
+            p={{ base: 3, sm: 4 }}
             borderRadius="lg"
             bg={useColorModeValue("blue.50", "blue.900")}
             border="1px solid"
@@ -178,11 +190,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             </Text>
           </Box>
 
-          <VStack spacing={3} align="stretch">
+          <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
             <Text fontSize="sm" fontWeight="semibold" color={textColor} textAlign="center">
               Or continue with
             </Text>
-            <HStack spacing={3}>
+            <HStack spacing={{ base: 2, sm: 3 }}>
               <ModalButton
                 variant="outline"
                 onClick={() => handleSocialLogin("Google")}
@@ -207,7 +219,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           <Divider />
 
           <form onSubmit={handleSubmit}>
-            <VStack spacing={4} align="stretch">
+            <VStack spacing={{ base: 3, sm: 4 }} align="stretch">
               <FormControl isInvalid={!!formErrors.email}>
                 <FormLabel color={textColor} fontWeight="semibold">
                   Email Address
@@ -269,7 +281,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           </form>
 
           <Box
-            p={3}
+            p={{ base: 2, sm: 3 }}
             borderRadius="lg"
             bg={bgColor}
             border="1px solid"
