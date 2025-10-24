@@ -161,7 +161,14 @@ const CountryDetails = () => {
 
   return (
     <Box bg={bgColor} minH="100vh" className="country-details-page">
-      <Box px={6} pb={6} position="relative" maxW="1500px" mx="auto">
+      <Box 
+        px={{ base: 4, md: 6, lg: 8 }} 
+        pt={{ base: 4, md: 6, lg: 8 }} 
+        pb={{ base: 6, md: 8 }} 
+        position="relative" 
+        maxW={{ base: '100%', lg: '1600px', xl: '1800px', '2xl': '1920px' }} 
+        mx="auto"
+      >
         {/* Hero Header */}
         <HeroHeader 
           countryId={countryId} 

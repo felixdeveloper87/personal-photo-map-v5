@@ -118,8 +118,8 @@ export const headerContainerStyles = (backgroundPattern) => ({
   top: 0,
   zIndex: 1000,
   backdropFilter: "blur(24px)",
-  borderBottom: "1px solid",
-  borderColor: "rgba(226, 232, 240, 0.2)",
+  borderBottom: "2px solid",
+  borderColor: "rgba(39, 143, 195, 0.2)",
   py: { base: 1, sm: 1.5, md: 2 }, // Responsive padding
   _before: {
     content: '""',

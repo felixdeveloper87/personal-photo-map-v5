@@ -80,7 +80,7 @@ const Map = () => {
   const navigate = useNavigate();
 
   // ✅ Zoom responsivo com fallback seguro
-  const initialZoom = useBreakpointValue({ base: 2, md: 2.0, lg: 2, xl: 3 }) ?? 2.6;
+  const initialZoom = useBreakpointValue({ base: 2, md: 2.0, lg: 2.5, xl: 3 }) ?? 2.6;
   const initialMinZoom = useBreakpointValue({ base: 1.8, md: 3.0 }) ?? 2.3;
 
   const colors = useMemo(() => ({ primary: '#3B82F6', secondary: '#10B981' }), []);

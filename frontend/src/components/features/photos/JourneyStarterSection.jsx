@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useId, useCallback, useState, useEffect } from 'react';
+import React, { memo, useId, useCallback, useState, useEffect } from 'react';
 import {
   Box,
   Text,
@@ -12,8 +12,6 @@ import {
   Alert,
   AlertIcon,
   VStack,
-  HStack,
-  Badge,
   Divider,
 } from '@chakra-ui/react';
 import { FaRocket, FaWikipediaW } from 'react-icons/fa';
@@ -22,7 +20,6 @@ import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal'
 import { fetchWikipediaData } from '../CountryDetails/services';
 import { getName } from 'i18n-iso-countries';
 
-const MotionBox = motion(Box);
 const MotionButton = motion(Button);
 
 const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
@@ -69,60 +66,72 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   // Respects users who prefer reduced motion
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  // Theme-aware tokens (computed once per render)
+  // Theme-aware tokens (computed once per render) - Professional palette
   const bgGradient = useColorModeValue(
-    'linear(to-br, blue.100, teal.100, yellow.300)',
-    'linear(to-br, blue.700, teal.800, gray.900)'
+    'linear(135deg, #f8fafc 0%, #e2e8f0 100%)',
+    'linear(135deg, #0f172a 0%, #1e293b 100%)'
   );
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.700', 'gray.300');
-  const accentColor = useColorModeValue('teal.600', 'teal.300');
+  const accentColor = useColorModeValue('blue.600', 'blue.400');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const titleGradient = useColorModeValue(
-    'linear(to-r, blue.600, purple.600, pink.600, orange.500)',
-    'linear(to-r, blue.300, purple.300, pink.300, orange.300)'
+  const titleColor = useColorModeValue('gray.900', 'white');
+  const subtitleColor = useColorModeValue('gray.700', 'gray.300');
+
+  const buttonGradient = useColorModeValue(
+    'linear(135deg, #3B82F6 0%, #2563EB 100%)',
+    'linear(135deg, #60A5FA 0%, #3B82F6 100%)'
   );
 
-  const subtitleGradient = useColorModeValue(
-    'linear(to-r, purple.600, pink.600, orange.500)',
-    'linear(to-r, purple.300, pink.300, orange.300)'
-  );
-
-  const buttonBorderGradient = useColorModeValue(
-    'linear(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B, #3B82F6)',
-    'linear(135deg, #60A5FA, #A78BFA, #F472B6, #FBBF24, #60A5FA)'
-  );
-
-  // Responsivo
-  const containerPy = useBreakpointValue({ base: 10, md: 16 });
-  const containerPx = useBreakpointValue({ base: 6, md: 10 });
-  const titleSize = useBreakpointValue({ base: '4xl', md: '5xl', lg: '6xl' });
-  const subtitleSize = useBreakpointValue({ base: 'xl', md: '2xl', lg: '3xl' });
-  const ctaSize = useBreakpointValue({ base: 'md', md: 'lg' });
-
-  // Variants centralizados
-  const floatVariant = useMemo(
-    () => ({
-      animate: prefersReducedMotion
-        ? {}
-        : {
-          y: [0, -10, 0],
-          transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-        },
-    }),
-    [prefersReducedMotion]
-  );
-
-  const shimmerHover = useMemo(
-    () =>
-      prefersReducedMotion
-        ? {}
-        : {
-          '&:hover::after': { left: '100%' },
-        },
-    [prefersReducedMotion]
-  );
+  // Responsivo - Totalmente adaptável para todas as telas
+  const containerPy = useBreakpointValue({ 
+    base: 6, 
+    sm: 8, 
+    md: 10, 
+    lg: 12, 
+    xl: 14, 
+    '2xl': 16 
+  });
+  const containerPx = useBreakpointValue({ 
+    base: 4, 
+    sm: 5, 
+    md: 6, 
+    lg: 8, 
+    xl: 10, 
+    '2xl': 12 
+  });
+  const titleSize = useBreakpointValue({ 
+    base: '2xl', 
+    sm: '3xl', 
+    md: '4xl', 
+    lg: '4xl',
+    xl: '5xl',
+    '2xl': '5xl'
+  });
+  const subtitleSize = useBreakpointValue({ 
+    base: 'md', 
+    sm: 'lg', 
+    md: 'xl', 
+    lg: 'xl',
+    xl: '2xl',
+    '2xl': '2xl'
+  });
+  const ctaSize = useBreakpointValue({ 
+    base: 'sm', 
+    sm: 'md', 
+    md: 'md',
+    lg: 'lg',
+    xl: 'lg'
+  });
+  const maxWidth = useBreakpointValue({
+    base: '100%',
+    sm: '95%',
+    md: '90%',
+    lg: '900px',
+    xl: '1000px',
+    '2xl': '1100px'
+  });
 
   // A11y: abrir via teclado também
   const handleKeyOpen = useCallback(
@@ -145,118 +154,86 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         py={containerPy}
         px={containerPx}
         bgGradient={bgGradient}
-        borderRadius="3xl"
+        borderRadius="2xl"
         position="relative"
         overflow="hidden"
         mb={8}
         boxShadow={useColorModeValue(
-          '0 25px 50px rgba(59,130,246,0.15), 0 12px 24px rgba(147,51,234,0.10)',
-          '0 25px 50px rgba(59,130,246,0.30), 0 12px 24px rgba(147,51,234,0.20)'
+          '0 10px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04)',
+          '0 10px 40px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3)'
         )}
-        _before={{
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          background: useColorModeValue(
-            'linear-gradient(45deg, rgba(59,130,246,.08), rgba(147,51,234,.08), rgba(236,72,153,.08))',
-            'linear-gradient(45deg, rgba(59,130,246,.18), rgba(147,51,234,.18), rgba(236,72,153,.18))'
-          ),
-          borderRadius: 'inherit',
-          zIndex: 0,
-        }}
+        border="1px solid"
+        borderColor={useColorModeValue('gray.200', 'gray.700')}
       >
-        {/* Subtle floating accents (decorative) */}
-        {!prefersReducedMotion && (
-          <>
-            <MotionBox
-              aria-hidden="true"
-              position="absolute"
-              top={{ base: '6%', md: '8%' }}
-              right={{ base: '8%', md: '12%' }}
-              fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
-              opacity={useColorModeValue(0.25, 0.45)}
-              zIndex={1}
-              animate={floatVariant.animate}
-            >
-              🚀
-            </MotionBox>
-            <MotionBox
-              aria-hidden="true"
-              position="absolute"
-              bottom={{ base: '8%', md: '12%' }}
-              left={{ base: '6%', md: '10%' }}
-              fontSize={{ base: 'xl', md: '3xl', lg: '4xl' }}
-              opacity={useColorModeValue(0.3, 0.5)}
-              zIndex={1}
-              animate={floatVariant.animate}
-              transition={{ delay: 0.6 }}
-            >
-              ⭐
-            </MotionBox>
-          </>
-        )}
 
         {/* Main Content */}
-        <Box position="relative" zIndex={2} maxW="900px" mx="auto">
+        <Box position="relative" zIndex={2} maxW={maxWidth} mx="auto">
           {/* Title */}
-          <Box mb={6}>
+          <Box mb={{ base: 6, sm: 7, md: 8, lg: 8 }}>
             <Text
               id={titleId}
               as="h2"
               fontSize={titleSize}
-              fontWeight="black"
-              bgGradient={titleGradient}
-              bgClip="text"
-              lineHeight="0.95"
+              fontWeight="bold"
+              color={titleColor}
+              lineHeight="1.1"
               letterSpacing="tight"
-              textShadow={useColorModeValue(
-                '0 4px 8px rgba(0,0,0,0.08)',
-                '0 4px 8px rgba(0,0,0,0.30)'
-              )}
+              mb={{ base: 2, sm: 2.5, md: 3 }}
+              px={{ base: 2, sm: 0 }}
             >
-              🌍 Your Global Adventure
+              Start Your Journey in {countryName}
             </Text>
             <Text
               fontSize={subtitleSize}
-              fontWeight="extrabold"
-              bgGradient={subtitleGradient}
-              bgClip="text"
-              mt={1}
-              textShadow={useColorModeValue(
-                '0 2px 4px rgba(0,0,0,0.06)',
-                '0 2px 4px rgba(0,0,0,0.24)'
-              )}
+              fontWeight="medium"
+              color={subtitleColor}
+              lineHeight="1.4"
+              px={{ base: 2, sm: 0 }}
             >
-              Begins Right Here!
+              Capture and share your travel memories
             </Text>
           </Box>
 
           {/* Wikipedia Info Section */}
           {isLoadingWikipedia ? (
-            <Box textAlign="center" py={6} mb={8}>
-              <VStack spacing={4}>
-                <Spinner size="lg" color={accentColor} thickness="4px" />
-                <Text fontSize="sm" color={textColor} fontWeight="medium">
-                  🌍 Loading information about this country...
+            <Box textAlign="center" py={{ base: 4, sm: 5, md: 6 }} mb={{ base: 6, md: 8 }}>
+              <VStack spacing={{ base: 3, md: 4 }}>
+                <Spinner 
+                  size={{ base: 'md', sm: 'lg' }} 
+                  color={accentColor} 
+                  thickness="4px" 
+                />
+                <Text 
+                  fontSize={{ base: 'xs', sm: 'sm' }} 
+                  color={textColor} 
+                  fontWeight="medium"
+                  px={{ base: 4, sm: 0 }}
+                >
+                  Loading country information...
                 </Text>
               </VStack>
             </Box>
           ) : wikipediaError ? (
-            <Box mb={8} maxW="720px" mx="auto">
-              <Alert status="info" borderRadius="xl" variant="subtle">
+            <Box mb={{ base: 6, md: 8 }} maxW={{ base: '100%', sm: '95%', md: '720px' }} mx="auto" px={{ base: 2, sm: 0 }}>
+              <Alert status="info" borderRadius={{ base: 'lg', md: 'xl' }} variant="subtle">
                 <AlertIcon />
-                <Text fontSize="sm" color={textColor}>
+                <Text fontSize={{ base: 'xs', sm: 'sm' }} color={textColor}>
                   {wikipediaError}
                 </Text>
               </Alert>
             </Box>
           ) : wikipediaData?.summary ? (
-            <Box mb={8} maxW="800px" mx="auto">
+            <Box 
+              mb={{ base: 6, md: 8 }} 
+              maxW={{ base: '100%', sm: '95%', md: '800px', lg: '850px', xl: '900px' }} 
+              mx="auto"
+              px={{ base: 2, sm: 0 }}
+            >
               {/* Wikipedia Summary Card */}
               <Box
                 bg={cardBg}
-                borderRadius="2xl"
-                p={{ base: 6, md: 8 }}
+                borderRadius={{ base: 'xl', md: '2xl' }}
+                p={{ base: 4, sm: 5, md: 6, lg: 7, xl: 8 }}
                 border="1px solid"
                 borderColor={borderColor}
                 boxShadow={useColorModeValue(
@@ -271,33 +248,39 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: '4px',
+                  height: { base: '3px', md: '4px' },
                   bgGradient: 'linear(to-r, blue.400, purple.400, pink.400)',
                 }}
               >
-                <VStack spacing={4} align="stretch">
+                <VStack spacing={{ base: 3, md: 4 }} align="stretch">
                   {/* Header with enhanced styling */}
                   <Box
                     display="flex"
                     alignItems="center"
-                    mb={6}
-                    p={4}
+                    mb={{ base: 4, sm: 5, md: 6 }}
+                    p={{ base: 3, sm: 3.5, md: 4 }}
                     bg={useColorModeValue('blue.50', 'blue.900')}
-                    borderRadius="xl"
+                    borderRadius={{ base: 'lg', md: 'xl' }}
                     border="1px solid"
                     borderColor={useColorModeValue('blue.200', 'blue.700')}
+                    flexDirection={{ base: 'row', sm: 'row' }}
                   >
                     <Box
-                      p={2}
+                      p={{ base: 1.5, sm: 2 }}
                       bg={useColorModeValue('blue.100', 'blue.800')}
-                      borderRadius="lg"
-                      mr={4}
+                      borderRadius={{ base: 'md', md: 'lg' }}
+                      mr={{ base: 3, sm: 4 }}
+                      flexShrink={0}
                     >
-                      <Icon as={FaWikipediaW} color="blue.500" boxSize={6} />
+                      <Icon 
+                        as={FaWikipediaW} 
+                        color="blue.500" 
+                        boxSize={{ base: 5, sm: 5, md: 6 }} 
+                      />
                     </Box>
                     <Box>
                       <Text
-                        fontSize={{ base: 'xl', md: '2xl' }}
+                        fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
                         fontWeight="black"
                         bgGradient={useColorModeValue(
                           'linear(to-r, blue.600, purple.600)',
@@ -309,10 +292,10 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                         About {countryName}
                       </Text>
                       <Text
-                        fontSize="sm"
+                        fontSize={{ base: 'xs', sm: 'sm' }}
                         color={useColorModeValue('blue.600', 'blue.300')}
                         fontWeight="medium"
-                        mt={1}
+                        mt={{ base: 0.5, md: 1 }}
                       >
                         Knowledge from Wikipedia
                       </Text>
@@ -323,27 +306,33 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
                   {/* Summary Content */}
                   <Text
-                    fontSize={{ base: 'md', md: 'lg' }}
+                    fontSize={{ base: 'sm', sm: 'md', md: 'lg' }}
                     color={textColor}
-                    lineHeight="1.7"
-                    fontWeight="medium"
-                    textAlign="justify"
+                    lineHeight={{ base: '1.6', md: '1.7' }}
+                    fontWeight="normal"
+                    textAlign={{ base: 'left', md: 'justify' }}
                   >
                     {wikipediaData.summary}
                   </Text>
 
                   {/* Wikipedia Link */}
                   <Box
-                    mt={4}
-                    p={4}
+                    mt={{ base: 3, md: 4 }}
+                    p={{ base: 3, sm: 3.5, md: 4 }}
                     bg={useColorModeValue('blue.50', 'blue.900')}
-                    borderRadius="xl"
+                    borderRadius={{ base: 'lg', md: 'xl' }}
                     border="1px solid"
                     borderColor={useColorModeValue('blue.200', 'blue.700')}
                   >
-                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box 
+                      display="flex" 
+                      alignItems="center" 
+                      justifyContent="space-between"
+                      flexDirection={{ base: 'column', sm: 'row' }}
+                      gap={{ base: 3, sm: 0 }}
+                    >
                       <Text
-                        fontSize="sm"
+                        fontSize={{ base: 'xs', sm: 'sm' }}
                         color={useColorModeValue('gray.600', 'gray.300')}
                         fontWeight="medium"
                       >
@@ -355,14 +344,14 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                           href={wikipediaData.content_urls.desktop.page}
                           target="_blank"
                           rel="noopener noreferrer"
-                          fontSize="sm"
+                          fontSize={{ base: 'xs', sm: 'sm' }}
                           fontWeight="bold"
                           color={accentColor}
                           textDecoration="none"
-                          px={4}
-                          py={2}
+                          px={{ base: 3, sm: 4 }}
+                          py={{ base: 1.5, sm: 2 }}
                           bg={useColorModeValue('white', 'gray.600')}
-                          borderRadius="lg"
+                          borderRadius={{ base: 'md', md: 'lg' }}
                           border="1px solid"
                           borderColor={useColorModeValue('gray.200', 'gray.500')}
                           _hover={{
@@ -375,20 +364,24 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                             )
                           }}
                           transition="all 0.2s ease"
+                          width={{ base: '100%', sm: 'auto' }}
+                          textAlign="center"
                         >
                           Read on Wikipedia →
                         </Text>
                       ) : (
                         <Text
-                          fontSize="sm"
+                          fontSize={{ base: 'xs', sm: 'sm' }}
                           fontWeight="bold"
                           color={useColorModeValue('gray.500', 'gray.400')}
-                          px={4}
-                          py={2}
+                          px={{ base: 3, sm: 4 }}
+                          py={{ base: 1.5, sm: 2 }}
                           bg={useColorModeValue('gray.100', 'gray.700')}
-                          borderRadius="lg"
+                          borderRadius={{ base: 'md', md: 'lg' }}
                           border="1px solid"
                           borderColor={useColorModeValue('gray.200', 'gray.600')}
+                          width={{ base: '100%', sm: 'auto' }}
+                          textAlign="center"
                         >
                           Link unavailable
                         </Text>
@@ -402,99 +395,78 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
             /* Fallback Description */
             <Text
               id={descId}
-              fontSize={{ base: 'md', md: 'lg' }}
+              fontSize={{ base: 'sm', sm: 'md', md: 'lg' }}
               color={textColor}
-              mb={8}
-              lineHeight="1.8"
-              fontWeight="medium"
-              maxW="720px"
+              mb={{ base: 6, md: 8 }}
+              lineHeight="1.7"
+              fontWeight="normal"
+              maxW={{ base: '100%', sm: '95%', md: '720px' }}
               mx="auto"
+              px={{ base: 2, sm: 0 }}
             >
-              This incredible country is waiting for your unique story!{' '}
-              <Text as="span" color={accentColor} fontWeight="semibold">
-                Capture breathtaking moments, discover hidden gems, and create memories that will last forever.
-              </Text>
+              Begin documenting your travels in {countryName}. Upload photos to create a visual timeline of your experiences and discoveries.
             </Text>
           )}
 
           {/* CTA */}
-          <Box
-            position="relative"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              inset: '-3px',
-              background: buttonBorderGradient,
-              borderRadius: '2xl',
-              zIndex: -1,
-            }}
-          >
+          <Box px={{ base: 2, sm: 0 }}>
             <MotionButton
               size={ctaSize}
-              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, md: 5 }} aria-hidden="true" />}
+              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, sm: 4, md: 5 }} aria-hidden="true" />}
               onClick={onImageUploaderOpen}
               onKeyDown={handleKeyOpen}
-              px={{ base: 6, md: 8 }}
-              py={{ base: 4, md: 6 }}
-              fontSize={{ base: 'md', md: 'lg' }}
-              fontWeight="bold"
-              borderRadius="2xl"
-              bg={cardBg}
-              color={accentColor}
-              border="2px solid"
-              borderColor={borderColor}
+              px={{ base: 6, sm: 8, md: 10, lg: 12 }}
+              py={{ base: 5, sm: 6, md: 7 }}
+              fontSize={{ base: 'sm', sm: 'md', md: 'lg' }}
+              fontWeight="semibold"
+              borderRadius={{ base: 'lg', md: 'xl' }}
+              bgGradient={buttonGradient}
+              color="white"
               role="button"
               aria-label="Start your journey by uploading your first photo"
-              position="relative"
-              overflow="hidden"
-              _after={{
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: useColorModeValue(
-                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
-                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)'
+              boxShadow={useColorModeValue(
+                '0 4px 14px rgba(59, 130, 246, 0.4)',
+                '0 4px 14px rgba(96, 165, 250, 0.3)'
+              )}
+              _hover={{
+                transform: 'translateY(-2px)',
+                boxShadow: useColorModeValue(
+                  '0 6px 20px rgba(59, 130, 246, 0.5)',
+                  '0 6px 20px rgba(96, 165, 250, 0.4)'
                 ),
-                transition: 'left 0.55s',
-                zIndex: 1,
               }}
-              sx={shimmerHover}
+              transition="all 0.2s ease"
               whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
               whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+              width={{ base: '100%', sm: 'auto' }}
             >
-              🎬 Start Your Journey
+              Upload Your First Photo
             </MotionButton>
           </Box>
 
-          {/* Quote */}
+          {/* Info Card */}
           <Box
-            mt={8}
-            p={{ base: 5, md: 6 }}
+            mt={{ base: 6, sm: 7, md: 8 }}
+            p={{ base: 4, sm: 5, md: 6 }}
             bg={cardBg}
-            borderRadius="xl"
+            borderRadius={{ base: 'lg', md: 'xl' }}
             border="1px solid"
             borderColor={borderColor}
-            maxW="680px"
-            mx="auto"
+            maxW={{ base: '100%', sm: '95%', md: '680px', lg: '720px' }}
+            mx={{ base: 2, sm: 'auto' }}
             boxShadow={useColorModeValue(
-              '0 8px 24px rgba(0,0,0,0.08)',
-              '0 8px 24px rgba(0,0,0,0.3)'
+              '0 4px 12px rgba(0,0,0,0.06)',
+              '0 4px 12px rgba(0,0,0,0.25)'
             )}
           >
             <Text
-              fontSize={{ base: 'md', md: 'lg' }}
+              fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
               color={textColor}
-              fontStyle="italic"
               textAlign="center"
-              fontWeight="medium"
-              lineHeight="1.7"
+              fontWeight="normal"
+              lineHeight={{ base: '1.6', md: '1.7' }}
             >
-              “Every photo tells a story. Every story begins with a single click.
-              <Text as="span" color={accentColor} fontWeight="semibold"> Your adventure is just one upload away!” ✨</Text>
-              ”
+              Every photo tells a story. Share your unique perspective and build your personal travel collection.
             </Text>
           </Box>
         </Box>

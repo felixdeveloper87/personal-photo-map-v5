@@ -204,7 +204,7 @@ const Header = () => {
 
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
-      <Container maxW="container.xl" px={{ base: 2, sm: 4, md: 6 }} {...headerContainerStyles(styles)}>
+      <Container maxW="container.2xl" px={{ base: 2, sm: 4, md: 6 }} {...headerContainerStyles(styles)}>
         {/* Primeira linha do header */}
         <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 1, sm: 2, md: 4 }}>
           {/* ESQUERDA: Logo (canto esquerdo) */}
