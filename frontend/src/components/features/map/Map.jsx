@@ -1,6 +1,6 @@
 import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
-import { MapContainer, GeoJSON, Rectangle } from 'react-leaflet';
-import { Box, useColorMode, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
+import { MapContainer, GeoJSON, Rectangle, useMap } from 'react-leaflet';
+import { Box, useColorMode, useBreakpointValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
@@ -12,7 +12,16 @@ import { useCountryHighlight } from './hooks/useCountryHighlight';
 import '../../../styles/leafletStyles.css';
 import ConversionModal from '../../modals/ConversionModal';
 
-// Componente memoizado para o oceano
+// ✅ Componente auxiliar para ajustar o zoom dinamicamente após render
+const ResponsiveZoom = React.memo(({ zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (map && zoom) map.setZoom(zoom);
+  }, [map, zoom]);
+  return null;
+});
+
+// ✅ Oceano memoizado
 const OceanRectangle = React.memo(({ oceanStyles, oceanBounds }) => (
   <Rectangle
     bounds={oceanBounds}
@@ -24,7 +33,7 @@ const OceanRectangle = React.memo(({ oceanStyles, oceanBounds }) => (
   />
 ));
 
-// Componente memoizado para países
+// ✅ GeoJSON memoizado
 const CountriesGeoJSON = React.memo(({ geoJsonKey, countryStyle, onEachCountry }) => (
   <GeoJSON
     key={geoJsonKey}
@@ -34,16 +43,16 @@ const CountriesGeoJSON = React.memo(({ geoJsonKey, countryStyle, onEachCountry }
   />
 ));
 
-// Componente memoizado para o container do mapa
-const MapContainerComponent = React.memo(({ 
-  bounds, 
-  center, 
-  zoom, 
-  minZoom, 
-  maxZoom, 
-  maxBoundsViscosity, 
-  worldCopyJump, 
-  children 
+// ✅ Container do mapa memoizado
+const MapContainerComponent = React.memo(({
+  bounds,
+  center,
+  zoom,
+  minZoom,
+  maxZoom,
+  maxBoundsViscosity,
+  worldCopyJump,
+  children
 }) => (
   <MapContainer
     center={center}
@@ -56,7 +65,7 @@ const MapContainerComponent = React.memo(({
     style={{
       height: '100%',
       width: '100%',
-      overflow: 'hidden'
+      overflow: 'hidden',
     }}
   >
     {children}
@@ -68,70 +77,83 @@ const Map = () => {
   const { countriesWithPhotos } = useContext(CountriesContext);
   const [geoJsonKey, setGeoJsonKey] = useState(0);
   const { colorMode } = useColorMode();
+  const navigate = useNavigate();
 
-  // Zoom responsivo usando Chakra UI
-  const initialZoom = useBreakpointValue({ base: 2.0, md: 2.6 });
-  const initialMinZoom = useBreakpointValue({ base: 1.8, md: 2.3 });
+  // ✅ Zoom responsivo com fallback seguro
+  const initialZoom = useBreakpointValue({ base: 2, md: 2.0, lg: 2, xl: 3 }) ?? 2.6;
+  const initialMinZoom = useBreakpointValue({ base: 1.8, md: 3.0 }) ?? 2.3;
 
   const colors = useMemo(() => ({ primary: '#3B82F6', secondary: '#10B981' }), []);
 
-  // Hook customizado para gerenciar destaque de países
-  const { highlightedCountries, isEffectActive, highlightIntensity } = useCountryHighlight(isLoggedIn, countriesWithPhotos);
+  // ✅ Hook customizado para efeito de destaque
+  const { highlightedCountries, isEffectActive, highlightIntensity } = useCountryHighlight(
+    isLoggedIn,
+    countriesWithPhotos
+  );
 
-  // Country styling function - agora usando a função centralizada
+  // ✅ Estilos de país com memoização
   const countryStyle = useCallback(
-    createCountryStyleBase(colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode),
+    createCountryStyleBase(
+      colors,
+      countriesWithPhotos,
+      highlightedCountries,
+      isLoggedIn,
+      isEffectActive,
+      highlightIntensity,
+      colorMode
+    ),
     [colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode]
   );
 
-  // Estado para modal de conversão
-  const [conversionModal, setConversionModal] = useState({ isOpen: false, countryId: null });
-  const navigate = useNavigate();
+  // ✅ Estado do modal
+  const [conversionModal, setConversionModal] = useState({ isOpen: false, country: null });
 
-  // Função para interações com países
-  const onEachCountry = useCallback((feature, layer) => {
-    const countryId = feature.properties.iso_a2?.toLowerCase();
-    const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
+  // ✅ Interações com países
+  const onEachCountry = useCallback(
+    (feature, layer) => {
+      const countryId = feature.properties.iso_a2?.toLowerCase();
+      const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
 
-    layer.on({
-      click: () => {
-        if (!isLoggedIn) {
-          setConversionModal({ isOpen: true, countryId });
-          return;
-        }
+      layer.on({
+        click: () => {
+          if (!isLoggedIn) {
+            setConversionModal({ isOpen: true, country: countryId });
+            return;
+          }
+          navigate(`/countries/${countryId}`);
+        },
+        mouseover: () => {
+          if (isCountryWithPhotos || !isLoggedIn) layer.getElement().style.cursor = 'pointer';
+        },
+        mouseout: () => {
+          layer.getElement().style.cursor = '';
+        },
+      });
+    },
+    [countriesWithPhotos, isLoggedIn, navigate]
+  );
 
-        // Navegar sempre, mesmo se não há fotos
-        navigate(`/countries/${countryId}`);
-      },
-      mouseover: () => {
-        if (isCountryWithPhotos || !isLoggedIn) {
-          layer.getElement().style.cursor = 'pointer';
-        }
-      },
-      mouseout: () => {
-        layer.getElement().style.cursor = '';
-      }
-    });
-  }, [countriesWithPhotos, isLoggedIn, navigate]);
-
-  // Update GeoJSON when countries change OR when highlighted countries change
+  // ✅ Atualiza GeoJSON quando há mudança
   useEffect(() => {
-    setGeoJsonKey(prevKey => prevKey + 1);
+    setGeoJsonKey((prevKey) => prevKey + 1);
   }, [countriesWithPhotos, highlightedCountries]);
 
-  // Configurações do mapa memoizadas (responsivas)
-  const mapConfig = useMemo(() => ({
-    bounds: [[-85, -180], [85, 180]],
-    oceanBounds: [[-90, -180], [90, 180]],
-    center: [20, 0],
-    zoom: initialZoom || 2.6,
-    minZoom: initialMinZoom || 2.3,
-    maxZoom: 7.5,
-    maxBoundsViscosity: 1.0,
-    worldCopyJump: false
-  }), [initialZoom, initialMinZoom]);
+  // ✅ Configurações do mapa
+  const mapConfig = useMemo(
+    () => ({
+      bounds: [[-80, -180], [85, 180]],
+      oceanBounds: [[-80, -180], [90, 180]],
+      center: [20, 0],
+      zoom: initialZoom,
+      minZoom: initialMinZoom,
+      maxZoom: 7.5,
+      maxBoundsViscosity: 1.0,
+      worldCopyJump: false,
+    }),
+    [initialZoom, initialMinZoom]
+  );
 
-  // Estilos do oceano centralizados
+  // ✅ Estilos do oceano
   const oceanStyles = useMemo(() => getOceanStyles(colorMode), [colorMode]);
 
   return (
@@ -139,14 +161,14 @@ const Map = () => {
       <Box
         position="relative"
         data-theme={colorMode}
-        h={{ base: "500px", sm: "600px", md: "700px", lg: "900px", xl: "1000px" }}
+        h={{ base: '550px', sm: '650px', md: '800px', lg: '1000px', xl: '1000px' }}
       >
         <MapContainerComponent {...mapConfig}>
-          <OceanRectangle 
-            oceanStyles={oceanStyles} 
-            oceanBounds={mapConfig.oceanBounds} 
-          />
-          
+          {/* ✅ Ajuste dinâmico de zoom */}
+          <ResponsiveZoom zoom={mapConfig.zoom} />
+
+          <OceanRectangle oceanStyles={oceanStyles} oceanBounds={mapConfig.oceanBounds} />
+
           <CountriesGeoJSON
             geoJsonKey={geoJsonKey}
             countryStyle={countryStyle}
@@ -155,7 +177,7 @@ const Map = () => {
         </MapContainerComponent>
       </Box>
 
-      {/* Conversion Modal for non-logged users */}
+      {/* ✅ Modal para usuários não logados */}
       {conversionModal.isOpen && (
         <ConversionModal
           isOpen={conversionModal.isOpen}

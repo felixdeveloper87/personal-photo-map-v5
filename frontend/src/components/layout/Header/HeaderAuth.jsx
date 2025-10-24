@@ -11,7 +11,7 @@ const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...pr
     <Box display={display} {...props}>
       {/* Horizontal (lado a lado) em todas as telas */}
       <HStack 
-        spacing={{ base: 1, sm: 2, md: 3 }}
+        spacing={{ base: 2, sm: 2, md: 3, lg: 4, xl: 4, "2xl": 4 }}
       >
         <ModernLoginButton 
           onClick={onLoginClick} 
