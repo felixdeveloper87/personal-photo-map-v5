@@ -132,133 +132,200 @@ export default function HeroHeader({
 
       {/* Detalhes colapsáveis */}
       <Collapse in={isExpanded} animateOpacity>
-        <Box
-          mt={4}
-          borderRadius="lg"
-          border="1px solid"
-          borderColor={borderColor}
-          p={{ base: 3, sm: 4 }}
-          boxShadow={useColorModeValue(
-            '0 4px 12px rgba(0,0,0,0.06)',
-            '0 4px 12px rgba(0,0,0,0.3)'
-          )}
-          bg={useColorModeValue('rgba(255,255,255,0.7)', 'rgba(0,0,0,0.3)')}
-          backdropFilter="blur(12px)"
+  <Box
+    mt={4}
+    borderRadius="lg"
+    border="1px solid"
+    borderColor={borderColor}
+    p={{ base: 3, sm: 4, md: 5 }}
+    boxShadow={useColorModeValue(
+      '0 4px 12px rgba(0,0,0,0.06)',
+      '0 4px 12px rgba(0,0,0,0.3)'
+    )}
+    bg={useColorModeValue('rgba(255,255,255,0.7)', 'rgba(0,0,0,0.3)')}
+    backdropFilter="blur(12px)"
+  >
+    <Flex
+      direction={{ base: 'column', md: 'row' }}
+      align="stretch"
+      gap={{ base: 4, md: 6 }}
+    >
+      {/* ====== LEFT: FLAG ====== */}
+      <Box
+        flex={{ base: 'none', md: '1 1 45%' }}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        borderRadius="lg"
+        overflow="hidden"
+        h={{ base: '180px', sm: '200px', md: '280px', lg: '320px' }}
+        border="1px solid"
+        borderColor={useColorModeValue('gray.200', 'gray.600')}
+        bg={useColorModeValue('white', 'gray.800')}
+        boxShadow="md"
+        position="relative"
+        sx={{
+          backgroundImage: useColorModeValue(
+            `
+              repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(59, 130, 246, 0.08) 10px,
+                rgba(59, 130, 246, 0.08) 20px
+              ),
+              repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 10px,
+                rgba(139, 92, 246, 0.08) 10px,
+                rgba(139, 92, 246, 0.08) 20px
+              ),
+              radial-gradient(circle at 20% 50%, rgba(59,130,246,0.12), transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(139,92,246,0.12), transparent 50%)
+            `,
+            `
+              repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(59,130,246,0.05) 10px,
+                rgba(59,130,246,0.05) 20px
+              ),
+              repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 10px,
+                rgba(139,92,246,0.05) 10px,
+                rgba(139,92,246,0.05) 20px
+              ),
+              radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08), transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(139,92,246,0.08), transparent 50%)
+            `
+          ),
+          backgroundSize: '40px 40px, 40px 40px, 100% 100%, 100% 100%',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: useColorModeValue(
+              'radial-gradient(circle, rgba(59,130,246,0.5) 1px, transparent 1px)',
+              'radial-gradient(circle, rgba(139,92,246,0.3) 1px, transparent 1px)'
+            ),
+            backgroundSize: '20px 20px',
+            opacity: useColorModeValue(0.4, 0.25),
+            pointerEvents: 'none',
+          },
+        }}
+      >
+        <EnhancedFlag countryCode={countryId?.toUpperCase()} isHero={false} />
+      </Box>
+
+      {/* ====== RIGHT: INFOBOXES + BUTTONS ====== */}
+      <Flex
+        flex={{ base: 'none', md: '1 1 55%' }}
+        direction="column"
+        justify="space-between"
+      >
+        {/* InfoBoxes line */}
+        <Grid
+          templateColumns="repeat(3, 1fr)"
+          gap={{ base: 2, sm: 3 }}
+          mb={{ base: 3, md: 4 }}
+          w="full"
         >
-          <Flex
-            direction={{ base: 'column', lg: 'row' }}
-            gap={{ base: 3, md: 5 }}
-            align="stretch"
+          <InfoBox
+            icon={FaLanguage}
+            label="Language"
+            value={countryInfo?.officialLanguage}
+            colorScheme="orange"
+            {...compactBoxProps}
+          />
+          <InfoBox
+            icon={FaUsers}
+            label="Population"
+            value={
+              countryInfo?.population
+                ? countryInfo.population.toLocaleString('en-US')
+                : 'N/A'
+            }
+            colorScheme="green"
+            {...compactBoxProps}
+          />
+          <InfoBox
+            icon={FaThermometerHalf}
+            label="Temperature"
+            value={
+              weatherData?.temperature !== undefined
+                ? `${weatherData.temperature}°C`
+                : 'N/A'
+            }
+            colorScheme="red"
+            {...compactBoxProps}
+          />
+        </Grid>
+
+        {/* Buttons full-width */}
+        <Grid
+          templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }}
+          gap={2}
+          w="full"
+        >
+          <Button
+            onClick={onOpen}
+            colorScheme="blue"
+            size="sm"
+            borderRadius="md"
+            height={{ base: '36px', md: '42px' }}
+            fontWeight="semibold"
+            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
           >
-            {/* Bandeira */}
-            <Box
-              flex="1"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              borderRadius="md"
-              overflow="hidden"
-              h={{ base: '180px', sm: '220px', md: '260px', lg: '300px' }}
-              border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.600')}
-              bg={useColorModeValue('white', 'gray.800')}
-              boxShadow="sm"
-            >
-              <EnhancedFlag countryCode={countryId?.toUpperCase()} isHero={false} />
-            </Box>
+            {buttonText}
+          </Button>
+          <Button
+            onClick={() =>
+              window.open(
+                `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(
+                  countryName
+                )}`,
+                '_blank'
+              )
+            }
+            colorScheme="green"
+            variant="outline"
+            size="sm"
+            borderRadius="md"
+            height={{ base: '36px', md: '42px' }}
+            fontWeight="semibold"
+            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+          >
+            Check Flights
+          </Button>
+          <Button
+            onClick={() =>
+              window.open(
+                `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
+                  countryName
+                )}`,
+                '_blank'
+              )
+            }
+            colorScheme="yellow"
+            variant="outline"
+            size="sm"
+            borderRadius="md"
+            height={{ base: '36px', md: '42px' }}
+            fontWeight="semibold"
+            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+          >
+            Find Hotels
+          </Button>
+        </Grid>
+      </Flex>
+    </Flex>
+  </Box>
+</Collapse>
 
-             {/* Info Boxes + Botões */}
-             <Box flex="1" display="flex" flexDirection="column" justifyContent="space-between">
-               <Grid
-                 templateColumns="repeat(3, minmax(0, 1fr))"
-                 gap={{ base: 1.5, sm: 2, md: 3 }}
-                 w="full"
-               >
-                <InfoBox
-                  icon={FaLanguage}
-                  label="Language"
-                  value={countryInfo?.officialLanguage}
-                  colorScheme="orange"
-                  {...compactBoxProps}
-                />
-                <InfoBox
-                  icon={FaUsers}
-                  label="Population"
-                  value={
-                    countryInfo?.population
-                      ? countryInfo.population.toLocaleString('en-US')
-                      : 'N/A'
-                  }
-                  colorScheme="green"
-                  {...compactBoxProps}
-                />
-                <InfoBox
-                  icon={FaThermometerHalf}
-                  label="Temperature"
-                  value={
-                    weatherData?.temperature !== undefined
-                      ? `${weatherData.temperature}°C`
-                      : 'N/A'
-                  }
-                  colorScheme="red"
-                  {...compactBoxProps}
-                />
-              </Grid>
-
-              {/* Ações secundárias */}
-              <Flex mt={3} gap={2} flexWrap="wrap">
-                <Button
-                  onClick={onOpen}
-                  colorScheme="blue"
-                  variant="solid"
-                  size="sm"
-                  flex="1"
-                  borderRadius="md"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  {buttonText}
-                </Button>
-                <Button
-                  onClick={() =>
-                    window.open(
-                      `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(
-                        countryName
-                      )}`,
-                      '_blank'
-                    )
-                  }
-                  colorScheme="green"
-                  variant="outline"
-                  size="sm"
-                  flex="1"
-                  borderRadius="md"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  Check Flights
-                </Button>
-                <Button
-                  onClick={() =>
-                    window.open(
-                      `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
-                        countryName
-                      )}`,
-                      '_blank'
-                    )
-                  }
-                  colorScheme="yellow"
-                  variant="outline"
-                  size="sm"
-                  flex="1"
-                  borderRadius="md"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  Find Hotels
-                </Button>
-              </Flex>
-            </Box>
-          </Flex>
-        </Box>
-      </Collapse>
 
       {/* Modal de Indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="Detailed Indicators">

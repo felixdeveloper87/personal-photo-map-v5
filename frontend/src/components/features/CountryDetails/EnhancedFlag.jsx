@@ -45,36 +45,39 @@ const EnhancedFlag = ({ countryCode }) => {
     setIsLoading(false);
   }, []);
 
+  // Responsive styles
   const commonStyles = {
     position: 'relative',
     width: '100%',
     height: '100%',
-    borderRadius: '20px',
+    borderRadius: { base: '12px', sm: '16px', md: '20px' },
     overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'opacity 0.2s ease'
+    transition: 'all 0.3s ease'
   };
 
-  const imageStyles = {
+  const getResponsiveImageStyles = () => ({
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
     objectPosition: 'center center',
-    borderRadius: '20px',
-    transition: 'opacity 0.2s ease'
-  };
+    transition: 'all 0.3s ease',
+    maxWidth: '100%',
+    maxHeight: '100%'
+  });
 
   if (fallbackImage) {
     return (
-      <Box {...commonStyles} opacity={0.8}>
-        <img
+      <Box {...commonStyles} opacity={{ base: 0.75, md: 0.85 }}>
+        <Box
+          as="img"
           src={fallbackImage}
           alt={`Flag of ${countryCode}`}
           onError={() => setFallbackImage(null)}
           onLoad={handleImageLoad}
-          style={imageStyles}
+          sx={getResponsiveImageStyles()}
         />
         {isLoading && (
           <Box
@@ -85,10 +88,14 @@ const EnhancedFlag = ({ countryCode }) => {
             alignItems="center"
             justifyContent="center"
             zIndex={10}
-            borderRadius="20px"
-            animation="pulse 1s ease-in-out infinite"
+            borderRadius={{ base: '12px', sm: '16px', md: '20px' }}
+            animation="pulse 1.5s ease-in-out infinite"
           >
-            <Icon as={FaGlobe} boxSize={8} color="white" />
+            <Icon 
+              as={FaGlobe} 
+              boxSize={{ base: 6, sm: 7, md: 8 }} 
+              color="white" 
+            />
           </Box>
         )}
       </Box>
@@ -99,28 +106,44 @@ const EnhancedFlag = ({ countryCode }) => {
     return (
       <Box
         bg={fallbackBg}
-        border="2px dashed"
+        border={{ base: '1px dashed', md: '2px dashed' }}
         borderColor={fallbackBorder}
-        borderRadius="20px"
-        transition="all 0.2s ease"
-        opacity={0.7}
+        borderRadius={{ base: '12px', sm: '16px', md: '20px' }}
+        transition="all 0.3s ease"
+        opacity={{ base: 0.65, md: 0.75 }}
         display="flex"
         alignItems="center"
         justifyContent="center"
         flexDirection="column"
         width="100%"
         height="100%"
+        p={{ base: 3, sm: 4, md: 5 }}
         _hover={{
           bg: hoverBg,
           borderColor: hoverBorder,
-          opacity: 0.9
+          opacity: 0.9,
+          transform: 'scale(1.02)'
         }}
       >
-        <Icon as={FaGlobe} boxSize={16} color={fallbackText} mb={3} />
-        <Text fontSize="lg" color={fallbackText} textAlign="center" fontWeight="semibold">
+        <Icon 
+          as={FaGlobe} 
+          boxSize={{ base: 10, sm: 12, md: 16 }} 
+          color={fallbackText} 
+          mb={{ base: 2, md: 3 }} 
+        />
+        <Text 
+          fontSize={{ base: 'md', sm: 'lg', md: 'xl' }} 
+          color={fallbackText} 
+          textAlign="center" 
+          fontWeight="semibold"
+        >
           {countryCode}
         </Text>
-        <Text fontSize="sm" color={fallbackText} textAlign="center">
+        <Text 
+          fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} 
+          color={fallbackText} 
+          textAlign="center"
+        >
           Flag not available
         </Text>
       </Box>
@@ -128,12 +151,13 @@ const EnhancedFlag = ({ countryCode }) => {
   }
 
   return (
-    <Box {...commonStyles} opacity={0.9}>
-      <Flag
+    <Box {...commonStyles} opacity={{ base: 0.85, md: 0.95 }}>
+      <Box
+        as={Flag}
         code={correctedCode}
         onError={handleFlagError}
         onLoad={handleImageLoad}
-        style={imageStyles}
+        sx={getResponsiveImageStyles()}
       />
       {isLoading && (
         <Box
@@ -144,9 +168,13 @@ const EnhancedFlag = ({ countryCode }) => {
           alignItems="center"
           justifyContent="center"
           zIndex={10}
-          borderRadius="20px"
+          borderRadius={{ base: '12px', sm: '16px', md: '20px' }}
         >
-          <Icon as={FaGlobe} boxSize={8} color="white" />
+          <Icon 
+            as={FaGlobe} 
+            boxSize={{ base: 6, sm: 7, md: 8 }} 
+            color="white" 
+          />
         </Box>
       )}
     </Box>
