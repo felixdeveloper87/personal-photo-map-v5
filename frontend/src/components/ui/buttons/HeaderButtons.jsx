@@ -164,9 +164,9 @@ export const MapButton = ({ onClick }) => (
 );
 
 export const LoginButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaSignInAlt} text="Login" tone="blue" variant="tonal" onClick={onClick} />
+  <ModernMaterialButton icon={FaSignInAlt} text="" tone="blue" variant="tonal" onClick={onClick} />
 );
 
 export const RegisterButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaUserPlus} text="Register" tone="green" onClick={onClick} />
+  <ModernMaterialButton icon={FaUserPlus} text="" tone="green" onClick={onClick} />
 );
