@@ -23,17 +23,16 @@ export {
 
 // Header Buttons - Botões específicos do header
 export {
-    ModernThemeToggleButton,
-    ModernUpgradeToPremiumButton,
-    ModernPhotoStorageButton,
-    ModernUserProfileButton,
-    ModernTimelineButton,
-    ModernSearchButton,
-    ModernMapButton,
-    ModernHeaderUserButton,
-    ModernLogoutButton,
-    ModernLoginButton,
-    ModernRegisterButton,
+    ThemeToggleButton,
+    PremiumButton,
+    PhotoStorageButton,
+    UserProfileButton,
+    TimelineButton,
+    SearchButton,
+    MapButton,
+    LogoutButton,
+    LoginButton,
+    RegisterButton,
 } from './HeaderButtons';
 
 // Selectable Buttons - Botões selecionáveis

@@ -15,11 +15,10 @@ import {
 } from "@chakra-ui/react";
 import { FaImages, FaMap, FaUser, FaSignOutAlt, FaMoon, FaSun, FaTimes, FaUserCircle } from "react-icons/fa";
 import { 
-  ModernUpgradeToPremiumButton, 
-  ModernPhotoStorageButton,
-  ModernUserProfileButton,
-  ModernSearchButton,
-  ModernTimelineButton
+  PhotoStorageButton,
+  UserProfileButton,
+  SearchButton,
+  TimelineButton
 } from "../../ui/buttons/HeaderButtons";
 import SearchForm from "../../features/SearchForm";
 import {
@@ -167,7 +166,7 @@ const HeaderMobile = ({
                   w="full"
                 >
                   {/* Photo Storage Button */}
-                  <ModernPhotoStorageButton
+                  <PhotoStorageButton
                     onClick={onPhotoStorageClick}
                     size={buttonSize}
                     w="full"
@@ -179,7 +178,7 @@ const HeaderMobile = ({
                   />
 
                   {/* User Profile Button */}
-                  <ModernUserProfileButton
+                  <UserProfileButton
                     onClick={onProfileClick}
                     size={buttonSize}
                     w="full"
@@ -191,7 +190,7 @@ const HeaderMobile = ({
                   />
 
                   {/* Search Button */}
-                  <ModernSearchButton
+                  <SearchButton
                     onClick={() => {
                       const searchTrigger = document.querySelector('[data-search-trigger]');
                       if (searchTrigger) {
@@ -208,7 +207,7 @@ const HeaderMobile = ({
                   />
 
                   {/* Timeline Button */}
-                  <ModernTimelineButton
+                  <TimelineButton
                     onClick={onTimelineClick}
                     size={buttonSize}
                     w="full"
@@ -220,18 +219,6 @@ const HeaderMobile = ({
                   />
                 </Box>
               </Box>
-
-              {/* Upgrade Premium - Responsivo */}
-              {!isPremium && (
-                <ModernUpgradeToPremiumButton
-                  onClick={() => {
-                    onPremiumClick();
-                    onClose?.();
-                  }}
-                  size={buttonSize}
-                  w="full"
-                />
-              )}
 
               {/* SearchForm para usuários logados */}
               <SearchForm

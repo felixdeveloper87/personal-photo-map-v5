@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@chakra-ui/react';
-import { ModernHeaderUserButton } from '../../ui/buttons/HeaderButtons';
+import { UserProfileButton } from '../../ui/buttons/HeaderButtons';
 
 const HeaderUser = ({ 
   styles, 
@@ -11,11 +11,8 @@ const HeaderUser = ({
 }) => {
   return (
     <Box my={2}>
-      <ModernHeaderUserButton
+      <UserProfileButton
         onClick={onProfileClick}
-        fullname={fullname}
-        isPremium={isPremium}
-        styles={styles}
         size={size}
       />
     </Box>

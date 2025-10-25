@@ -14,7 +14,7 @@ import {
 import { ArrowBackIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import countries from 'i18n-iso-countries'
 import moment from 'moment-timezone'
-import { FaLanguage, FaUsers, FaThermometerHalf } from 'react-icons/fa'
+import { FaLanguage, FaUsers, FaThermometerHalf, FaChartLine, FaPoundSign, FaHeartbeat } from 'react-icons/fa'
 import EnhancedFlag from './EnhancedFlag'
 import InfoBox from './InfoBox'
 import BaseModal from '../../modals/BaseModal'
@@ -261,6 +261,37 @@ export default function HeroHeader({
                 : 'N/A'
             }
             colorScheme="red"
+            {...compactBoxProps}
+          />
+        </Grid>
+
+        {/* Second row of InfoBoxes - Only visible on MD+ */}
+        <Grid
+          templateColumns="repeat(3, 1fr)"
+          gap={{ base: 2, sm: 3 }}
+          mb={{ base: 3, md: 4 }}
+          w="full"
+          display={{ base: 'none', md: 'grid' }}
+        >
+          <InfoBox
+            icon={FaChartLine}
+            label="GDP per capita"
+            value={indicatorsData?.gdpPerCapitaCurrent?.value || 'N/A'}
+            colorScheme="purple"
+            {...compactBoxProps}
+          />
+          <InfoBox
+            icon={FaPoundSign}
+            label="Exchange Rate"
+            value={exchangeRate ? `£1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A'}
+            colorScheme="teal"
+            {...compactBoxProps}
+          />
+          <InfoBox
+            icon={FaHeartbeat}
+            label="Life Expectancy"
+            value={indicatorsData?.lifeExpectancy?.value || 'N/A'}
+            colorScheme="pink"
             {...compactBoxProps}
           />
         </Grid>

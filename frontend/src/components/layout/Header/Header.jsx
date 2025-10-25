@@ -34,14 +34,14 @@ import HeaderAuth from "./HeaderAuth";
 import HeaderUser from "./HeaderUser";
 import HeaderMobile from "./HeaderMobile";
 import {
-  ModernThemeToggleButton,
-  ModernLogoutButton,
-  ModernMapButton,
-  ModernPhotoStorageButton,
-  ModernUserProfileButton,
-  ModernSearchButton,
-  ModernTimelineButton,
-  ModernUpgradeToPremiumButton,
+  ThemeToggleButton,
+  LogoutButton,
+  MapButton,
+  PhotoStorageButton,
+  UserProfileButton,
+  SearchButton,
+  TimelineButton,
+  PremiumButton,
 } from "../../ui/buttons/HeaderButtons";
 
 // Modais
@@ -212,22 +212,30 @@ const Header = () => {
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
           </HStack>
 
-          {/* CENTRO: 3 botões (Map, Theme, Logout) para mobile quando logado */}
+          {/* CENTRO: botões para mobile quando logado */}
           {isLoggedIn && isCompact && (
             <HStack spacing={{ base: 1, sm: 1.5, md: 2 }} align="center" flex="0 0 auto">
-              <ModernMapButton
+              {/* Botão Premium (mobile) */}
+              {!isPremium && (
+                <PremiumButton
+                  onClick={premiumModal.onOpen}
+                  size={buttonSize}
+                />
+              )}
+              
+              <MapButton
                 isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
                 size={buttonSize}
                 aria-label="Go to Map"
               />
-              <ModernThemeToggleButton
+              <ThemeToggleButton
                 colorMode={colorMode}
                 toggleColorMode={toggleColorMode}
                 styles={styles}
                 size={buttonSize}
               />
-              <ModernLogoutButton
+              <LogoutButton
                 onClick={() => {
                   logout();
                   navigate("/");
@@ -251,8 +259,16 @@ const Header = () => {
             display={isCompact ? "none" : "flex"}
             maxW={centerMaxW}
           >
+            {/* Botão Premium (antes do Map) */}
+            {isLoggedIn && !isPremium && (
+              <PremiumButton
+                onClick={premiumModal.onOpen}
+                size={buttonSize}
+              />
+            )}
+
             {/* Botão Map - responsivo */}
-            <ModernMapButton
+            <MapButton
               isLoggedIn={isLoggedIn}
               onClick={() =>
                 isLoggedIn ? navigate("/map/private") : navigate("/map")
@@ -298,7 +314,7 @@ const Header = () => {
             display={isLoggedIn && isCompact ? "none" : "flex"}
           >
             {/* Theme toggle - sempre visível */}
-            <ModernThemeToggleButton
+            <ThemeToggleButton
               colorMode={colorMode}
               toggleColorMode={toggleColorMode}
               styles={styles}
@@ -314,7 +330,7 @@ const Header = () => {
                 size={buttonSize}
               />
             ) : (
-              <ModernLogoutButton
+              <LogoutButton
                 onClick={() => {
                   logout();
                   navigate("/"); // Redireciona para a landing page após logout
@@ -348,21 +364,21 @@ const Header = () => {
                 gap={{ base: 1, sm: 1.5, md: 2 }}
                 w="100%"
               >
-                <ModernPhotoStorageButton
+                <PhotoStorageButton
                   onClick={photoStorageModal.onOpen}
                   size={buttonSize}
                   display="flex"
                   flexDirection="column"
                 />
                 
-                <ModernUserProfileButton
+                <UserProfileButton
                   onClick={profileModal.onOpen}
                   size={buttonSize}
                   display="flex"
                   flexDirection="column"
                 />
                 
-                <ModernSearchButton
+                <SearchButton
                   onClick={() => {
                     // Trigger search form
                     const searchInput = document.querySelector('[data-search-trigger]');
@@ -373,22 +389,13 @@ const Header = () => {
                   flexDirection="column"
                 />
                 
-                <ModernTimelineButton
+                <TimelineButton
                   onClick={() => navigate("/timeline")}
                   size={buttonSize}
                   display="flex"
                   flexDirection="column"
                 />
               </Box>
-
-              {/* Botão Premium (se não for premium) */}
-              {!isPremium && (
-                <ModernUpgradeToPremiumButton
-                  onClick={premiumModal.onOpen}
-                  w="100%"
-                  size={buttonSize}
-                />
-              )}
             </VStack>
           </Box>
         )}
