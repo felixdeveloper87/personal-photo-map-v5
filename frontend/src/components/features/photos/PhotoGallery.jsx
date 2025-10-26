@@ -110,6 +110,8 @@ const PhotoGallery = memo(function PhotoGallery({
   const checkboxBorderColor = useColorModeValue('gray.300', 'gray.600');
   const shimmerColor1 = useColorModeValue('#e2e8f0', '#1a202c');
   const shimmerColor2 = useColorModeValue('#cbd5e0', '#2d3748');
+  const buttonBorderColor = useColorModeValue('blue.600', 'white');
+  const buttonTextColor = useColorModeValue('blue.600', 'white');
 
   // Debug: Log images data
   console.log('🖼️ PhotoGallery received images:', images?.length || 0, 'images');
@@ -281,7 +283,7 @@ const PhotoGallery = memo(function PhotoGallery({
           <HStack spacing={3} wrap="wrap">
             <Button
               size="sm"
-              colorScheme={isSelectionMode ? 'blue' : 'gray'}
+              colorScheme="blue"
               variant={isSelectionMode ? 'solid' : 'outline'}
               onClick={() => {
                 if (toggleSelectionMode) toggleSelectionMode();
@@ -289,11 +291,15 @@ const PhotoGallery = memo(function PhotoGallery({
               leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
               borderRadius="full"
               px={6}
+              borderWidth="1px"
+              borderColor={isSelectionMode ? undefined : buttonBorderColor}
+              color={isSelectionMode ? undefined : buttonTextColor}
               _hover={{
                 transform: 'translateY(-1px)',
                 boxShadow: isSelectionMode 
                   ? '0 4px 12px rgba(59, 130, 246, 0.3)' 
-                  : '0 4px 12px rgba(0, 0, 0, 0.1)'
+                  : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                borderColor: isSelectionMode ? undefined : buttonBorderColor
               }}
               transition="all 0.2s ease"
             >

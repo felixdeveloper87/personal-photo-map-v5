@@ -73,42 +73,37 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
         borderRadius="lg"
         overflow="hidden"
       >
-        <CardBody p={4}>
-          <VStack spacing={3} align="stretch">
+        <CardBody p={2} px={4}>
+          <Flex 
+            justify="space-between" 
+            align="center" 
+            gap={{ base: 2, sm: 3, md: 4 }}
+            flexWrap="nowrap"
+            overflow="hidden"
+          >
             
-            {/* Header with country status */}
-            <Flex justify="space-between" align="center">
-              <HStack spacing={2}>
-                <Icon as={FaGlobe} color={iconColor} boxSize={4} />
-                <Text fontSize="sm" fontWeight="medium" color={textSecondary}>
-                  Travel Hub
-                </Text>
-              </HStack>
-              <Badge 
-                colorScheme="blue" 
-                variant="subtle" 
-                fontSize="xs"
-                px={2}
-                py={1}
-                borderRadius="md"
+            {/* Left: Icon + Text */}
+            <HStack spacing={{ base: 1, sm: 2 }} flexShrink={0}>
+              <Icon as={FaGlobe} color={iconColor} boxSize={{ base: 3.5, sm: 4 }} />
+              <Text 
+                fontSize={{ base: "xs", sm: "sm" }} 
+                fontWeight="medium" 
+                color={textSecondary}
+                whiteSpace="nowrap"
               >
-                Explore
-              </Badge>
-            </Flex>
+                Travel Hub
+              </Text>
+            </HStack>
 
-            <Divider />
-
-            {/* Action buttons - centered and balanced */}
-            <Flex justify="center" gap={4} flexWrap="wrap">
-              
-              {/* Upload Photos Button - Primary action */}
+            {/* Center: Action buttons */}
+            <HStack spacing={{ base: 1, sm: 2 }} justifyContent="center">
               <Tooltip label="Share your travel memories" hasArrow>
                 <Button
                   onClick={onImageUploaderOpen}
-                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={4} />}
+                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={{ base: 3, sm: 3.5 }} />}
                   variant="ghost"
                   colorScheme="blue"
-                  size="sm"
+                  size={{ base: "xs", sm: "sm" }}
                   bg={useColorModeValue('blue.50', 'blue.900')}
                   color={useColorModeValue('blue.600', 'blue.200')}
                   _hover={{
@@ -121,21 +116,22 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW="120px"
-                  px={6}
+                  px={{ base: 2, sm: 3 }}
+                  py={1.5}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  whiteSpace="nowrap"
                 >
                   Add Photos
                 </Button>
               </Tooltip>
 
-              {/* Share Button - Secondary action */}
               <Tooltip label="Coming soon - Share functionality" hasArrow>
                 <Button
                   onClick={handleShare}
-                  leftIcon={<Icon as={FaShare} boxSize={4} />}
+                  leftIcon={<Icon as={FaShare} boxSize={{ base: 3, sm: 3.5 }} />}
                   variant="ghost"
                   colorScheme="gray"
-                  size="sm"
+                  size={{ base: "xs", sm: "sm" }}
                   bg={useColorModeValue('gray.100', 'gray.700')}
                   color={useColorModeValue('gray.600', 'gray.300')}
                   _hover={{
@@ -148,23 +144,32 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW="120px"
-                  px={6}
+                  px={{ base: 2, sm: 3 }}
+                  py={1.5}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  whiteSpace="nowrap"
                 >
                   Share
                 </Button>
               </Tooltip>
-            </Flex>
+            </HStack>
 
-            {/* Quick insights - contextual information */}
-            <Box>
-              <Text fontSize="xs" color={textSecondary} textAlign="center" lineHeight="relaxed">
-                <Icon as={FaMapMarkerAlt} mr={1} />
-                Start building your travel story • Upload photos to remember this destination
-              </Text>
-            </Box>
+            {/* Right: Badge */}
+            <Badge 
+              colorScheme="blue" 
+              variant="subtle" 
+              fontSize={{ base: "2xs", sm: "xs" }}
+              px={{ base: 1.5, sm: 2 }}
+              py={{ base: 0.5, sm: 1 }}
+              borderRadius="md"
+              flexShrink={0}
+              whiteSpace="nowrap"
+              display={{ base: "none", sm: "block" }}
+            >
+              Explore
+            </Badge>
 
-          </VStack>
+          </Flex>
         </CardBody>
         
         <EnhancedImageUploaderModal
