@@ -181,7 +181,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
               mb={{ base: 2, sm: 2.5, md: 3 }}
               px={{ base: 2, sm: 0 }}
             >
-              Start Your Journey in {countryName}
+             {countryName} is waiting for you
             </Text>
             <Text
               fontSize={subtitleSize}
