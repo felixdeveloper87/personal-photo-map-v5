@@ -173,7 +173,7 @@ const FullImageModal = memo(function FullImageModal({
           </Badge>
         )}
         {totalCount > 1 && (
-          <Badge bg={glassBg} borderRadius="full" px={3} py={1} fontSize="xs" backdropFilter="blur(10px)">
+          <Badge bg={glassBg} color="white" borderRadius="full" px={3} py={1} fontSize="xs" backdropFilter="blur(10px)">
             {currentIndex + 1} / {totalCount}
           </Badge>
         )}
