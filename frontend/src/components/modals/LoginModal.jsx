@@ -91,15 +91,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       const data = await response.json();
       login(data);
       
-      toast({
-        title: "Welcome back! 🎉",
-        description: "You have successfully logged in.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-        position: "top-right",
-      });
-      
       onClose();
       navigate('/');
     } catch (error) {

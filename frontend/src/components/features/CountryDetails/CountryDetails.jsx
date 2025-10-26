@@ -146,13 +146,13 @@ const CountryDetails = () => {
   useEffect(() => {
     if (countryInfo && !countryLoading) {
       const countryName = countryInfo.nativeName || countryId?.toUpperCase();
-      toast({
-        title: `Welcome to ${countryName}!`,
-        description: "Country information loaded successfully.",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
+      // toast({
+      //   title: `Welcome to ${countryName}!`,
+      //   description: "Country information loaded successfully.",
+      //   status: "success",
+      //   duration: 2000,
+      //   isClosable: true,
+      // });
     }
   }, [countryInfo, countryLoading, countryId, toast]);
 
