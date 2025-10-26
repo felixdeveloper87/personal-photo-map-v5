@@ -171,8 +171,7 @@ const BaseModal = ({
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
         h={{ base: "100vh", sm: "auto" }} // Full height on mobile
-        // iOS Safari safe area support
-        paddingTop={{ base: "env(safe-area-inset-top)", sm: 0 }}
+        // iOS Safari safe area support - only bottom for keyboard
         paddingBottom={{ base: "env(safe-area-inset-bottom)", sm: 0 }}
         // Prevent iOS zoom on input focus
         css={{
@@ -214,11 +213,15 @@ const BaseModal = ({
           borderBottom="1px solid"
           borderColor={borderColor}
           pb={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
-          pt={{ base: 6, sm: variant === 'minimal' ? 4 : 6 }}
+          pt={{ 
+            base: "max(1.5rem, env(safe-area-inset-top))", 
+            sm: variant === 'minimal' ? 4 : 6 
+          }}
           px={{ base: 4, sm: 6 }}
           position="relative"
           bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(30, 41, 59, 0.8)")}
           backdropFilter="blur(10px)"
+          WebkitBackdropFilter="blur(10px)"
           boxShadow={useColorModeValue("0 2px 8px rgba(0, 0, 0, 0.1)", "0 2px 8px rgba(0, 0, 0, 0.3)")}
           _after={variant === 'minimal' ? {} : {
             content: '""',
@@ -271,12 +274,16 @@ const BaseModal = ({
           <ModalCloseButton
             size="md"
             position="absolute"
-            top={{ base: 3, sm: 4 }}
+            top={{ 
+              base: "calc(0.75rem + env(safe-area-inset-top))", 
+              sm: 4 
+            }}
             right={{ base: 3, sm: 4 }}
             borderRadius="full"
             bg="transparent"
             color={useColorModeValue("gray.500", "gray.400")}
             transition="all 0.15s ease-in-out"
+            zIndex={10}
             _hover={{
               color: useColorModeValue("gray.700", "gray.200"),
               transform: "scale(1.1)",
