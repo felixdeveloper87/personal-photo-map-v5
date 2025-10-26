@@ -28,7 +28,7 @@ const FullImageModal = memo(function FullImageModal({
   countryName,
   currentIndex = 0,
   totalCount = 1,
-  images = [], // ✅ adiciona a lista de imagens aqui (urls em array)
+  images = [], // lista completa de URLs
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -38,31 +38,27 @@ const FullImageModal = memo(function FullImageModal({
   const textColor = useColorModeValue('white', 'white');
   const glassBg = useColorModeValue('rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)');
 
-  // === Zoom / Pan MotionValues ===
+  // --- Motion values ---
   const scale = useSpring(1, { stiffness: 220, damping: 28 });
   const x = useSpring(0, { stiffness: 220, damping: 28 });
   const y = useSpring(0, { stiffness: 220, damping: 28 });
   const dragX = useMotionValue(0);
 
+  // --- Cache ---
   const loadedImages = useRef(new Set());
   const viewportRef = useRef(null);
 
-  // === Helpers ===
+  // --- Helpers ---
   const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
-
   const resetZoom = useCallback(() => {
     animate(scale, 1, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
     animate(x, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
     animate(y, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
   }, [scale, x, y]);
 
-  // === Cache-aware image load ===
+  // --- Cache aware load ---
   useEffect(() => {
-    if (loadedImages.current.has(imageUrl)) {
-      setImgLoaded(true);
-    } else {
-      setImgLoaded(false);
-    }
+    setImgLoaded(loadedImages.current.has(imageUrl));
   }, [imageUrl]);
 
   const handleImageLoad = useCallback(() => {
@@ -70,31 +66,67 @@ const FullImageModal = memo(function FullImageModal({
     setImgLoaded(true);
   }, [imageUrl]);
 
-  // === Preload vizinhas (Apple-style) ===
+  // --- Preload vizinhas ---
   useEffect(() => {
     if (!images?.length || !hasMultiple) return;
-
     const preload = (url) => {
       if (!url || loadedImages.current.has(url)) return;
       const img = new Image();
       img.src = url;
       img.onload = () => loadedImages.current.add(url);
     };
-
     const prevUrl = images[currentIndex - 1];
     const nextUrl = images[currentIndex + 1];
     preload(prevUrl);
     preload(nextUrl);
   }, [images, currentIndex, hasMultiple]);
 
-  // === Reset geral quando abre ou troca imagem ===
+  // --- Reset quando abre/troca ---
   useEffect(() => {
     setDownPosition(0);
     dragX.set(0);
     resetZoom();
   }, [imageUrl, isOpen, dragX, resetZoom]);
 
-  // === Navegação via teclado (mantida igual) ===
+  // --- Swipe horizontal mobile ---
+  const swipeStart = useRef({ x: 0, y: 0 });
+  const swipeActive = useRef(false);
+
+  const handleTouchStart = useCallback((e) => {
+    if (scale.get() > 1) return; // com zoom, não swipa
+    const touch = e.touches[0];
+    swipeStart.current = { x: touch.clientX, y: touch.clientY };
+    swipeActive.current = true;
+  }, [scale]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!swipeActive.current || scale.get() > 1) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - swipeStart.current.x;
+    const dy = touch.clientY - swipeStart.current.y;
+    if (Math.abs(dy) > Math.abs(dx)) {
+      swipeActive.current = false;
+      return;
+    }
+    dragX.set(dx);
+  }, [dragX, scale]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!swipeActive.current || scale.get() > 1) return;
+    const dx = dragX.get();
+    const velocity = dragX.getVelocity ? dragX.getVelocity() : 0;
+    if (dx < -MIN_SWIPE_DISTANCE || velocity < -MIN_SWIPE_VELOCITY) {
+      setDirection(1);
+      onNext?.();
+    } else if (dx > MIN_SWIPE_DISTANCE || velocity > MIN_SWIPE_VELOCITY) {
+      setDirection(-1);
+      onPrev?.();
+    }
+    animate(dragX, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
+    swipeActive.current = false;
+  }, [dragX, scale, onNext, onPrev]);
+
+  // --- Teclado ---
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
@@ -116,7 +148,7 @@ const FullImageModal = memo(function FullImageModal({
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose, onNext, onPrev, resetZoom, scale, hasMultiple]);
 
-  // === Header ===
+  // --- Header ---
   const Header = (
     <Flex
       position="absolute"
@@ -146,7 +178,6 @@ const FullImageModal = memo(function FullImageModal({
           </Badge>
         )}
       </HStack>
-
       <IconButton
         icon={<FiX />}
         aria-label="Close"
@@ -167,23 +198,19 @@ const FullImageModal = memo(function FullImageModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full" motionPreset="fade" isCentered>
-      <MotionOverlay
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        bg="black"
-        backdropFilter="blur(10px)"
-      />
+      <MotionOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} bg="black" backdropFilter="blur(10px)" />
       <ModalContent bg="transparent" boxShadow="none" maxW="none">
         <ModalBody p={0} h="100vh" position="relative" overflow="hidden">
           {Header}
 
-          {/* === Image viewer area === */}
           <Center
             ref={viewportRef}
             position="absolute"
             inset={0}
             style={{ touchAction: 'none' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <AnimatePresence initial={false} custom={direction}>
               <MotionDiv
@@ -194,7 +221,7 @@ const FullImageModal = memo(function FullImageModal({
                 exit={{ opacity: 0, x: direction < 0 ? 100 : -100, scale: 0.98 }}
                 transition={{ type: 'tween', ease: EASING_CURVE, duration: 0.3 }}
                 style={{
-                  x,
+                  x: scale.get() === 1 ? dragX : x,
                   y,
                   scale,
                   width: '100%',
@@ -230,7 +257,6 @@ const FullImageModal = memo(function FullImageModal({
             </AnimatePresence>
           </Center>
 
-          {/* === Nav arrows === */}
           {hasMultiple && (
             <>
               <IconButton
@@ -276,7 +302,6 @@ const FullImageModal = memo(function FullImageModal({
             </>
           )}
 
-          {/* === Mobile indicators === */}
           {hasMultiple && isMobile && scale.get() === 1 && (
             <>
               <Box
@@ -339,7 +364,7 @@ FullImageModal.propTypes = {
   countryName: PropTypes.string,
   currentIndex: PropTypes.number,
   totalCount: PropTypes.number,
-  images: PropTypes.array, // ✅ lista completa de URLs
+  images: PropTypes.array,
 };
 
 export default FullImageModal;
