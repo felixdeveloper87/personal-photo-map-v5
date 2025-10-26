@@ -206,9 +206,16 @@ const Header = () => {
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
           </HStack>
 
-          {/* CENTRO: botões para mobile quando logado - apenas Map e Logout */}
+          {/* CENTRO: botões para mobile quando logado - Theme, Map e Logout */}
           {isLoggedIn && isCompact && (
             <HStack spacing={{ base: 1, sm: 1.5, md: 2 }} align="center" flex="0 0 auto">
+              <ThemeToggleButton
+                colorMode={colorMode}
+                toggleColorMode={toggleColorMode}
+                styles={styles}
+                size={buttonSize}
+                hideText={true}
+              />
               <MapButton
                 isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
@@ -348,10 +355,10 @@ const Header = () => {
             borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
           >
             <VStack spacing={{ base: 1, sm: 1.5 }} w="100%">
-              {/* Grid de 6 botões em 1 linha */}
+              {/* Grid de 5 botões em 1 linha */}
               <Box
                 display="grid"
-                gridTemplateColumns="repeat(6, 1fr)"
+                gridTemplateColumns="repeat(5, 1fr)"
                 gap={{ base: 0.5, sm: 1.5, md: 2 }}
                 w="100%"
               >
@@ -370,21 +377,6 @@ const Header = () => {
                     px={{ base: 1, sm: 2 }}
                   />
                 )}
-                
-                <ThemeToggleButton
-                  colorMode={colorMode}
-                  toggleColorMode={toggleColorMode}
-                  styles={styles}
-                  size="xs"
-                  hideText={true}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  h={{ base: "44px", sm: "52px" }}
-                  minW="0"
-                  px={{ base: 1, sm: 2 }}
-                />
                 
                 <PhotoStorageButton
                   onClick={photoStorageModal.onOpen}
