@@ -49,6 +49,7 @@ const ModernMaterialButton = ({
   onClick,
   size = "sm",
   variant = "filled", // "filled" | "outlined" | "tonal"
+  hideText = false, // Nova prop para esconder o texto
   ...props
 }) => {
   const mode = useColorModeValue("light", "dark");
@@ -65,7 +66,7 @@ const ModernMaterialButton = ({
     "0 2px 6px rgba(0,0,0,0.35)"
   );
 
-  const iconSize = { xs: 12, sm: 14, md: 18, lg: 20 }[size] || 16;
+  const iconSize = { xs: 16, sm: 16, md: 18, lg: 20 }[size] || 18;
 
   const variantStyles =
     variant === "outlined"
@@ -110,7 +111,7 @@ const ModernMaterialButton = ({
     >
       <HStack spacing={2}>
         {icon && <Icon as={icon} boxSize={`${iconSize}px`} />}
-        {text && <Text fontSize="sm">{text}</Text>}
+        {text && !hideText && <Text fontSize="sm">{text}</Text>}
       </HStack>
     </MotionButton>
   );
@@ -120,47 +121,51 @@ const ModernMaterialButton = ({
    🔹 Specific Buttons (Material Edition)
    ===================================== */
 
-export const ThemeToggleButton = ({ colorMode, toggleColorMode }) => (
+export const ThemeToggleButton = ({ colorMode, toggleColorMode, hideText, ...props }) => (
   <ModernMaterialButton
     icon={colorMode === "light" ? FaMoon : FaSun}
     tone="blue"
     variant="tonal"
     onClick={toggleColorMode}
     aria-label="Toggle theme"
+    hideText={hideText}
+    {...props}
   />
 );
 
-export const PremiumButton = ({ onClick }) => (
+export const PremiumButton = ({ onClick, hideText, ...props }) => (
   <ModernMaterialButton
     icon={FaCrown}
-    text=""
+    text="Premium"
     tone="yellow"
     onClick={onClick}
+    hideText={hideText}
+    {...props}
   />
 );
 
-export const PhotoStorageButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaImages} text="Photos" tone="purple" onClick={onClick} />
+export const PhotoStorageButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaImages} text="Photos" tone="purple" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const UserProfileButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaUserCircle} text="Profile" tone="cyan" onClick={onClick} />
+export const UserProfileButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaUserCircle} text="Profile" tone="cyan" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const LogoutButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaSignOutAlt} text="" tone="red" onClick={onClick} />
+export const LogoutButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaSignOutAlt} text="" tone="red" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const TimelineButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaClock} text="Timeline" tone="orange" onClick={onClick} />
+export const TimelineButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaClock} text="Timeline" tone="orange" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const SearchButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaSearch} text="Search" tone="blue" onClick={onClick} />
+export const SearchButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaSearch} text="Search" tone="blue" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const MapButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaGlobe} text="" tone="blue" onClick={onClick} />
+export const MapButton = ({ onClick, hideText, ...props }) => (
+  <ModernMaterialButton icon={FaGlobe} text="Map" tone="blue" onClick={onClick} hideText={hideText} {...props} />
 );
 
 export const LoginButton = ({ onClick }) => (

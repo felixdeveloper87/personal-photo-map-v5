@@ -171,7 +171,7 @@ const Header = () => {
     base: "xs",    // Mobile pequeno
     sm: "sm",      // Mobile médio
     md: "sm",      // Tablet
-    lg: "sm",      // Desktop pequeno
+    lg: "md",      // Desktop pequeno
     xl: "md",      // Desktop médio
     "2xl": "lg",   // Desktop grande
   });
@@ -206,28 +206,15 @@ const Header = () => {
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
           </HStack>
 
-          {/* CENTRO: botões para mobile quando logado */}
+          {/* CENTRO: botões para mobile quando logado - apenas Map e Logout */}
           {isLoggedIn && isCompact && (
             <HStack spacing={{ base: 1, sm: 1.5, md: 2 }} align="center" flex="0 0 auto">
-              {/* Botão Premium (mobile) */}
-              {!isPremium && (
-                <PremiumButton
-                  onClick={premiumModal.onOpen}
-                  size={buttonSize}
-                />
-              )}
-              
               <MapButton
                 isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
                 size={buttonSize}
+                hideText={true}
                 aria-label="Go to Map"
-              />
-              <ThemeToggleButton
-                colorMode={colorMode}
-                toggleColorMode={toggleColorMode}
-                styles={styles}
-                size={buttonSize}
               />
               <LogoutButton
                 onClick={() => {
@@ -240,6 +227,7 @@ const Header = () => {
                   });
                 }}
                 size={buttonSize}
+                hideText={true}
               />
             </HStack>
           )}
@@ -348,7 +336,7 @@ const Header = () => {
           </HStack>
         </Flex>
 
-        {/* Segunda linha do header - Botões de ação para mobile quando logado */}
+        {/* Segunda linha do header - Todos os botões de ação para mobile quando logado */}
         {isLoggedIn && isCompact && (
           <Box
             w="100%"
@@ -358,25 +346,68 @@ const Header = () => {
             borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
           >
             <VStack spacing={{ base: 1, sm: 1.5 }} w="100%">
-              {/* Grid de 4 botões principais */}
+              {/* Grid de 6 botões em 1 linha */}
               <Box
                 display="grid"
-                gridTemplateColumns="repeat(4, 1fr)"
-                gap={{ base: 1, sm: 1.5, md: 2 }}
+                gridTemplateColumns="repeat(6, 1fr)"
+                gap={{ base: 0.5, sm: 1.5, md: 2 }}
                 w="100%"
               >
+                {/* Botão Premium - só aparece se não for premium */}
+                {!isPremium && (
+                  <PremiumButton
+                    onClick={premiumModal.onOpen}
+                    size="xs"
+                    hideText={true}
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    w="100%"
+                    h={{ base: "44px", sm: "52px" }}
+                    minW="0"
+                    px={{ base: 1, sm: 2 }}
+                  />
+                )}
+                
+                <ThemeToggleButton
+                  colorMode={colorMode}
+                  toggleColorMode={toggleColorMode}
+                  styles={styles}
+                  size="xs"
+                  hideText={true}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  w="100%"
+                  h={{ base: "44px", sm: "52px" }}
+                  minW="0"
+                  px={{ base: 1, sm: 2 }}
+                />
+                
                 <PhotoStorageButton
                   onClick={photoStorageModal.onOpen}
-                  size={buttonSize}
+                  size="xs"
+                  hideText={true}
                   display="flex"
-                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  w="100%"
+                  h={{ base: "44px", sm: "52px" }}
+                  minW="0"
+                  px={{ base: 1, sm: 2 }}
                 />
                 
                 <UserProfileButton
                   onClick={profileModal.onOpen}
-                  size={buttonSize}
+                  size="xs"
+                  hideText={true}
                   display="flex"
-                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  w="100%"
+                  h={{ base: "44px", sm: "52px" }}
+                  minW="0"
+                  px={{ base: 1, sm: 2 }}
                 />
                 
                 <SearchButton
@@ -385,16 +416,28 @@ const Header = () => {
                     const searchInput = document.querySelector('[data-search-trigger]');
                     if (searchInput) searchInput.click();
                   }}
-                  size={buttonSize}
+                  size="xs"
+                  hideText={true}
                   display="flex"
-                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  w="100%"
+                  h={{ base: "44px", sm: "52px" }}
+                  minW="0"
+                  px={{ base: 1, sm: 2 }}
                 />
                 
                 <TimelineButton
                   onClick={() => navigate("/timeline")}
-                  size={buttonSize}
+                  size="xs"
+                  hideText={true}
                   display="flex"
-                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  w="100%"
+                  h={{ base: "44px", sm: "52px" }}
+                  minW="0"
+                  px={{ base: 1, sm: 2 }}
                 />
               </Box>
             </VStack>
