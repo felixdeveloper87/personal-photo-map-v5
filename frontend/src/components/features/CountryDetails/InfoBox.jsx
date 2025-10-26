@@ -148,7 +148,7 @@ export default function InfoBox({
         outlineColor: currentColors.icon,
       }}
       sx={{
-        minW: isMobile ? '100px' : '120px',
+        minW: 0,
         ...sx,
       }}
     >

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Box, Icon, Text, useColorModeValue } from '@chakra-ui/react';
+import { Box, Icon, Text, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
 import Flag from 'react-world-flags';
 import { FaGlobe } from 'react-icons/fa';
 import { getCachedFlag, normalizeCountryCode } from '../../../utils/flagNormalizer';
@@ -16,6 +16,9 @@ const EnhancedFlag = ({ countryCode }) => {
   const hoverBorder = useColorModeValue('gray.400', 'gray.500');
 
   const correctedCode = normalizeCountryCode(countryCode);
+  
+  // Define objectFit responsivamente: cover para mobile/medium, contain para desktop
+  const objectFit = useBreakpointValue({ base: 'cover', sm: 'cover', md: 'contain', lg: 'contain' });
 
   const handleFlagError = useCallback(async () => {
     if (flagError) return;
@@ -61,7 +64,7 @@ const EnhancedFlag = ({ countryCode }) => {
   const getResponsiveImageStyles = () => ({
     width: '100%',
     height: '100%',
-    objectFit: 'contain',
+    objectFit: objectFit,
     objectPosition: 'center center',
     transition: 'all 0.3s ease',
     maxWidth: '100%',

@@ -194,7 +194,7 @@ const Header = () => {
   });
 
   // Mostrar versão compacta (hamburger + logo map button) em larguras <= 1380px
-  const [isCompact] = useMediaQuery("(max-width: 1380px)");
+  const [isCompact] = useMediaQuery("(max-width: 1100px)");
 
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
@@ -249,15 +249,17 @@ const Header = () => {
               />
             )}
 
-            {/* Botão Map - responsivo */}
-            <MapButton
-              isLoggedIn={isLoggedIn}
-              onClick={() =>
-                isLoggedIn ? navigate("/map/private") : navigate("/map")
-              }
-              size={buttonSize}
-              aria-label="Go to Map"
-            />
+            {/* Botão Map - responsivo - apenas para usuários logados */}
+            {isLoggedIn && (
+              <MapButton
+                isLoggedIn={isLoggedIn}
+                onClick={() =>
+                  isLoggedIn ? navigate("/map/private") : navigate("/map")
+                }
+                size={buttonSize}
+                aria-label="Go to Map"
+              />
+            )}
 
             {isLoggedIn && (
               <UserProfileButton
@@ -340,7 +342,7 @@ const Header = () => {
         {isLoggedIn && isCompact && (
           <Box
             w="100%"
-            pt={2}
+            pt={4}
             pb={2}
             borderTop="1px solid"
             borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
