@@ -17,43 +17,64 @@ import {
   Tooltip,
   Kbd,
   Badge,
+  Skeleton,
+  SkeletonCircle,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  IconButton,
+  useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { IoCheckmark, IoCheckmarkCircle } from 'react-icons/io5';
+import { IoCheckmark, IoCheckmarkCircle, IoEllipsisVertical } from 'react-icons/io5';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Registrar nomes de países
 countries.registerLocale(en);
 
 // Animações estilo Apple Photos
 const imageVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, scale: 0.85, y: 20 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    y: 0,
+    transition: { 
+      duration: 0.5, 
+      ease: [0.34, 1.56, 0.64, 1],
+      staggerChildren: 0.05 
+    },
   },
   hover: {
     scale: 1.02,
-    transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] },
+    y: -4,
+    transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] },
   },
   exit: {
     opacity: 0,
-    scale: 0.8,
-    transition: { duration: 0.2 },
+    scale: 0.9,
+    y: -10,
+    transition: { duration: 0.25, ease: [0.34, 1.56, 0.64, 1] },
   },
 };
 
 // Animações para checkboxes
 const checkboxVariants = {
-  initial: { scale: 0.8, opacity: 0 },
-  animate: { scale: 1, opacity: 1 },
-  checked: { scale: 1.1, opacity: 1 },
-  hover: { scale: 1.05 },
+  initial: { scale: 0.7, opacity: 0, rotate: -180 },
+  animate: { scale: 1, opacity: 1, rotate: 0 },
+  checked: { scale: 1.15, opacity: 1, rotate: 360 },
+  hover: { scale: 1.1 },
+};
+
+// Blur placeholder animation
+const blurVariants = {
+  initial: { opacity: 1, blur: 8 },
+  loaded: { opacity: 0, blur: 0, transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] } },
 };
 
 const PhotoGallery = memo(function PhotoGallery({
@@ -71,6 +92,13 @@ const PhotoGallery = memo(function PhotoGallery({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fullscreenRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const toast = useToast();
+  
+  // Drag-to-select state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartIndex, setDragStartIndex] = useState(null);
+  const dragAreaRef = useRef(null);
+  const [imageLoadStates, setImageLoadStates] = useState(new Map());
 
   const isMobile = useBreakpointValue({ base: true, sm: false });
   const isLargeScreen = useBreakpointValue({ base: false, lg: false, xl: true, '2xl': true });
@@ -80,6 +108,8 @@ const PhotoGallery = memo(function PhotoGallery({
   const selectionBgColor = useColorModeValue('blue.50', 'blue.900');
   const checkboxBgColor = useColorModeValue('white', 'gray.800');
   const checkboxBorderColor = useColorModeValue('gray.300', 'gray.600');
+  const shimmerColor1 = useColorModeValue('#e2e8f0', '#1a202c');
+  const shimmerColor2 = useColorModeValue('#cbd5e0', '#2d3748');
 
   // Debug: Log images data
   console.log('🖼️ PhotoGallery received images:', images?.length || 0, 'images');
@@ -125,6 +155,60 @@ const PhotoGallery = memo(function PhotoGallery({
     const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Keyboard shortcuts (Ctrl/Cmd+A for select all, Escape for exit selection)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isSelectionMode) return;
+      
+      // Select all with Ctrl/Cmd+A
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        onSelectAll?.(images);
+      }
+      
+      // Escape to exit selection mode
+      if (e.key === 'Escape') {
+        toggleSelectionMode?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSelectionMode, images, onSelectAll, toggleSelectionMode]);
+
+  // Handle image load state
+  const handleImageLoad = useCallback((imageId) => {
+    setImageLoadStates((prev) => new Map(prev).set(imageId, true));
+  }, []);
+
+  // Drag-to-select handlers
+  const handleDragStart = useCallback((index) => {
+    if (!isSelectionMode) return;
+    setIsDragging(true);
+    setDragStartIndex(index);
+  }, [isSelectionMode]);
+
+  const handleDragMove = useCallback((index) => {
+    if (!isDragging || dragStartIndex === null) return;
+    
+    const start = Math.min(dragStartIndex, index);
+    const end = Math.max(dragStartIndex, index);
+    
+    for (let i = start; i <= end; i++) {
+      if (images[i]?.id) {
+        const imageId = images[i].id;
+        if (!selectedSet.has(String(imageId))) {
+          handleImageSelection?.(imageId);
+        }
+      }
+    }
+  }, [isDragging, dragStartIndex, images, selectedSet, handleImageSelection]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+    setDragStartIndex(null);
   }, []);
 
   // Empty state
@@ -174,6 +258,23 @@ const PhotoGallery = memo(function PhotoGallery({
 
   return (
     <Box bg={bgColor} py={2}>
+      {/* Global styles for shimmer animation */}
+      <Box
+        as="style"
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes shimmer {
+              0% { background-position: -200% 0; }
+              100% { background-position: 200% 0; }
+            }
+            @keyframes pulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.7; }
+            }
+          `,
+        }}
+      />
+      
       {/* Selection Controls */}
       <Box mb={4}>
         <Flex justify="space-between" align="center" maxW="1800px" mx="auto" px={6}>
@@ -272,10 +373,14 @@ const PhotoGallery = memo(function PhotoGallery({
           </HStack>
 
           {isSelectionMode && (
-            <HStack spacing={2} opacity={0.8}>
+            <HStack spacing={2} opacity={0.7}>
               <Text fontSize="xs" color="gray.500">Tips:</Text>
               <Kbd>Click</Kbd>
-              <Text fontSize="xs" color="gray.500">to toggle</Text>
+              <Text fontSize="xs" color="gray.500">to toggle,</Text>
+              <Kbd>Ctrl+A</Kbd>
+              <Text fontSize="xs" color="gray.500">to select all,</Text>
+              <Kbd>Esc</Kbd>
+              <Text fontSize="xs" color="gray.500">to exit</Text>
             </HStack>
           )}
         </Flex>
@@ -335,9 +440,27 @@ const PhotoGallery = memo(function PhotoGallery({
                   role="group"
                   aria-label={`Image from ${countryName}`}
                   onClick={() => handleImageClick(index)}
+                  onMouseDown={(e) => isSelectionMode && !isDragging && handleDragStart(index)}
+                  onMouseEnter={(e) => isSelectionMode && handleDragMove(index)}
+                  onMouseUp={() => handleDragEnd()}
+                  onMouseLeave={() => handleDragEnd()}
                 >
+                  {/* Drag selection overlay */}
+                  {isSelectionMode && isDragging && dragStartIndex !== null && (
+                    <Box
+                      position="absolute"
+                      inset="0"
+                      bg="rgba(59,130,246,0.15)"
+                      zIndex={1}
+                      pointerEvents="none"
+                      border={`3px solid ${selectionColor}`}
+                      borderRadius={isMobile ? '8px' : '12px'}
+                      animation="pulse 1s ease-in-out infinite"
+                    />
+                  )}
+                  
                   {/* Overlay sutil quando selecionado */}
-                  {isSelectionMode && (
+                  {isSelectionMode && !isDragging && (
                     <Box
                       position="absolute"
                       inset="0"
@@ -402,8 +525,36 @@ const PhotoGallery = memo(function PhotoGallery({
                     </motion.div>
                   )}
 
-                  {/* Imagem */}
+                  {/* Imagem com blur-up loading */}
                   <Box position="relative" overflow="hidden" borderRadius={isMobile ? '8px' : '12px'}>
+                    {/* Blur placeholder */}
+                    {!imageLoadStates.get(image.id) && (
+                      <motion.div
+                        variants={blurVariants}
+                        initial="initial"
+                        animate={imageLoadStates.get(image.id) ? "loaded" : "initial"}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: `linear-gradient(110deg, ${shimmerColor1} 0%, ${shimmerColor2} 50%, ${shimmerColor1} 100%)`,
+                          backgroundSize: '200% 200%',
+                          animation: 'shimmer 1.5s ease-in-out infinite',
+                        }}
+                      >
+                        <Box
+                          position="absolute"
+                          inset={0}
+                          filter="blur(20px)"
+                          style={{
+                            backgroundImage: `url(${image.url})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity: 0.3,
+                          }}
+                        />
+                      </motion.div>
+                    )}
+                    
                     <Image
                       src={image.url}
                       alt={`Photo from ${countryName}`}
@@ -412,13 +563,17 @@ const PhotoGallery = memo(function PhotoGallery({
                       objectFit="cover"
                       loading="lazy"
                       fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
-                      onLoad={() => console.log('✅ Image loaded successfully:', image.url)}
+                      onLoad={() => {
+                        handleImageLoad(image.id);
+                        console.log('✅ Image loaded successfully:', image.url);
+                      }}
                       onError={(e) => console.error('❌ Image failed to load:', image.url, e)}
                       sx={{
                         aspectRatio: '1/1',
                         minHeight: isMobile ? '120px' : '200px',
-                        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
                         filter: isSelected ? 'brightness(0.98) contrast(1.02) saturate(1.05)' : 'none',
+                        opacity: imageLoadStates.get(image.id) ? 1 : 0,
                       }}
                       _groupHover={{ transform: isSelectionMode ? 'scale(1.01)' : 'scale(1.05)' }}
                     />
@@ -433,6 +588,9 @@ const PhotoGallery = memo(function PhotoGallery({
                     bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
                     p={isMobile ? 2 : 3}
                     color="white"
+                    opacity={0}
+                    _groupHover={{ opacity: 1 }}
+                    transition="opacity 0.3s ease"
                   >
                     <VStack spacing={isMobile ? 0.5 : 1} align="start">
                       <Text fontSize={isMobile ? 'xs' : 'sm'} fontWeight="semibold" lineHeight="1.2" noOfLines={1}>
@@ -445,6 +603,64 @@ const PhotoGallery = memo(function PhotoGallery({
                       )}
                     </VStack>
                   </Box>
+
+                  {/* Context Menu (Right-click) */}
+                  {!isSelectionMode && (
+                    <Menu isLazy>
+                      {({ isOpen }) => (
+                        <>
+                          <MenuButton
+                            as={IconButton}
+                            icon={<IoEllipsisVertical />}
+                            aria-label="Image options"
+                            position="absolute"
+                            top="8px"
+                            right="8px"
+                            size="sm"
+                            borderRadius="full"
+                            bg="rgba(0,0,0,0.6)"
+                            color="white"
+                            opacity={0}
+                            _groupHover={{ opacity: 1 }}
+                            _hover={{ bg: 'rgba(0,0,0,0.8)', transform: 'scale(1.1)' }}
+                            transition="all 0.2s ease"
+                            backdropFilter="blur(8px)"
+                            onClick={(e) => e.stopPropagation()}
+                            zIndex={4}
+                          />
+                          <MenuList
+                            bg={useColorModeValue('white', 'gray.800')}
+                            borderColor={useColorModeValue('gray.200', 'gray.600')}
+                            boxShadow="xl"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MenuItem
+                              onClick={() => {
+                                setCurrentImageIndex(index);
+                                onOpen();
+                              }}
+                              icon={<Icon as={IoCheckmarkCircle} />}
+                            >
+                              View Full Image
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => {
+                                navigator.clipboard.writeText(image.url);
+                                toast({
+                                  title: 'Copied to clipboard',
+                                  status: 'success',
+                                  duration: 2000,
+                                  isClosable: true,
+                                });
+                              }}
+                            >
+                              Copy Image URL
+                            </MenuItem>
+                          </MenuList>
+                        </>
+                      )}
+                    </Menu>
+                  )}
                 </Box>
               </motion.div>
             );
@@ -491,7 +707,7 @@ PhotoGallery.propTypes = {
   isSelectionMode: PropTypes.bool,
   toggleSelectionMode: PropTypes.func,
   handleImageSelection: PropTypes.func,
-  isImageSelected: PropTypes.func, // compat
+  isImageSelected: PropTypes.func,
   onSelectAll: PropTypes.func,
   onClearSelection: PropTypes.func,
 };
