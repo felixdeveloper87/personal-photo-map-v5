@@ -264,18 +264,18 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       onClose={onClose}
       title="User Profile"
       icon={FaUser}
-      size="lg"
+      size={{ base: "full", sm: "md", md: "lg", lg: "xl", xl: "2xl" }}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={{ base: 4, sm: 5, md: 6 }} align="stretch">
         <MotionBox
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Profile Header Section */}
-          <MotionBox variants={itemVariants} mb={6}>
+          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
             <Box
-              p={6}
+              p={{ base: 4, sm: 5, md: 6 }}
               borderRadius="xl"
               bg={useColorModeValue("blue.50", "blue.900")}
               border="1px solid"
@@ -297,11 +297,11 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 />
               )}
 
-              <Flex align="center" justify="space-between" position="relative">
-                <HStack spacing={4}>
+              <Flex align="center" justify="space-between" position="relative" direction={{ base: "column", sm: "row" }} gap={{ base: 3, sm: 0 }}>
+                <HStack spacing={{ base: 3, sm: 4 }}>
                   <Box position="relative">
                     <Avatar
-                      size="xl"
+                      size={{ base: "lg", sm: "xl" }}
                       name={fullname}
                       bg={isPremium ? premiumGradient : accentColor}
                       color="white"
@@ -322,18 +322,18 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     )}
                   </Box>
 
-                  <VStack spacing={2} align="start">
-                    <HStack spacing={3} align="center">
-                      <Heading as="h2" size="lg" color={headingColor}>
+                  <VStack spacing={{ base: 1.5, sm: 2 }} align="start">
+                    <HStack spacing={{ base: 2, sm: 3 }} align="center" flexWrap="wrap">
+                      <Heading as="h2" size={{ base: "md", sm: "lg" }} color={headingColor}>
                         {fullname}
                       </Heading>
                       {isPremium && (
                         <Badge
                           colorScheme="yellow"
-                          px={3}
+                          px={{ base: 2, sm: 3 }}
                           py={1}
                           borderRadius="full"
-                          fontSize="sm"
+                          fontSize={{ base: "xs", sm: "sm" }}
                           fontWeight="bold"
                           bg={premiumGradient}
                           color="white"
@@ -345,15 +345,15 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     </HStack>
 
                     <HStack spacing={2} align="center">
-                      <Icon as={FaEnvelope} color={textColor} w={4} h={4} />
-                      <Text color={textColor} fontSize="sm">
+                      <Icon as={FaEnvelope} color={textColor} w={{ base: 3, sm: 4 }} h={{ base: 3, sm: 4 }} />
+                      <Text color={textColor} fontSize={{ base: "xs", sm: "sm" }}>
                         {email}
                       </Text>
                     </HStack>
 
                     <HStack spacing={2} align="center">
-                      <Icon as={FaMapMarkerAlt} color={textColor} w={4} h={4} />
-                      <Text color={textColor} fontSize="sm">
+                      <Icon as={FaMapMarkerAlt} color={textColor} w={{ base: 3, sm: 4 }} h={{ base: 3, sm: 4 }} />
+                      <Text color={textColor} fontSize={{ base: "xs", sm: "sm" }}>
                         {userStats.favoriteContinent}
                       </Text>
                     </HStack>
@@ -375,26 +375,26 @@ const UserProfileModal = ({ isOpen, onClose }) => {
           </MotionBox>
 
           {/* Statistics Cards */}
-          <MotionBox variants={itemVariants} mb={6}>
-            <Heading as="h3" size="md" mb={4} color={headingColor}>
+          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
+            <Heading as="h3" size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
               <Icon as={FaTrophy} mr={2} color="yellow.400" />
               Travel Statistics
             </Heading>
-            <SimpleGrid columns={gridColumns} spacing={4}>
+            <SimpleGrid columns={gridColumns} spacing={{ base: 2, sm: 3, md: 4 }}>
               <Box
                 bg={bgColor}
                 borderRadius="lg"
                 border="1px solid"
                 borderColor={borderColor}
-                p={4}
+                p={{ base: 3, sm: 4 }}
                 textAlign="center"
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaCamera} w={5} h={5} color="blue.400" mb={2} />
+                <Icon as={FaCamera} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="blue.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{userStats.totalPhotos}</StatNumber>
-                  <StatLabel color={textColor} fontSize="sm">Photos</StatLabel>
+                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.totalPhotos}</StatNumber>
+                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Photos</StatLabel>
                 </Stat>
               </Box>
 
@@ -403,16 +403,16 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 borderRadius="lg"
                 border="1px solid"
                 borderColor={borderColor}
-                p={4}
+                p={{ base: 3, sm: 4 }}
                 textAlign="center"
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaGlobe} w={5} h={5} color="green.400" mb={2} />
+                <Icon as={FaGlobe} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="green.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{userStats.countriesVisited}</StatNumber>
-                  <StatLabel color={textColor} fontSize="sm">Countries</StatLabel>
-                  <StatHelpText fontSize="xs" lineHeight="1.2">
+                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.countriesVisited}</StatNumber>
+                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Countries</StatLabel>
+                  <StatHelpText fontSize={{ base: "2xs", sm: "xs" }} lineHeight="1.2">
                     {((userStats.countriesVisited / 195) * 100).toFixed(1)}% of world
                   </StatHelpText>
                 </Stat>
@@ -424,15 +424,15 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 borderRadius="lg"
                 border="1px solid"
                 borderColor={borderColor}
-                p={4}
+                p={{ base: 3, sm: 4 }}
                 textAlign="center"
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaGlobe} w={5} h={5} color="teal.400" mb={2} />
+                <Icon as={FaGlobe} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="teal.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{continentCount}</StatNumber>
-                  <StatLabel color={textColor} fontSize="sm">Continents</StatLabel>
+                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{continentCount}</StatNumber>
+                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Continents</StatLabel>
                 </Stat>
               </Box>
 
@@ -441,28 +441,28 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 borderRadius="lg"
                 border="1px solid"
                 borderColor={borderColor}
-                p={4}
+                p={{ base: 3, sm: 4 }}
                 textAlign="center"
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaCalendarAlt} w={5} h={5} color="purple.400" mb={2} />
+                <Icon as={FaCalendarAlt} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="purple.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{userStats.joinDate}</StatNumber>
-                  <StatLabel color={textColor} fontSize="sm">Member Since</StatLabel>
+                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.joinDate}</StatNumber>
+                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Member Since</StatLabel>
                 </Stat>
               </Box>
             </SimpleGrid>
           </MotionBox>
 
           {/* Countries Section */}
-          <MotionBox variants={itemVariants} mb={6}>
-            <Heading as="h3" size="md" mb={4} color={headingColor}>
+          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
+            <Heading as="h3" size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
               <Icon as={FaFlag} mr={2} color="blue.400" />
               Countries Explored
             </Heading>
             <Box
-              p={4}
+              p={{ base: 3, sm: 4 }}
               borderRadius="lg"
               bg={bgColor}
               border="1px solid"
@@ -477,10 +477,10 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     borderRadius="full"
                     mb={4}
                   />
-                  <Text textAlign="center" color={textColor} mb={4} fontSize="sm">
+                  <Text textAlign="center" color={textColor} mb={{ base: 3, sm: 4 }} fontSize={{ base: "xs", sm: "sm" }}>
                     {countryNamesList.length} / 195 countries ({((countryNamesList.length / 195) * 100).toFixed(1)}%)
                   </Text>
-                  <SimpleGrid columns={countryGridColumns} spacing={3}>
+                  <SimpleGrid columns={countryGridColumns} spacing={{ base: 2, sm: 3 }}>
                     {countryNamesList
                       .filter(country => country.name && country.name !== 'UNKNOWN') // Filter out invalid countries
                       .slice(0, 12)
@@ -576,14 +576,15 @@ const UserProfileModal = ({ isOpen, onClose }) => {
           </MotionBox>
 
           {/* Action Buttons */}
-          <Flex justify="center" gap={4}>
+          <Flex justify="center" gap={{ base: 2, sm: 4 }}>
             <Button
               colorScheme="blue"
-              size="md"
+              size={{ base: "sm", sm: "md" }}
               onClick={onClose}
               leftIcon={<FaCompass />}
               _hover={{ transform: 'translateY(-2px)' }}
               transition="all 0.2s"
+              w={{ base: "full", sm: "auto" }}
             >
               Continue Exploring
             </Button>

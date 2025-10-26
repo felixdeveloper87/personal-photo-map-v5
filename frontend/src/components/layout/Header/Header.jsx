@@ -5,7 +5,6 @@ import {
   Flex,
   useDisclosure,
   useToast,
-  IconButton,
   useMediaQuery,
   useColorMode,
   useBreakpointValue,
@@ -13,9 +12,7 @@ import {
   Container,
   HStack,
   VStack,
-  Text,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 
 import { AuthContext } from "../../../context/AuthContext";
 import { CountriesContext } from "../../../context/CountriesContext";
@@ -29,10 +26,8 @@ import {
 
 // Componentes do header
 import HeaderLogo from "./HeaderLogo";
-import HeaderActions from "./HeaderActions";
 import HeaderAuth from "./HeaderAuth";
-import HeaderUser from "./HeaderUser";
-import HeaderMobile from "./HeaderMobile";
+import SearchForm from "../../features/SearchForm";
 import {
   ThemeToggleButton,
   LogoutButton,
@@ -57,12 +52,11 @@ const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
 
   // Contextos
-  const { isLoggedIn, fullname, isPremium, logout, upgradeToPremium } = useContext(AuthContext);
+  const { isLoggedIn, fullname, isPremium, logout } = useContext(AuthContext);
   const { countriesWithPhotos, photoCount, countryCount } =
     useContext(CountriesContext);
 
   // Disclosures
-  const mobileMenu = useDisclosure();
   const photoStorageModal = useDisclosure();
   const profileModal = useDisclosure();
   const premiumModal = useDisclosure();
@@ -278,31 +272,38 @@ const Header = () => {
             />
 
             {isLoggedIn && (
-              <HeaderUser
-                styles={styles}
-                fullname={fullname}
-                isPremium={isPremium}
-                onProfileClick={profileModal.onOpen}
+              <UserProfileButton
+                onClick={profileModal.onOpen}
                 size={buttonSize}
               />
             )}
 
             {isLoggedIn && (
-              <HeaderActions
-                styles={styles}
-                colorMode={colorMode}
-                toggleColorMode={toggleColorMode}
-                isLoggedIn={isLoggedIn}
-                isPremium={isPremium}
-                onPremiumClick={premiumModal.onOpen}
-                onPhotoStorageClick={photoStorageModal.onOpen}
-                countriesWithPhotos={countriesWithPhotos}
-                onSearch={(p) =>
-                  navigate(`/countries/${p.country}?year=${p.year}`)
-                }
-                onTimelineClick={() => navigate("/timeline")}
-                buttonSize={buttonSize}
-              />
+              <>
+                <PhotoStorageButton
+                  onClick={photoStorageModal.onOpen}
+                  size={buttonSize}
+                  aria-label="Photo Storage"
+                />
+                <SearchButton
+                  onClick={() => {
+                    const searchTrigger = document.querySelector('[data-search-trigger]');
+                    if (searchTrigger) {
+                      searchTrigger.click();
+                    }
+                  }}
+                  size={buttonSize}
+                  aria-label="Search Photos"
+                />
+                <SearchForm
+                  countriesWithPhotos={countriesWithPhotos}
+                  onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
+                />
+                <TimelineButton
+                  onClick={() => navigate("/timeline")}
+                  size={buttonSize}
+                />
+              </>
             )}
           </HStack>
 
@@ -400,59 +401,6 @@ const Header = () => {
           </Box>
         )}
       </Container>
-
-      {/* MENU MOBILE (aparece somente no base…lg) */}
-      <HeaderMobile
-        isCompact={isCompact}
-        isOpen={mobileMenu.isOpen}
-        styles={styles}
-        colorMode={colorMode}
-        toggleColorMode={toggleColorMode}
-        isLoggedIn={isLoggedIn}
-        fullname={fullname}
-        isPremium={isPremium}
-        photoCount={photoCount}
-        countryCount={countryCount}
-        countriesWithPhotos={countriesWithPhotos}
-        buttonSize={buttonSize}
-        onProfileClick={() => {
-          profileModal.onOpen();
-          mobileMenu.onClose();
-        }}
-        onPremiumClick={() => {
-          premiumModal.onOpen();
-          mobileMenu.onClose();
-        }}
-        onPhotoStorageClick={() => {
-          photoStorageModal.onOpen();
-          mobileMenu.onClose();
-        }}
-        onTimelineClick={() => {
-          navigate("/timeline");
-          mobileMenu.onClose();
-        }}
-        onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
-        onLoginClick={() => {
-          loginModal.onOpen();
-          mobileMenu.onClose();
-        }}
-        onRegisterClick={() => {
-          registerModal.onOpen();
-          mobileMenu.onClose();
-        }}
-        onLogout={() => {
-          logout();
-          navigate("/"); // Redireciona para a landing page após logout
-          mobileMenu.onClose();
-          toast({
-            title: "Logged out",
-            status: "info",
-            duration: 2000,
-            isClosable: true,
-          });
-        }}
-        onClose={mobileMenu.onClose} // ⬅️ fecha pelo X no topo
-      />
 
       {/* MODAIS */}
       <UserProfileModal

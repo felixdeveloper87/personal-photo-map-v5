@@ -69,27 +69,27 @@ const BaseModal = ({
 
   // Enhanced theme-aware colors with modern gradients
   const bgGradient = useColorModeValue(
-    variant === 'minimal' 
+    variant === 'minimal'
       ? "linear(to-br, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95))"
       : variant === 'premium'
-      ? "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))"
-      : "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))",
+        ? "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))"
+        : "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))",
     variant === 'minimal'
       ? "linear(to-br, rgba(26, 32, 44, 0.98), rgba(26, 32, 44, 0.95))"
       : variant === 'premium'
-      ? "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
-      : "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
+        ? "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
+        : "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
   );
-  
+
   const borderColor = useColorModeValue(
-    variant === 'minimal' 
+    variant === 'minimal'
       ? "rgba(226, 232, 240, 0.8)"
       : "rgba(148, 163, 184, 0.2)",
     variant === 'minimal'
       ? "rgba(71, 85, 105, 0.2)"
       : "rgba(148, 163, 184, 0.1)"
   );
-  
+
   const shadowColor = useColorModeValue(
     "rgba(0, 0, 0, 0.08)",
     "rgba(0, 0, 0, 0.25)"
@@ -126,11 +126,16 @@ const BaseModal = ({
     }
   }, [isOpen]);
 
+  // Support responsive sizes - size can be object or string
+  const responsiveSize = typeof size === 'object'
+    ? size
+    : { base: "full", sm: size, md: size, lg: size };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={{ base: "full", sm: size }}
+      size={responsiveSize}
       isCentered={isCentered}
       motionPreset={motionPreset}
       closeOnOverlayClick={closeOnOverlayClick}
@@ -145,22 +150,37 @@ const BaseModal = ({
           bg: "blackAlpha.500"
         }}
       />
-      
+
       <ModalContent
         bgGradient={bgGradient}
         backdropFilter="blur(24px)"
+        WebkitBackdropFilter="blur(24px)" // Safari support
         border="1px solid"
         borderColor={borderColor}
         borderRadius={{ base: "none", sm: variant === 'minimal' ? "xl" : "2xl" }}
         shadow={shadowConfig.xl}
-        maxHeight={{ base: "calc(100vh - 2rem)", sm: maxHeight }}
+        maxHeight={{ 
+          base: "100vh", // Full viewport height on mobile
+          sm: maxHeight 
+        }}
+        minHeight={{ base: "100vh", sm: "auto" }} // Ensure full height on mobile
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
-        my={{ base: 4, sm: "auto" }}
+        my={{ base: 0, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
-        h={{ base: "calc(100vh - 2rem)", sm: "auto" }}
+        h={{ base: "100vh", sm: "auto" }} // Full height on mobile
+        // iOS Safari safe area support
+        paddingTop={{ base: "env(safe-area-inset-top)", sm: 0 }}
+        paddingBottom={{ base: "env(safe-area-inset-bottom)", sm: 0 }}
+        // Prevent iOS zoom on input focus
+        css={{
+          '@supports (-webkit-touch-callout: none)': {
+            // iOS-specific styles
+            minHeight: '-webkit-fill-available',
+          }
+        }}
         _before={showShimmer ? {
           content: '""',
           position: "absolute",
@@ -174,8 +194,8 @@ const BaseModal = ({
           zIndex: 1
         } : {}}
         _hover={{
-          transform: "translateY(-4px) scale(1.01)",
-          shadow: shadowConfig["2xl"],
+          transform: { base: "none", sm: "translateY(-4px) scale(1.01)" },
+          shadow: { base: shadowConfig.xl, sm: shadowConfig["2xl"] },
           borderColor: useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(59, 130, 246, 0.2)")
         }}
         _focus={{
@@ -217,7 +237,7 @@ const BaseModal = ({
               p={{ base: 1.5, sm: variant === 'minimal' ? 1.5 : 2 }}
               borderRadius={variant === 'minimal' ? "md" : "lg"}
               bg={useColorModeValue(
-                variant === 'premium' ? "blue.50" : "gray.50", 
+                variant === 'premium' ? "blue.50" : "gray.50",
                 variant === 'premium' ? "blue.900" : "gray.700"
               )}
               color={useColorModeValue(
@@ -249,26 +269,24 @@ const BaseModal = ({
         {/* Modern Close Button */}
         {showCloseButton && (
           <ModalCloseButton
-            size={{ base: "md", sm: "lg" }}
-            borderRadius="full"
-            bg={useColorModeValue("white", "gray.800")}
-            color={useColorModeValue("gray.500", "gray.400")}
-            border="1px solid"
-            borderColor={useColorModeValue("gray.200", "gray.600")}
-            shadow="sm"
-            _hover={{
-              bg: useColorModeValue("gray.50", "gray.700"),
-              color: useColorModeValue("gray.700", "gray.200"),
-              transform: "scale(1.05)",
-              borderColor: useColorModeValue("gray.300", "gray.500")
-            }}
-            _active={{
-              transform: "scale(0.95)"
-            }}
-            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            size="md"
+            position="absolute"
             top={{ base: 3, sm: 4 }}
             right={{ base: 3, sm: 4 }}
-            zIndex={2}
+            borderRadius="full"
+            bg="transparent"
+            color={useColorModeValue("gray.500", "gray.400")}
+            transition="all 0.15s ease-in-out"
+            _hover={{
+              color: useColorModeValue("gray.700", "gray.200"),
+              transform: "scale(1.1)",
+              bg: useColorModeValue("gray.100", "gray.700"),
+            }}
+            _active={{
+              transform: "scale(0.95)",
+              bg: useColorModeValue("gray.200", "gray.600"),
+            }}
+            _focus={{ boxShadow: "none" }}
           />
         )}
 
@@ -277,11 +295,20 @@ const BaseModal = ({
           px={{ base: 4, sm: 6 }}
           py={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
           overflowY="auto"
+          overflowX="hidden"
           position="relative"
           flex="1"
           bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(26, 32, 44, 0.5)")}
           backdropFilter="blur(5px)"
+          WebkitBackdropFilter="blur(5px)" // Safari support
+          // iOS Safari smooth scrolling
+          WebkitOverflowScrolling="touch"
           css={{
+            // Smooth scrolling for iOS
+            '-webkit-overflow-scrolling': 'touch',
+            // Better touch handling
+            'touch-action': 'pan-y',
+            // Custom scrollbar
             '&::-webkit-scrollbar': {
               width: '8px',
             },

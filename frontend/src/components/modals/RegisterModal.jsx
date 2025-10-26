@@ -240,26 +240,26 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   };
 
   const footer = (
-    <VStack spacing={3} w="full">
+    <VStack spacing={{ base: 2, sm: 3 }} w="full">
       <ModalButton
         variant="primary"
         onClick={handleSubmit}
         isLoading={isLoading}
         leftIcon={<FaUserPlus />}
         w="full"
+        size={{ base: "md", sm: "lg" }}
       >
         Create Account
       </ModalButton>
       
-      <HStack spacing={3} w="full">
-        <ModalButton
-          variant="secondary"
-          onClick={onSwitchToLogin}
-          w="full"
-        >
-          Already have an account? Sign In
-        </ModalButton>
-      </HStack>
+      <ModalButton
+        variant="secondary"
+        onClick={onSwitchToLogin}
+        w="full"
+        size={{ base: "sm", sm: "md" }}
+      >
+        Already have an account? Sign In
+      </ModalButton>
     </VStack>
   );
 
@@ -270,36 +270,36 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       title="Join Photomap"
       icon={FaUserPlus}
       footer={footer}
-      size="lg"
+      size={{ base: "full", sm: "md", md: "lg", lg: "xl" }}
       closeOnOverlayClick={false}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch">
         {/* Welcome Message */}
         <Box
           textAlign="center"
-          p={4}
+          p={{ base: 3, sm: 4 }}
           borderRadius="lg"
           bg={useColorModeValue("green.50", "green.900")}
           border="1px solid"
           borderColor={useColorModeValue("green.200", "green.700")}
         >
-          <Text fontSize="md" color={useColorModeValue("green.700", "green.200")}>
+          <Text fontSize={{ base: "sm", sm: "md" }} color={useColorModeValue("green.700", "green.200")}>
             Start your photo mapping adventure today! 📸🌍
           </Text>
         </Box>
 
         {/* Social Registration Options */}
-        <VStack spacing={3} align="stretch">
-          <Text fontSize="sm" fontWeight="semibold" color={textColor} textAlign="center">
+        <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
+          <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="semibold" color={textColor} textAlign="center">
             Or register with
           </Text>
-          <HStack spacing={3}>
+          <HStack spacing={{ base: 2, sm: 3 }} flexDirection={{ base: "column", sm: "row" }}>
             <ModalButton
               variant="outline"
               onClick={() => handleSocialRegister("Google")}
               leftIcon={<FaGoogle />}
               w="full"
-              size="sm"
+              size={{ base: "md", sm: "sm" }}
             >
               Google
             </ModalButton>
@@ -308,7 +308,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               onClick={() => handleSocialRegister("GitHub")}
               leftIcon={<FaGithub />}
               w="full"
-              size="sm"
+              size={{ base: "md", sm: "sm" }}
             >
               GitHub
             </ModalButton>
@@ -319,7 +319,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
         {/* Registration Form */}
         <form onSubmit={handleSubmit}>
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={{ base: 3, sm: 4 }} align="stretch">
             {/* Full Name */}
             <FormControl isInvalid={!!formErrors.fullname}>
               <FormLabel color={textColor} fontWeight="semibold">
@@ -475,16 +475,16 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
         {/* Password Requirements */}
         <Box
-          p={4}
+          p={{ base: 3, sm: 4 }}
           borderRadius="lg"
           bg={bgColor}
           border="1px solid"
           borderColor={borderColor}
         >
-          <Text fontSize="sm" fontWeight="semibold" color={textColor} mb={2}>
+          <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="semibold" color={textColor} mb={2}>
             Password Requirements:
           </Text>
-          <VStack spacing={1} align="start" fontSize="xs" color={useColorModeValue("gray.600", "gray.400")}>
+          <VStack spacing={1} align="start" fontSize={{ base: "2xs", sm: "xs" }} color={useColorModeValue("gray.600", "gray.400")}>
             <HStack spacing={2}>
               <FaCheck color={formData.password.length >= 6 ? "green" : "gray"} />
               <Text>Minimum 6 characters</Text>
@@ -497,7 +497,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         </Box>
 
         {/* Terms and Privacy */}
-        <VStack spacing={3} align="stretch">
+        <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
           <FormControl isInvalid={!!formErrors.terms}>
             <Checkbox
               isChecked={acceptedTerms}
@@ -533,13 +533,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
         {/* Security Note */}
         <Box
-          p={3}
+          p={{ base: 2, sm: 3 }}
           borderRadius="lg"
           bg={bgColor}
           border="1px solid"
           borderColor={borderColor}
         >
-          <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")} textAlign="center">
+          <Text fontSize={{ base: "2xs", sm: "xs" }} color={useColorModeValue("gray.600", "gray.400")} textAlign="center">
             🔒 Your data is encrypted and secure. We never store your password.
           </Text>
         </Box>

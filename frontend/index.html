@@ -4,8 +4,66 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Enhanced viewport for iOS Safari support -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <!-- iOS Safari PWA support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PhotoMap" />
+  
+  <!-- Prevent iOS Safari from auto-zooming on input focus -->
+  <meta name="format-detection" content="telephone=no" />
+  
   <title>Personal Photo Map</title>
+  
+  <!-- iOS Safari safe area insets support -->
+  <style>
+    /* Ensure body uses full viewport with safe area insets */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    /* Prevent iOS Safari bounce scroll on body */
+    #root {
+      position: relative;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow: hidden;
+    }
+    
+    /* iOS Safari: Prevent auto-zoom on input focus */
+    @supports (-webkit-touch-callout: none) {
+      input, 
+      textarea, 
+      select {
+        font-size: 16px !important;
+      }
+      
+      /* Ensure inputs don't zoom when focused on iOS */
+      input:focus,
+      textarea:focus,
+      select:focus {
+        font-size: 16px !important;
+      }
+    }
+    
+    /* Prevent horizontal scroll */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 </head>
 
 <body>

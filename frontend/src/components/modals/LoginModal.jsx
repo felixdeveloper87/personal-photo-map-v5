@@ -172,11 +172,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         title="Welcome Back"
         icon={FaUser}
         footer={footer}
-        size="md"
+        size={{ base: "full", sm: "md", md: "lg" }}
         variant="premium"
         closeOnOverlayClick={false}
       >
-        <VStack spacing={{ base: 4, sm: 6 }} align="stretch">
+        <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch">
           <Box
             textAlign="center"
             p={{ base: 3, sm: 4 }}
@@ -185,22 +185,22 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             border="1px solid"
             borderColor={useColorModeValue("blue.200", "blue.700")}
           >
-            <Text fontSize="md" color={useColorModeValue("blue.700", "blue.200")}>
+            <Text fontSize={{ base: "sm", sm: "md" }} color={useColorModeValue("blue.700", "blue.200")}>
               Sign in to continue your photo mapping journey
             </Text>
           </Box>
 
           <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
-            <Text fontSize="sm" fontWeight="semibold" color={textColor} textAlign="center">
+            <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="semibold" color={textColor} textAlign="center">
               Or continue with
             </Text>
-            <HStack spacing={{ base: 2, sm: 3 }}>
+            <HStack spacing={{ base: 2, sm: 3 }} flexDirection={{ base: "column", sm: "row" }}>
               <ModalButton
                 variant="outline"
                 onClick={() => handleSocialLogin("Google")}
                 leftIcon={<FaGoogle />}
                 w="full"
-                size="sm"
+                size={{ base: "md", sm: "sm" }}
               >
                 Google
               </ModalButton>
@@ -209,7 +209,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 onClick={() => handleSocialLogin("GitHub")}
                 leftIcon={<FaGithub />}
                 w="full"
-                size="sm"
+                size={{ base: "md", sm: "sm" }}
               >
                 GitHub
               </ModalButton>
@@ -287,7 +287,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             border="1px solid"
             borderColor={borderColor}
           >
-            <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")} textAlign="center">
+            <Text fontSize={{ base: "2xs", sm: "xs" }} color={useColorModeValue("gray.600", "gray.400")} textAlign="center">
               🔒 Your data is encrypted and secure. We never store your password.
             </Text>
           </Box>
