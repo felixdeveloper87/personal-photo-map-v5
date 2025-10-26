@@ -12,6 +12,7 @@ import {
   Alert,
   AlertIcon,
   VStack,
+  HStack,
   Divider,
 } from '@chakra-ui/react';
 import { FaRocket, FaWikipediaW } from 'react-icons/fa';
@@ -102,7 +103,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
     '2xl': 12 
   });
   const titleSize = useBreakpointValue({ 
-    base: '2xl', 
+    base: 'xl', 
     sm: '3xl', 
     md: '4xl', 
     lg: '4xl',
@@ -168,32 +169,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
         {/* Main Content */}
         <Box position="relative" zIndex={2} maxW={maxWidth} mx="auto">
-          {/* Title */}
-          <Box mb={{ base: 6, sm: 7, md: 8, lg: 8 }}>
-            <Text
-              id={titleId}
-              as="h2"
-              fontSize={titleSize}
-              fontWeight="bold"
-              color={titleColor}
-              lineHeight="1.1"
-              letterSpacing="tight"
-              mb={{ base: 2, sm: 2.5, md: 3 }}
-              px={{ base: 2, sm: 0 }}
-            >
-             {countryName} is waiting for you
-            </Text>
-            <Text
-              fontSize={subtitleSize}
-              fontWeight="medium"
-              color={subtitleColor}
-              lineHeight="1.4"
-              px={{ base: 2, sm: 0 }}
-            >
-              Capture and share your travel memories
-            </Text>
-          </Box>
-
           {/* Wikipedia Info Section */}
           {isLoadingWikipedia ? (
             <Box textAlign="center" py={{ base: 4, sm: 5, md: 6 }} mb={{ base: 6, md: 8 }}>
@@ -253,6 +228,28 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                 }}
               >
                 <VStack spacing={{ base: 3, md: 4 }} align="stretch">
+                  {/* Texto incorporado */}
+                  <Box textAlign="center" mb={{ base: 2, md: 3 }}>
+                    <Text
+                      fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
+                      fontWeight="bold"
+                      bgGradient={useColorModeValue(
+                        'linear(to-r, blue.600, purple.600, pink.500)',
+                        'linear(to-r, blue.300, purple.300, pink.300)'
+                      )}
+                      bgClip="text"
+                      lineHeight="1.2"
+                      letterSpacing="tight"
+                      px={{ base: 2, sm: 0 }}
+                      textShadow={useColorModeValue(
+                        '0 2px 4px rgba(59, 130, 246, 0.2)',
+                        '0 2px 4px rgba(0, 0, 0, 0.3)'
+                      )}
+                    >
+                      {countryName} is waiting for you
+                    </Text>
+                  </Box>
+
                   {/* Header with enhanced styling */}
                   <Box
                     display="flex"
@@ -265,41 +262,45 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     borderColor={useColorModeValue('blue.200', 'blue.700')}
                     flexDirection={{ base: 'row', sm: 'row' }}
                   >
-                    <Box
-                      p={{ base: 1.5, sm: 2 }}
-                      bg={useColorModeValue('blue.100', 'blue.800')}
-                      borderRadius={{ base: 'md', md: 'lg' }}
-                      mr={{ base: 3, sm: 4 }}
-                      flexShrink={0}
-                    >
-                      <Icon 
-                        as={FaWikipediaW} 
-                        color="blue.500" 
-                        boxSize={{ base: 5, sm: 5, md: 6 }} 
-                      />
-                    </Box>
-                    <Box>
-                      <Text
-                        fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
-                        fontWeight="black"
-                        bgGradient={useColorModeValue(
-                          'linear(to-r, blue.600, purple.600)',
-                          'linear(to-r, blue.300, purple.300)'
-                        )}
-                        bgClip="text"
-                        lineHeight="1.2"
+                    <HStack spacing={{ base: 2, sm: 3 }} align="center" w="100%">
+                      <Box
+                        p={{ base: 1.5, sm: 2 }}
+                        bg={useColorModeValue('blue.100', 'blue.800')}
+                        borderRadius={{ base: 'md', md: 'lg' }}
+                        flexShrink={0}
                       >
-                        About {countryName}
-                      </Text>
-                      <Text
-                        fontSize={{ base: 'xs', sm: 'sm' }}
-                        color={useColorModeValue('blue.600', 'blue.300')}
-                        fontWeight="medium"
-                        mt={{ base: 0.5, md: 1 }}
-                      >
-                        Knowledge from Wikipedia
-                      </Text>
-                    </Box>
+                        <Icon 
+                          as={FaWikipediaW} 
+                          color="blue.500" 
+                          boxSize={{ base: 4, sm: 5, md: 6 }} 
+                        />
+                      </Box>
+                      <HStack spacing={{ base: 2, sm: 3 }} align="center" flex={1}>
+                        <Text
+                          fontSize={{ base: 'sm', sm: 'lg', md: '2xl' }}
+                          fontWeight="black"
+                          bgGradient={useColorModeValue(
+                            'linear(to-r, blue.600, purple.600)',
+                            'linear(to-r, blue.300, purple.300)'
+                          )}
+                          bgClip="text"
+                          lineHeight="1.2"
+                          whiteSpace="nowrap"
+                        >
+                          About {countryName}
+                        </Text>
+                        <Text
+                          fontSize={{ base: '2xs', sm: 'xs', md: 'sm' }}
+                          color={useColorModeValue('blue.600', 'blue.300')}
+                          fontWeight="medium"
+                          whiteSpace="nowrap"
+                        >
+                          <Box as="span" display={{ base: 'inline', sm: 'inline' }}>
+                            • <Box as="span" display={{ base: 'none', sm: 'inline' }}>Knowledge </Box>from Wikipedia
+                          </Box>
+                        </Text>
+                      </HStack>
+                    </HStack>
                   </Box>
 
                   <Divider borderColor={borderColor} />
