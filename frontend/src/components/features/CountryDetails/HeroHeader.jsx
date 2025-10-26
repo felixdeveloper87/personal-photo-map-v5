@@ -14,7 +14,7 @@ import {
 import { ArrowBackIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import countries from 'i18n-iso-countries'
 import moment from 'moment-timezone'
-import { FaLanguage, FaUsers, FaThermometerHalf, FaChartLine, FaPoundSign, FaHeartbeat } from 'react-icons/fa'
+import { FaLanguage, FaUsers, FaThermometerHalf, FaChartLine, FaPoundSign, FaHeartbeat, FaChartBar, FaPlane, FaBed } from 'react-icons/fa'
 import EnhancedFlag from './EnhancedFlag'
 import InfoBox from './InfoBox'
 import BaseModal from '../../modals/BaseModal'
@@ -39,6 +39,8 @@ export default function HeroHeader({
   const dateFaded = useColorModeValue('gray.500', 'gray.400')
   const isSmall = useBreakpointValue({ base: true, md: false })
   const buttonText = useBreakpointValue({ base: 'View Data', sm: 'View Data', md: 'View Indicators' })
+  const flightsButtonText = useBreakpointValue({ base: 'Flights', md: 'Check Flights' })
+  const hotelsButtonText = useBreakpointValue({ base: 'Hotels', md: 'Find Hotels' })
 
   const countryName =
     countries.getName(countryId?.toUpperCase() || '', 'en') || countryId?.toUpperCase()
@@ -298,18 +300,34 @@ export default function HeroHeader({
 
         {/* Buttons full-width */}
         <Grid
-          templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }}
-          gap={2}
+          templateColumns="repeat(3, 1fr)"
+          gap={{ base: 1.5, sm: 2 }}
           w="full"
         >
           <Button
             onClick={onOpen}
-            colorScheme="blue"
+            leftIcon={<FaChartBar />}
+            bg="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
+            color="white"
             size="sm"
-            borderRadius="md"
-            height={{ base: '36px', md: '42px' }}
-            fontWeight="semibold"
-            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+            borderRadius="lg"
+            height={{ base: '40px', md: '44px' }}
+            fontWeight="600"
+            fontSize={{ base: 'xs', sm: 'sm' }}
+            boxShadow="md"
+            sx={{
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+            }}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+              bg: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+            }}
+            _active={{
+              transform: 'translateY(0px)',
+              boxShadow: 'md',
+            }}
+            transition="all 0.2s ease"
           >
             {buttonText}
           </Button>
@@ -322,15 +340,29 @@ export default function HeroHeader({
                 '_blank'
               )
             }
-            colorScheme="green"
+            leftIcon={<FaPlane />}
             variant="outline"
+            borderWidth="2px"
+            borderColor="green.400"
+            color={useColorModeValue('green.600', 'green.300')}
             size="sm"
-            borderRadius="md"
-            height={{ base: '36px', md: '42px' }}
-            fontWeight="semibold"
-            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+            borderRadius="lg"
+            height={{ base: '40px', md: '44px' }}
+            fontWeight="600"
+            fontSize={{ base: 'xs', sm: 'sm' }}
+            bg={useColorModeValue('white', 'gray.800')}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+              bg: useColorModeValue('green.50', 'green.900'),
+              borderColor: 'green.500',
+            }}
+            _active={{
+              transform: 'translateY(0px)',
+            }}
+            transition="all 0.2s ease"
           >
-            Check Flights
+            {flightsButtonText}
           </Button>
           <Button
             onClick={() =>
@@ -341,15 +373,29 @@ export default function HeroHeader({
                 '_blank'
               )
             }
-            colorScheme="yellow"
+            leftIcon={<FaBed />}
             variant="outline"
+            borderWidth="2px"
+            borderColor="yellow.400"
+            color={useColorModeValue('yellow.600', 'yellow.300')}
             size="sm"
-            borderRadius="md"
-            height={{ base: '36px', md: '42px' }}
-            fontWeight="semibold"
-            _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+            borderRadius="lg"
+            height={{ base: '40px', md: '44px' }}
+            fontWeight="600"
+            fontSize={{ base: 'xs', sm: 'sm' }}
+            bg={useColorModeValue('white', 'gray.800')}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+              bg: useColorModeValue('yellow.50', 'yellow.900'),
+              borderColor: 'yellow.500',
+            }}
+            _active={{
+              transform: 'translateY(0px)',
+            }}
+            transition="all 0.2s ease"
           >
-            Find Hotels
+            {hotelsButtonText}
           </Button>
         </Grid>
       </Flex>

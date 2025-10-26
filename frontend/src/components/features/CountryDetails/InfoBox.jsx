@@ -106,7 +106,14 @@ export default function InfoBox({
   const valueColor = useColorModeValue('gray.900', 'gray.100');
 
   const boxContent = (
-    <VStack spacing={1.5} align="center" justify="center" textAlign="center">
+    <VStack 
+      spacing={1.5} 
+      align="center" 
+      justify="center" 
+      textAlign="center"
+      position="relative"
+      zIndex={1}
+    >
       <Icon as={icon} boxSize={currentSize.iconSize} color={currentColors.icon} />
       <Text
         fontSize={currentSize.labelFontSize}
@@ -149,6 +156,36 @@ export default function InfoBox({
       }}
       sx={{
         minW: 0,
+        backgroundImage: useColorModeValue(
+          `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 8px,
+            rgba(0, 0, 0, 0.02) 8px,
+            rgba(0, 0, 0, 0.02) 16px
+          )`,
+          `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 8px,
+            rgba(255, 255, 255, 0.015) 8px,
+            rgba(255, 255, 255, 0.015) 16px
+          )`
+        ),
+        backgroundSize: '20px 20px',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: useColorModeValue(
+            'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0)',
+            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)'
+          ),
+          backgroundSize: '12px 12px',
+          pointerEvents: 'none',
+        },
         ...sx,
       }}
     >
