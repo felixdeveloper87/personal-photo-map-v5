@@ -28,6 +28,7 @@ import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
 import TimelineVideoModal from '../modals/TimelineVideoModal';
 import VideoGeneratorButton from './photos/VideoGeneratorButton';
+import CacheStatus from '../ui/CacheStatus';
 import { FaGlobe, FaCamera, FaHistory } from 'react-icons/fa';
 
 // Lazy loading of PhotoGallery
@@ -342,6 +343,11 @@ const Timeline = ({ selectedYear }) => {
               </Text>
             )}
           </VStack>
+        </Box>
+
+        {/* Cache Status */}
+        <Box px={{ base: 2, sm: 3, md: 4 }}>
+          <CacheStatus />
         </Box>
 
         {/* View Toggle - Above Photos */}

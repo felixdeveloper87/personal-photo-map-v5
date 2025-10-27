@@ -38,6 +38,7 @@ import {
   AlbumSelectableButton,
 } from '../../ui/buttons/SelectableButtons';
 import VideoGeneratorButton from './VideoGeneratorButton';
+import CacheStatus from '../../ui/CacheStatus';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -460,6 +461,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
             )}
           </Wrap>
         )}
+      </Box>
+
+      {/* Cache Status */}
+      <Box mb={4} px={{ base: 2, sm: 3, md: 4 }}>
+        <CacheStatus />
       </Box>
 
       {/* Listagem de imagens */}

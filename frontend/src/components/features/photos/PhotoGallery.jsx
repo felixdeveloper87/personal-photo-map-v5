@@ -30,6 +30,7 @@ import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useImageCache } from '../../../hooks/useImageCache';
 
 // Registrar nomes de países
 countries.registerLocale(en);
@@ -96,6 +97,9 @@ const PhotoGallery = memo(function PhotoGallery({
   const [dragStartIndex, setDragStartIndex] = useState(null);
   const dragAreaRef = useRef(null);
   const [imageLoadStates, setImageLoadStates] = useState(new Map());
+  
+  // Image cache hook
+  const { cacheImage } = useImageCache();
 
   const isMobile = useBreakpointValue({ base: true, sm: false });
   const isLargeScreen = useBreakpointValue({ base: false, lg: false, xl: true, '2xl': true });
@@ -177,6 +181,22 @@ const PhotoGallery = memo(function PhotoGallery({
   const handleImageLoad = useCallback((imageId) => {
     setImageLoadStates((prev) => new Map(prev).set(imageId, true));
   }, []);
+  
+  // Cache images when they're visible
+  useEffect(() => {
+    // Cache all visible images in background
+    const cacheImages = async () => {
+      for (const image of images) {
+        if (image.url) {
+          cacheImage(image.url);
+        }
+      }
+    };
+    
+    if (images.length > 0) {
+      cacheImages();
+    }
+  }, [images, cacheImage]);
 
   // Drag-to-select handlers
   const handleDragStart = useCallback((index) => {
