@@ -127,6 +127,7 @@ const BaseModal = ({
   }, [isOpen]);
 
   // Support responsive sizes - size can be object or string
+  // On mobile, always use "full" width
   const responsiveSize = typeof size === 'object'
     ? size
     : { base: "full", sm: size, md: size, lg: size };
@@ -136,7 +137,7 @@ const BaseModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size={responsiveSize}
-      isCentered={isCentered}
+      isCentered={{ base: false, sm: isCentered }}
       motionPreset={motionPreset}
       closeOnOverlayClick={closeOnOverlayClick}
       closeOnEsc={closeOnEsc}
@@ -164,8 +165,9 @@ const BaseModal = ({
         }}
         minHeight={{ base: "auto", sm: "auto" }}
         overflow="hidden"
-        mx={{ base: 4, sm: 4 }}
-        my={{ base: 6, sm: "auto" }}
+        mx={{ base: 0, sm: 4 }}
+        mt={{ base: 6, sm: "auto" }}
+        mb={{ base: 6, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
