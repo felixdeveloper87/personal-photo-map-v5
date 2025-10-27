@@ -624,7 +624,34 @@ const PhotoGallery = memo(function PhotoGallery({
                           const response = await fetch(image.url);
                           const blob = await response.blob();
                           
-                          // Create a download link
+                          // Detect iOS/Safari mobile
+                          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                          const isMobileSafari = isIOS && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+                          
+                          // Use Web Share API only for iOS Safari
+                          if (isMobileSafari && navigator.share && navigator.canShare) {
+                            const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
+                            
+                            if (navigator.canShare({ files: [file] })) {
+                              await navigator.share({
+                                files: [file],
+                                title: 'Photo',
+                                text: 'Download photo',
+                              });
+                              
+                              toast({
+                                title: 'Share opened',
+                                description: 'Use "Save Image" to save to your Photos',
+                                status: 'success',
+                                duration: 3000,
+                                isClosable: true,
+                              });
+                              return;
+                            }
+                          }
+                          
+                          // Standard download for desktop/non-iOS browsers
                           const url = window.URL.createObjectURL(blob);
                           const link = document.createElement('a');
                           link.href = url;
@@ -643,9 +670,10 @@ const PhotoGallery = memo(function PhotoGallery({
                             isClosable: true,
                           });
                         } catch (error) {
+                          console.error('Download error:', error);
                           toast({
                             title: 'Download failed',
-                            description: 'Could not download the image',
+                            description: error.name === 'AbortError' ? 'Share cancelled' : 'Could not download the image',
                             status: 'error',
                             duration: 3000,
                             isClosable: true,
