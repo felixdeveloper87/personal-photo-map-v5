@@ -272,7 +272,7 @@ const PhotoGallery = memo(function PhotoGallery({
       {/* Selection Controls - Only show if toggleSelectionMode is provided */}
       {toggleSelectionMode && (
       <Box mb={4}>
-        <Flex justify="space-between" align="center" maxW="1800px" mx="auto" px={{ base: 3, md: 6 }}>
+        <Flex justify="space-between" align="center" maxW="2600px" mx="auto" px={{ base: 3, md: 6 }}>
           <VStack alignItems={{ base: 'stretch', md: 'flex-start' }} spacing={{ base: 2, md: 3 }} flex={1}>
             <Button
               size={{ base: 'xs', md: 'sm' }}
@@ -383,7 +383,7 @@ const PhotoGallery = memo(function PhotoGallery({
       )}
 
       {/* Grid */}
-      <Box maxW="1900px" mx="auto" px={{ base: 1, sm: 4, md: 6, lg: 8 }}>
+      <Box maxW="3600px" mx="auto" px={{ base: 1, sm: 4, md: 6, lg: 8 }}>
         <SimpleGrid
           columns={{ base: 3, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 8 }}
           spacing={{ base: 2, sm: 3, md: 3, lg: 4, xl: 5 }}

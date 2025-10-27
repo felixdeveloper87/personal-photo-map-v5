@@ -166,7 +166,7 @@ const CountryDetails = () => {
         pt={{ base: 4, md: 6, lg: 8 }} 
         pb={{ base: 6, md: 8 }} 
         position="relative" 
-        maxW={{ base: '100%', lg: '1600px', xl: '1800px', '2xl': '1920px' }} 
+        maxW={{ base: '100%', lg: '1600px', xl: '2200px', '2xl': '2600px' }} 
         mx="auto"
       >
         {/* Hero Header */}
