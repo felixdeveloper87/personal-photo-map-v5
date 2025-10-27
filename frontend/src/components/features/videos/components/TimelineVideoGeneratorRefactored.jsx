@@ -237,8 +237,8 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
               controls
               style={{ width: '100%', maxWidth: '400px', borderRadius: '8px' }}
             />
-            <Text fontSize="sm" color={mutedTextColor}>
-              Format: {mp4VideoUrl ? 'MP4 (iPhone compatible)' : 'WebM (Browser compatible)'}
+            <Text fontSize="sm" color={mutedTextColor} textAlign="center">
+              {mp4VideoUrl ? '📱 Mobile Ready: Tap "Share Video" to save or share!' : 'Format: WebM (Browser compatible)'}
             </Text>
           </VStack>
         )}
@@ -346,7 +346,7 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
               _active={{ transform: "translateY(0)" }}
               transition="all 0.2s"
             >
-              Download {mp4VideoUrl ? 'MP4' : 'WebM'}
+              📱 Share Video
             </Button>
           )}
 

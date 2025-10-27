@@ -610,7 +610,7 @@ export const useVideoGenerator = () => {
   /**
    * Função para fazer download do vídeo
    */
-  const downloadVideo = useCallback(() => {
+  const downloadVideo = useCallback(async () => {
     const urlToDownload = mp4VideoUrl || videoUrl;
     const isMP4 = !!mp4VideoUrl;
     
@@ -618,28 +618,68 @@ export const useVideoGenerator = () => {
     
     const filename = generateFileName(isMP4);
     
-    // Criar blob a partir da URL e fazer download
-    fetch(urlToDownload)
-      .then(response => response.blob())
-      .then(blob => {
-        downloadBlob(blob, filename);
-        
-        toast({
-          title: 'Download iniciado!',
-          description: `Fazendo download do vídeo em formato ${isMP4 ? 'MP4' : 'WebM'}`,
-          status: 'info',
-          duration: 3000,
-        });
-      })
-      .catch(error => {
-        console.error('Erro no download:', error);
-        toast({
-          title: 'Erro no download',
-          description: 'Não foi possível fazer o download do vídeo',
-          status: 'error',
-          duration: 3000,
-        });
+    try {
+      // Check if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Fetch the video as a blob
+      const response = await fetch(urlToDownload);
+      const blob = await response.blob();
+      
+      // Use Web Share API for mobile devices (iOS and Android)
+      if (isMobile && navigator.share && navigator.canShare) {
+        try {
+          const file = new File([blob], filename, { type: blob.type });
+          
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Video',
+            });
+            
+            toast({
+              title: 'Share opened',
+              description: 'Use "Save to Files" or share to your preferred app',
+              status: 'success',
+              duration: 3000,
+              isClosable: true,
+            });
+            return;
+          }
+        } catch (shareError) {
+          if (shareError.name === 'AbortError') {
+            toast({
+              title: 'Share cancelled',
+              status: 'info',
+              duration: 2000,
+              isClosable: true,
+            });
+            return;
+          }
+          // Continue to standard download if share fails
+          console.warn('Share failed, falling back to download:', shareError);
+        }
+      }
+      
+      // Standard download for desktop or when Web Share is not available
+      downloadBlob(blob, filename);
+      
+      toast({
+        title: 'Download iniciado!',
+        description: `Fazendo download do vídeo em formato ${isMP4 ? 'MP4' : 'WebM'}`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
       });
+    } catch (error) {
+      console.error('Erro no download:', error);
+      toast({
+        title: 'Erro no download',
+        description: 'Não foi possível fazer o download do vídeo',
+        status: 'error',
+        duration: 3000,
+      });
+    }
   }, [mp4VideoUrl, videoUrl, toast]);
   
   /**

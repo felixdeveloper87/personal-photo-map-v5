@@ -306,24 +306,66 @@ const VideoSettings = ({
           {settings.musicSource === 'upload' && (
             <FormControl>
               <FormLabel color={textColor}>Audio file</FormLabel>
-              <Input
-                id="audio-upload"
-                type="file"
-                accept="audio/*"
-                onChange={handleAudioFileSelect}
-                bg={inputBg}
-                border="2px dashed"
-                borderColor="gray.300"
-                _hover={{ borderColor: "blue.400" }}
-                pt={1}
-              />
+              <VStack spacing={2} align="stretch">
+                <Box position="relative">
+                  <Input
+                    id="audio-upload"
+                    type="file"
+                    accept="audio/mpeg,audio/mp4,audio/mp3,audio/wav,audio/ogg,audio/aac,audio/*"
+                    onChange={handleAudioFileSelect}
+                    bg={inputBg}
+                    border="2px dashed"
+                    borderColor="gray.300"
+                    _hover={{ borderColor: "blue.400" }}
+                    pt={1}
+                    cursor="pointer"
+                  />
+                  {!audioFile && (
+                    <Text 
+                      position="absolute" 
+                      left="50%" 
+                      top="50%" 
+                      transform="translate(-50%, -50%)" 
+                      fontSize="xs" 
+                      color="gray.500"
+                      pointerEvents="none"
+                      textAlign="center"
+                      width="100%"
+                      px={2}
+                    >
+                      📁 Tap to select audio file
+                    </Text>
+                  )}
+                </Box>
+                
+                <Box 
+                  p={3} 
+                  bg="blue.50" 
+                  border="1px solid" 
+                  borderColor="blue.200" 
+                  borderRadius="md"
+                  _dark={{ bg: "blue.900", borderColor: "blue.700" }}
+                >
+                  <Text fontSize="xs" color="blue.800" fontWeight="semibold" mb={2}>
+                    📱 iOS Safari - Como adicionar música:
+                  </Text>
+                  <VStack spacing={1} align="stretch" fontSize="xs" color="blue.700">
+                    <Text>1️⃣ Tap no campo acima</Text>
+                    <Text>2️⃣ Tap em <strong>"Editar"</strong> no topo direito</Text>
+                    <Text>3️⃣ Tap em <strong>"Adicionar Arquivos"</strong></Text>
+                    <Text>4️⃣ Escolha: <strong>Files</strong>, <strong>Dropbox</strong>, <strong>Google Drive</strong> ou <strong>iCloud</strong></Text>
+                    <Text mt={2} fontWeight="bold">💡 Dica: Baixe a música antes no app Files</Text>
+                  </VStack>
+                </Box>
+              </VStack>
+              
               {audioFile && (
-                <Text fontSize="sm" color="green.500" mt={1}>
+                <Text fontSize="sm" color="green.500" mt={2}>
                   ✅ {audioFile.name}
                 </Text>
               )}
               {audioUrl && !audioFile && (
-                <Text fontSize="sm" color="blue.500" mt={1}>
+                <Text fontSize="sm" color="blue.500" mt={2}>
                   🎵 Audio loaded from previous session
                 </Text>
               )}
