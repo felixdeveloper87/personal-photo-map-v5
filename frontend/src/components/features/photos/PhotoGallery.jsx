@@ -19,15 +19,11 @@ import {
   Badge,
   Skeleton,
   SkeletonCircle,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   IconButton,
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { IoCheckmark, IoCheckmarkCircle, IoEllipsisVertical } from 'react-icons/io5';
+import { IoCheckmark, IoDownload } from 'react-icons/io5';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
@@ -273,12 +269,13 @@ const PhotoGallery = memo(function PhotoGallery({
         }}
       />
       
-      {/* Selection Controls */}
+      {/* Selection Controls - Only show if toggleSelectionMode is provided */}
+      {toggleSelectionMode && (
       <Box mb={4}>
-        <Flex justify="space-between" align="center" maxW="1800px" mx="auto" px={6}>
-          <HStack spacing={3} wrap="wrap">
+        <Flex justify="space-between" align="center" maxW="1800px" mx="auto" px={{ base: 3, md: 6 }}>
+          <VStack alignItems={{ base: 'stretch', md: 'flex-start' }} spacing={{ base: 2, md: 3 }} flex={1}>
             <Button
-              size="sm"
+              size={{ base: 'xs', md: 'sm' }}
               colorScheme="blue"
               variant={isSelectionMode ? 'solid' : 'outline'}
               onClick={() => {
@@ -286,10 +283,11 @@ const PhotoGallery = memo(function PhotoGallery({
               }}
               leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
               borderRadius="full"
-              px={6}
+              px={{ base: 4, md: 6 }}
               borderWidth="1px"
               borderColor={isSelectionMode ? undefined : buttonBorderColor}
               color={isSelectionMode ? undefined : buttonTextColor}
+              fontSize={{ base: 'xs', md: 'sm' }}
               _hover={{
                 transform: 'translateY(-1px)',
                 boxShadow: isSelectionMode 
@@ -303,47 +301,53 @@ const PhotoGallery = memo(function PhotoGallery({
             </Button>
 
             {isSelectionMode && (
-              <>
-                <Tooltip label="Select all photos currently visible" hasArrow>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onSelectAll?.(images)}
-                    borderRadius="full"
-                    colorScheme="blue"
-                    _hover={{
-                      bg: 'blue.50',
-                      transform: 'translateY(-1px)',
-                    }}
-                    transition="all 0.2s ease"
-                  >
-                    Select All ({total})
-                  </Button>
-                </Tooltip>
+              <VStack spacing={{ base: 2, md: 3 }} align="stretch" w="full">
+                <HStack spacing={2} wrap="wrap">
+                  <Tooltip label="Select all photos currently visible" hasArrow>
+                    <Button
+                      size={{ base: 'xs', md: 'sm' }}
+                      variant="ghost"
+                      onClick={() => onSelectAll?.(images)}
+                      borderRadius="full"
+                      colorScheme="blue"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      px={{ base: 3, md: 4 }}
+                      _hover={{
+                        bg: 'blue.50',
+                        transform: 'translateY(-1px)',
+                      }}
+                      transition="all 0.2s ease"
+                    >
+                      Select All ({total})
+                    </Button>
+                  </Tooltip>
 
-                <Tooltip label="Clear current selection" hasArrow>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onClearSelection?.()}
-                    borderRadius="full"
-                    colorScheme="gray"
-                    _hover={{
-                      bg: 'gray.50',
-                      transform: 'translateY(-1px)',
-                    }}
-                    transition="all 0.2s ease"
-                  >
-                    Unselect All
-                  </Button>
-                </Tooltip>
+                  <Tooltip label="Clear current selection" hasArrow>
+                    <Button
+                      size={{ base: 'xs', md: 'sm' }}
+                      variant="ghost"
+                      onClick={() => onClearSelection?.()}
+                      borderRadius="full"
+                      colorScheme="gray"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      px={{ base: 3, md: 4 }}
+                      _hover={{
+                        bg: 'gray.50',
+                        transform: 'translateY(-1px)',
+                      }}
+                      transition="all 0.2s ease"
+                    >
+                      Unselect All
+                    </Button>
+                  </Tooltip>
+                </HStack>
 
-                <HStack spacing={3}>
+                <HStack spacing={2} flexWrap="wrap">
                   <Badge
                     colorScheme="blue"
                     variant="subtle"
-                    fontSize="sm"
-                    px={3}
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    px={{ base: 2, md: 3 }}
                     py={1}
                     borderRadius="full"
                     bg={selectionBgColor}
@@ -355,12 +359,13 @@ const PhotoGallery = memo(function PhotoGallery({
                   <DeleteButton
                     onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
                     isDisabled={selectedCount === 0}
-                    size="sm"
+                    size={{ base: 'xs', md: 'sm' }}
                     colorScheme="red"
                     variant="outline"
                     borderRadius="full"
-                    px={4}
+                    px={{ base: 3, md: 4 }}
                     leftIcon={<CloseIcon />}
+                    fontSize={{ base: 'xs', md: 'sm' }}
                     _hover={{
                       transform: 'translateY(-1px)',
                       boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
@@ -370,23 +375,12 @@ const PhotoGallery = memo(function PhotoGallery({
                     Delete Selected
                   </DeleteButton>
                 </HStack>
-              </>
+              </VStack>
             )}
-          </HStack>
-
-          {isSelectionMode && (
-            <HStack spacing={2} opacity={0.7}>
-              <Text fontSize="xs" color="gray.500">Tips:</Text>
-              <Kbd>Click</Kbd>
-              <Text fontSize="xs" color="gray.500">to toggle,</Text>
-              <Kbd>Ctrl+A</Kbd>
-              <Text fontSize="xs" color="gray.500">to select all,</Text>
-              <Kbd>Esc</Kbd>
-              <Text fontSize="xs" color="gray.500">to exit</Text>
-            </HStack>
-          )}
+          </VStack>
         </Flex>
       </Box>
+      )}
 
       {/* Grid */}
       <Box maxW="1900px" mx="auto" px={{ base: 2, sm: 4, md: 6, lg: 8 }}>
@@ -606,62 +600,60 @@ const PhotoGallery = memo(function PhotoGallery({
                     </VStack>
                   </Box>
 
-                  {/* Context Menu (Right-click) */}
+                  {/* Download Button */}
                   {!isSelectionMode && (
-                    <Menu isLazy>
-                      {({ isOpen }) => (
-                        <>
-                          <MenuButton
-                            as={IconButton}
-                            icon={<IoEllipsisVertical />}
-                            aria-label="Image options"
-                            position="absolute"
-                            top="8px"
-                            right="8px"
-                            size="sm"
-                            borderRadius="full"
-                            bg="rgba(0,0,0,0.6)"
-                            color="white"
-                            opacity={0}
-                            _groupHover={{ opacity: 1 }}
-                            _hover={{ bg: 'rgba(0,0,0,0.8)', transform: 'scale(1.1)' }}
-                            transition="all 0.2s ease"
-                            backdropFilter="blur(8px)"
-                            onClick={(e) => e.stopPropagation()}
-                            zIndex={4}
-                          />
-                          <MenuList
-                            bg={useColorModeValue('white', 'gray.800')}
-                            borderColor={useColorModeValue('gray.200', 'gray.600')}
-                            boxShadow="xl"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MenuItem
-                              onClick={() => {
-                                setCurrentImageIndex(index);
-                                onOpen();
-                              }}
-                              icon={<Icon as={IoCheckmarkCircle} />}
-                            >
-                              View Full Image
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() => {
-                                navigator.clipboard.writeText(image.url);
-                                toast({
-                                  title: 'Copied to clipboard',
-                                  status: 'success',
-                                  duration: 2000,
-                                  isClosable: true,
-                                });
-                              }}
-                            >
-                              Copy Image URL
-                            </MenuItem>
-                          </MenuList>
-                        </>
-                      )}
-                    </Menu>
+                    <IconButton
+                      aria-label="Download image"
+                      icon={<IoDownload />}
+                      position="absolute"
+                      top="8px"
+                      right="8px"
+                      size="sm"
+                      borderRadius="full"
+                      bg="rgba(0,0,0,0.6)"
+                      color="white"
+                      opacity={0}
+                      _groupHover={{ opacity: 1 }}
+                      _hover={{ bg: 'rgba(0,0,0,0.8)', transform: 'scale(1.1)' }}
+                      transition="all 0.2s ease"
+                      backdropFilter="blur(8px)"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          // Fetch the image as a blob
+                          const response = await fetch(image.url);
+                          const blob = await response.blob();
+                          
+                          // Create a download link
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `image-${image.id}.jpg`;
+                          document.body.appendChild(link);
+                          link.click();
+                          
+                          // Clean up
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                          
+                          toast({
+                            title: 'Download started',
+                            status: 'success',
+                            duration: 2000,
+                            isClosable: true,
+                          });
+                        } catch (error) {
+                          toast({
+                            title: 'Download failed',
+                            description: 'Could not download the image',
+                            status: 'error',
+                            duration: 3000,
+                            isClosable: true,
+                          });
+                        }
+                      }}
+                      zIndex={4}
+                    />
                   )}
                 </Box>
               </motion.div>

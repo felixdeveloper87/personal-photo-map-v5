@@ -77,7 +77,7 @@ const Timeline = ({ selectedYear }) => {
 
   // Responsive values
   const fontSize = useBreakpointValue({ base: 'lg', md: 'xl', lg: '2xl' });
-  const padding = useBreakpointValue({ base: 4, md: 6, lg: 8 });
+  const padding = useBreakpointValue({ base: 1, md: 6, lg: 6 });
 
   // Color scheme
   const textColor = useColorModeValue('black.800', 'white');
@@ -151,7 +151,7 @@ const Timeline = ({ selectedYear }) => {
   if (!isLoggedIn) {
     return (
       <Box minH="100vh" p={padding}>
-        <VStack spacing={6} align="stretch" maxW={{ base: "1200px", lg: "1600px", xl: "1800px" }} mx="auto">
+        <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 2, md: 0 }}>
           <Heading
             as="h1"
             size={fontSize}
@@ -199,13 +199,13 @@ const Timeline = ({ selectedYear }) => {
 
   return (
     <Box minH="100vh" p={padding}>
-      <VStack spacing={6} align="stretch" maxW={{ base: "1200px", lg: "1600px", xl: "1800px" }} mx="auto">
+      <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 2, md: 0 }}>
         {/* Professional Header Section */}
         <Box
           bg={cardBg}
           borderRadius="2xl"
           boxShadow="xl"
-          p={{ base: 6, md: 8 }}
+          p={{ base: 4, md: 8 }}
           borderWidth="1px"
           borderColor={useColorModeValue('gray.200', 'gray.700')}
           position="relative"
@@ -224,18 +224,18 @@ const Timeline = ({ selectedYear }) => {
             {/* Title Section */}
             <HStack spacing={4} justify="space-between" align="center" flexWrap="wrap">
               <HStack spacing={3}>
-                <Icon as={FaHistory} color={accentColor} boxSize={8} />
+                <Icon as={FaHistory} color={accentColor} boxSize={{ base: 6, md: 8 }} />
                 <VStack align="start" spacing={0}>
                   <Heading
                     as="h1"
-                    fontSize={{ base: '2xl', md: '3xl' }}
+                    fontSize={{ base: 'xl', md: '3xl' }}
                     color={textColor}
                     fontWeight="bold"
                     letterSpacing="tight"
                   >
                     {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
                   </Heading>
-                  <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" fontWeight="medium">
                     Your journey through memories
                   </Text>
                 </VStack>
@@ -258,7 +258,7 @@ const Timeline = ({ selectedYear }) => {
             {/* Statistics */}
             {sortedYears.length > 0 && (
               <HStack
-                spacing={{ base: 3, md: 6 }}
+                spacing={{ base: 2, md: 6 }}
                 justify="space-around"
                 flexWrap="wrap"
                 align="start"
@@ -266,16 +266,16 @@ const Timeline = ({ selectedYear }) => {
                 {/* Total Photos */}
                 <VStack spacing={1}>
                   <HStack spacing={2} color={accentColor}>
-                    <Icon as={FaCamera} />
-                    <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                    <Icon as={FaCamera} boxSize={{ base: 4, md: 5 }} />
+                    <Text fontSize={{ base: 'xs', md: 'md' }} fontWeight="semibold">
                       Total Photos
                     </Text>
                   </HStack>
                   <Badge
-                    fontSize={{ base: 'lg', md: 'xl' }}
+                    fontSize={{ base: 'md', md: 'xl' }}
                     colorScheme="teal"
                     variant="subtle"
-                    px={4}
+                    px={{ base: 3, md: 4 }}
                     py={1}
                     borderRadius="full"
                   >
@@ -286,16 +286,16 @@ const Timeline = ({ selectedYear }) => {
                 {/* Years Covered */}
                 <VStack spacing={1}>
                   <HStack spacing={2} color={accentColor}>
-                    <Icon as={FaHistory} />
-                    <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                    <Icon as={FaHistory} boxSize={{ base: 4, md: 5 }} />
+                    <Text fontSize={{ base: 'xs', md: 'md' }} fontWeight="semibold">
                       Years
                     </Text>
                   </HStack>
                   <Badge
-                    fontSize={{ base: 'lg', md: 'xl' }}
+                    fontSize={{ base: 'md', md: 'xl' }}
                     colorScheme="blue"
                     variant="subtle"
-                    px={4}
+                    px={{ base: 3, md: 4 }}
                     py={1}
                     borderRadius="full"
                   >
@@ -307,16 +307,16 @@ const Timeline = ({ selectedYear }) => {
                 {sortedYears.length > 0 && (
                   <VStack spacing={1}>
                     <HStack spacing={2} color={accentColor}>
-                      <Icon as={FaGlobe} />
-                      <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                      <Icon as={FaGlobe} boxSize={{ base: 4, md: 5 }} />
+                      <Text fontSize={{ base: 'xs', md: 'md' }} fontWeight="semibold">
                         Period
                       </Text>
                     </HStack>
                     <Badge
-                      fontSize={{ base: 'lg', md: 'xl' }}
+                      fontSize={{ base: 'md', md: 'xl' }}
                       colorScheme="purple"
                       variant="subtle"
-                      px={4}
+                      px={{ base: 3, md: 4 }}
                       py={1}
                       borderRadius="full"
                     >
