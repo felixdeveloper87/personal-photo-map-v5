@@ -305,8 +305,40 @@ const VideoSettings = ({
           {/* Upload de arquivo */}
           {settings.musicSource === 'upload' && (
             <FormControl>
-              <FormLabel color={textColor}>Audio file</FormLabel>
-              <VStack spacing={2} align="stretch">
+              <FormLabel color={textColor}>Audio file (MP3, WAV, AAC, etc.)</FormLabel>
+              <VStack spacing={3} align="stretch">
+                
+                {/* Alerta importante sobre Apple Music */}
+                <Box 
+                  p={4} 
+                  bg="orange.50" 
+                  border="2px solid" 
+                  borderColor="orange.300" 
+                  borderRadius="md"
+                  _dark={{ bg: "orange.900", borderColor: "orange.700" }}
+                >
+                  <VStack spacing={2} align="stretch">
+                    <HStack spacing={2}>
+                      <Text fontSize="lg">⚠️</Text>
+                      <Text fontSize="sm" color="orange.800" fontWeight="bold" _dark={{ color: "orange.200" }}>
+                        iOS Safari Limitation
+                      </Text>
+                    </HStack>
+                    <Text fontSize="xs" color="orange.700" _dark={{ color: "orange.300" }}>
+                      <strong>Importante:</strong> iOS Safari não pode acessar músicas da biblioteca do Apple Music diretamente por questões de segurança.
+                    </Text>
+                    <Text fontSize="xs" color="orange.700" fontWeight="medium" _dark={{ color: "orange.300" }} mt={1}>
+                      📝 <strong>Solução:</strong> Se a música está no Apple Music:
+                    </Text>
+                    <Box as="ul" fontSize="xs" color="orange.700" _dark={{ color: "orange.300" }} ml={4} mt={1}>
+                      <li>1. Abra a música no app "Music"</li>
+                      <li>2. Exporte ou encontre o arquivo MP3</li>
+                      <li>3. Salve no app "Files"</li>
+                      <li>4. Depois volte aqui e selecione do "Files"</li>
+                    </Box>
+                  </VStack>
+                </Box>
+
                 <Box position="relative">
                   <Input
                     id="audio-upload"
@@ -315,8 +347,8 @@ const VideoSettings = ({
                     onChange={handleAudioFileSelect}
                     bg={inputBg}
                     border="2px dashed"
-                    borderColor="gray.300"
-                    _hover={{ borderColor: "blue.400" }}
+                    borderColor="blue.300"
+                    _hover={{ borderColor: "blue.500" }}
                     pt={1}
                     cursor="pointer"
                   />
@@ -326,43 +358,80 @@ const VideoSettings = ({
                       left="50%" 
                       top="50%" 
                       transform="translate(-50%, -50%)" 
-                      fontSize="xs" 
-                      color="gray.500"
+                      fontSize="sm" 
+                      color="blue.600"
                       pointerEvents="none"
                       textAlign="center"
                       width="100%"
                       px={2}
+                      fontWeight="medium"
                     >
-                      📁 Tap to select audio file
+                      📁 Tap aqui para selecionar música
                     </Text>
                   )}
                 </Box>
                 
+                {/* Instruções detalhadas para iOS */}
                 <Box 
-                  p={3} 
+                  p={4} 
                   bg="blue.50" 
                   border="1px solid" 
                   borderColor="blue.200" 
                   borderRadius="md"
                   _dark={{ bg: "blue.900", borderColor: "blue.700" }}
                 >
-                  <Text fontSize="xs" color="blue.800" fontWeight="semibold" mb={2}>
-                    📱 iOS Safari - Como adicionar música:
+                  <Text fontSize="sm" color="blue.800" fontWeight="bold" mb={3} _dark={{ color: "blue.200" }}>
+                    📱 Passo a Passo para iPhone/iPad:
                   </Text>
-                  <VStack spacing={1} align="stretch" fontSize="xs" color="blue.700">
-                    <Text>1️⃣ Tap no campo acima</Text>
-                    <Text>2️⃣ Tap em <strong>"Editar"</strong> no topo direito</Text>
-                    <Text>3️⃣ Tap em <strong>"Adicionar Arquivos"</strong></Text>
-                    <Text>4️⃣ Escolha: <strong>Files</strong>, <strong>Dropbox</strong>, <strong>Google Drive</strong> ou <strong>iCloud</strong></Text>
-                    <Text mt={2} fontWeight="bold">💡 Dica: Baixe a música antes no app Files</Text>
+                  <VStack spacing={2} align="stretch" fontSize="sm" color="blue.700" _dark={{ color: "blue.200" }}>
+                    <HStack align="start" spacing={2}>
+                      <Text fontWeight="bold" fontSize="lg">1️⃣</Text>
+                      <Text><strong>Tap</strong> no campo de seleção acima (azul tracejado)</Text>
+                    </HStack>
+                    <HStack align="start" spacing={2}>
+                      <Text fontWeight="bold" fontSize="lg">2️⃣</Text>
+                      <Text>Na tela que abrir, procure por <strong>"Editar"</strong> no canto superior direito</Text>
+                    </HStack>
+                    <HStack align="start" spacing={2}>
+                      <Text fontWeight="bold" fontSize="lg">3️⃣</Text>
+                      <Text>Tap em <strong>"Adicionar Arquivos..."</strong> (Add Files)</Text>
+                    </HStack>
+                    <HStack align="start" spacing={2}>
+                      <Text fontWeight="bold" fontSize="lg">4️⃣</Text>
+                      <Text>Escolha onde está sua música:</Text>
+                    </HStack>
+                    <Box as="ul" ml={6} mt={-2}>
+                      <li>📱 <strong>Files</strong> - Se salvou antes</li>
+                      <li>☁️ <strong>iCloud Drive</strong> - Se tem na nuvem</li>
+                      <li>📦 <strong>Dropbox</strong> - Se estiver lá</li>
+                      <li>🌐 <strong>Google Drive</strong> - Também funciona</li>
+                      <li>💾 <strong>Downloads</strong> - Se baixou recentemente</li>
+                    </Box>
                   </VStack>
                 </Box>
               </VStack>
               
               {audioFile && (
-                <Text fontSize="sm" color="green.500" mt={2}>
-                  ✅ {audioFile.name}
-                </Text>
+                <Box 
+                  p={3} 
+                  bg="green.50" 
+                  border="1px solid" 
+                  borderColor="green.200" 
+                  borderRadius="md"
+                  mt={2}
+                >
+                  <HStack>
+                    <Text fontSize="lg">✅</Text>
+                    <VStack align="start" spacing={0}>
+                      <Text fontSize="sm" color="green.800" fontWeight="bold">
+                        Música selecionada com sucesso!
+                      </Text>
+                      <Text fontSize="xs" color="green.700">
+                        {audioFile.name}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
               )}
               {audioUrl && !audioFile && (
                 <Text fontSize="sm" color="blue.500" mt={2}>

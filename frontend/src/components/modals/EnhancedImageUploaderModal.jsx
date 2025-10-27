@@ -221,7 +221,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     if (valid.length === 0) return;
 
     // Limit number of files to prevent memory issues on low memory VPS
-    const MAX_FILES = 8;
+    const MAX_FILES = 20;
     if (valid.length > MAX_FILES) {
       showToast('Too many files', `Please select no more than ${MAX_FILES} photos at once for better performance.`, 'warning');
       return;
@@ -557,7 +557,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
           </Button>
 
           <Text fontSize="sm" color={subtleText} mt={2} textAlign="center">
-            You can select up to 8 photos at once. For best performance on low memory servers, try uploading 3-5 photos per batch.
+            You can select up to 20 photos at once. For best performance on low memory servers, try uploading 3-5 photos per batch.
           </Text>
         </Box>
 
