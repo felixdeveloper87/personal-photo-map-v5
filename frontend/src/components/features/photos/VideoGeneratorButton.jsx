@@ -76,10 +76,10 @@ const VideoGeneratorButton = ({
       <Button
         colorScheme="green"
         variant="solid"
-        size={{ base: "xs", sm: "sm", md: "sm" }}
+        size={{ base: "sm", sm: "sm", md: "sm" }}
         borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
         px={{ base: 2, sm: 3, md: 4 }}
-        py={{ base: 1, sm: 2, md: 2 }}
+        py={{ base: 2, sm: 2, md: 2 }}
         fontWeight="semibold"
         boxShadow="md"
         _hover={{
@@ -97,8 +97,13 @@ const VideoGeneratorButton = ({
       >
         <HStack spacing={2}>
           <Icon as={isHovered ? FaPlay : FaVideo} />
-          <Text>Generate Video</Text>
-          <Badge colorScheme="green" variant="subtle" fontSize="xs">
+          <Text display={{ base: "none", sm: "block" }}>Generate Video</Text>
+          <Badge 
+            colorScheme="green" 
+            variant="subtle" 
+            fontSize="xs"
+            display={{ base: "none", sm: "inline-flex" }}
+          >
             {images.length}
           </Badge>
         </HStack>

@@ -16,6 +16,9 @@ import {
   Badge,
   Divider,
   Icon,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,7 +28,7 @@ import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
 import TimelineVideoModal from '../modals/TimelineVideoModal';
 import VideoGeneratorButton from './photos/VideoGeneratorButton';
-import { FaGlobe, FaVideo, FaCamera, FaHistory } from 'react-icons/fa';
+import { FaGlobe, FaCamera, FaHistory } from 'react-icons/fa';
 
 // Lazy loading of PhotoGallery
 const LazyPhotoGallery = lazy(() => import('./photos/PhotoGallery'));
@@ -65,6 +68,7 @@ const Timeline = ({ selectedYear }) => {
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
   const { isLoggedIn, fullname } = useContext(AuthContext);
   const [collapsedYears, setCollapsedYears] = useState({});
+  const [viewByYear, setViewByYear] = useState(true); // Toggle state: true = by year, false = show all
 
   // Extrair o primeiro nome do usuário
   const getFirstName = () => {
@@ -222,34 +226,22 @@ const Timeline = ({ selectedYear }) => {
         >
           <VStack spacing={6} align="stretch">
             {/* Title Section */}
-            <HStack spacing={4} justify="space-between" align="center" flexWrap="wrap">
-              <HStack spacing={3}>
-                <Icon as={FaHistory} color={accentColor} boxSize={{ base: 6, md: 8 }} />
-                <VStack align="start" spacing={0}>
-                  <Heading
-                    as="h1"
-                    fontSize={{ base: 'xl', md: '3xl' }}
-                    color={textColor}
-                    fontWeight="bold"
-                    letterSpacing="tight"
-                  >
-                    {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
-                  </Heading>
-                  <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" fontWeight="medium">
-                    Your journey through memories
-                  </Text>
-                </VStack>
-              </HStack>
-
-              {/* Generate Video Button */}
-              {sortedYears.length > 0 && images.length >= 2 && (
-                <VideoGeneratorButton
-                  images={images}
-                  context="timeline"
-                  contextName="Timeline"
-                  contextYear={selectedYear}
-                />
-              )}
+            <HStack spacing={3}>
+              <Icon as={FaHistory} color={accentColor} boxSize={{ base: 6, md: 8 }} />
+              <VStack align="start" spacing={0}>
+                <Heading
+                  as="h1"
+                  fontSize={{ base: 'xl', md: '3xl' }}
+                  color={textColor}
+                  fontWeight="bold"
+                  letterSpacing="tight"
+                >
+                  {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
+                </Heading>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" fontWeight="medium">
+                  Your journey through memories
+                </Text>
+              </VStack>
             </HStack>
 
             {/* Divider */}
@@ -340,78 +332,130 @@ const Timeline = ({ selectedYear }) => {
           </VStack>
         </Box>
 
+        {/* View Toggle - Above Photos */}
+        {sortedYears.length > 0 && (
+          <Box
+            bg={cardBg}
+            borderRadius="lg"
+            boxShadow="sm"
+            p={4}
+            borderWidth="1px"
+            borderColor={useColorModeValue('gray.200', 'gray.700')}
+          >
+            <HStack justify="space-between" align="center" spacing={4} flexWrap="wrap">
+              <FormControl display="flex" alignItems="center" justifyContent="center" w="auto">
+                <FormLabel htmlFor="view-toggle" mb="0" fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold" color={textColor}>
+                  {viewByYear ? 'Viewing by Year' : 'Showing All Photos'}
+                </FormLabel>
+                <Switch
+                  id="view-toggle"
+                  size={{ base: 'md', md: 'lg' }}
+                  colorScheme="teal"
+                  isChecked={viewByYear}
+                  onChange={() => setViewByYear(!viewByYear)}
+                />
+              </FormControl>
+
+              {/* Generate Video Button - Only show when viewing all photos */}
+              {!viewByYear && images.length >= 2 && (
+                <VideoGeneratorButton
+                  images={images}
+                  context="timeline"
+                  contextName="Timeline"
+                  contextYear={selectedYear}
+                />
+              )}
+            </HStack>
+          </Box>
+        )}
+
         {sortedYears.length > 0 ? (
-          <VStack spacing={3} align="stretch">
-            <AnimatePresence>
-              {sortedYears.map((year) => (
-                <motion.div
-                  key={year}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Box
-                    bg={cardBg}
-                    borderRadius="lg"
-                    boxShadow="md"
-                    p={4}
-                    position="relative"
-                    _before={{
-                      content: '""',
-                      position: 'absolute',
-                      left: '20px',
-                      top: '50px',
-                      bottom: '20px',
-                      width: '4px',
-                      bg: accentColor,
-                      borderRadius: 'full',
-                      display: { base: 'none', md: 'block' },
-                    }}
+          viewByYear ? (
+            // View by Year - Grouped by years with collapse
+            <VStack spacing={3} align="stretch">
+              <AnimatePresence>
+                {sortedYears.map((year) => (
+                  <motion.div
+                    key={year}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <HStack justify="space-between" align="center" cursor="pointer" onClick={() => toggleYear(year)}>
-                      <Text
-                        fontSize="xl"
-                        fontWeight="semibold"
-                        color={textColor}
-                        _hover={{ color: 'blue.500' }}
-                        transition="color 0.3s ease"
-                      >
-                        {year}
-                      </Text>
-                      <HStack spacing={2}>
-                        {/* Botão de vídeo para o ano */}
-                        <VideoGeneratorButton
-                          images={groupedByYear[year] || []}
-                          context="year"
-                          contextName="Timeline"
-                          contextYear={year}
-                        />
-                        <IconButton
-                          aria-label={`Toggle photos for ${year}`}
-                          icon={collapsedYears[year] ? <ChevronDownIcon /> : <ChevronUpIcon />}
-                          size="sm"
-                          variant="ghost"
+                    <Box
+                      bg={cardBg}
+                      borderRadius="lg"
+                      boxShadow="md"
+                      p={4}
+                      position="relative"
+                      _before={{
+                        content: '""',
+                        position: 'absolute',
+                        left: '20px',
+                        top: '50px',
+                        bottom: '20px',
+                        width: '4px',
+                        bg: accentColor,
+                        borderRadius: 'full',
+                        display: { base: 'none', md: 'block' },
+                      }}
+                    >
+                      <HStack justify="space-between" align="center" cursor="pointer" onClick={() => toggleYear(year)}>
+                        <Text
+                          fontSize="xl"
+                          fontWeight="semibold"
                           color={textColor}
-                          onClick={(e) => {
-                            e?.stopPropagation?.();
-                            toggleYear(year);
-                          }}
-                        />
+                          _hover={{ color: 'blue.500' }}
+                          transition="color 0.3s ease"
+                        >
+                          {year}
+                        </Text>
+                        <HStack spacing={2}>
+                          {/* Botão de vídeo para o ano */}
+                          <VideoGeneratorButton
+                            images={groupedByYear[year] || []}
+                            context="year"
+                            contextName="Timeline"
+                            contextYear={year}
+                          />
+                          <IconButton
+                            aria-label={`Toggle photos for ${year}`}
+                            icon={collapsedYears[year] ? <ChevronDownIcon /> : <ChevronUpIcon />}
+                            size="sm"
+                            variant="ghost"
+                            color={textColor}
+                            onClick={(e) => {
+                              e?.stopPropagation?.();
+                              toggleYear(year);
+                            }}
+                          />
+                        </HStack>
                       </HStack>
-                    </HStack>
-                    <Collapse in={!collapsedYears[year]} animateOpacity>
-                      <Box mt={2}>
-                        <Suspense fallback={<Spinner size="md" color={accentColor} />}>
-                          <LazyPhotoGallery images={groupedByYear[year] || []} />
-                        </Suspense>
-                      </Box>
-                    </Collapse>
-                  </Box>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </VStack>
+                      <Collapse in={!collapsedYears[year]} animateOpacity>
+                        <Box mt={2}>
+                          <Suspense fallback={<Spinner size="md" color={accentColor} />}>
+                            <LazyPhotoGallery images={groupedByYear[year] || []} />
+                          </Suspense>
+                        </Box>
+                      </Collapse>
+                    </Box>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </VStack>
+          ) : (
+            // Show All - Single gallery with all photos
+            <Box
+              bg={cardBg}
+              borderRadius="lg"
+              boxShadow="md"
+              p={4}
+            >
+              <Suspense fallback={<Spinner size="xl" color={accentColor} />}>
+                <LazyPhotoGallery images={images} />
+              </Suspense>
+            </Box>
+          )
         ) : (
           <Text color={textColor} fontSize="lg" textAlign="center" mt={8}>
             No photos to display yet. Start capturing your journey!
