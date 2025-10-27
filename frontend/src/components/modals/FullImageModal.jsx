@@ -38,9 +38,9 @@ const FullImageModal = memo(function FullImageModal({
   const glassBg = useColorModeValue('rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)');
 
   // Motion values (zoom/pan)
-  const scale = useSpring(1, { stiffness: 220, damping: 28 });
-  const x = useSpring(0, { stiffness: 220, damping: 28 });
-  const y = useSpring(0, { stiffness: 220, damping: 28 });
+  const scale = useSpring(1, { stiffness: 400, damping: 30 });
+  const x = useSpring(0, { stiffness: 600, damping: 30 });
+  const y = useSpring(0, { stiffness: 600, damping: 30 });
   const dragX = useMotionValue(0); // swipe nav (somente quando scale === 1)
 
   // Refs e dimensões
