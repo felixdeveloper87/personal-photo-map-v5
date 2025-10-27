@@ -383,13 +383,13 @@ const PhotoGallery = memo(function PhotoGallery({
       )}
 
       {/* Grid */}
-      <Box maxW="1900px" mx="auto" px={{ base: 2, sm: 4, md: 6, lg: 8 }}>
+      <Box maxW="1900px" mx="auto" px={{ base: 1, sm: 4, md: 6, lg: 8 }}>
         <SimpleGrid
-          columns={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 8 }}
+          columns={{ base: 3, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 8 }}
           spacing={{ base: 2, sm: 3, md: 3, lg: 4, xl: 5 }}
           sx={{
-            columnGap: { base: '6px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
-            rowGap: { base: '6px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
+            columnGap: { base: '2px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
+            rowGap: { base: '2px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
           }}
         >
           {images.map((image, index) => {

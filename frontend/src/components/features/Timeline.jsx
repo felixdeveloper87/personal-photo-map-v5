@@ -151,7 +151,7 @@ const Timeline = ({ selectedYear }) => {
   if (!isLoggedIn) {
     return (
       <Box minH="100vh" p={padding}>
-        <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 2, md: 0 }}>
+        <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 0, md: 0 }}>
           <Heading
             as="h1"
             size={fontSize}
@@ -199,7 +199,7 @@ const Timeline = ({ selectedYear }) => {
 
   return (
     <Box minH="100vh" p={padding}>
-      <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 2, md: 0 }}>
+      <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "1800px" }} mx="auto" px={{ base: 0, md: 0 }}>
         {/* Professional Header Section */}
         <Box
           bg={cardBg}
@@ -401,7 +401,7 @@ const Timeline = ({ selectedYear }) => {
                       </HStack>
                     </HStack>
                     <Collapse in={!collapsedYears[year]} animateOpacity>
-                      <Box mt={2} pl={{ base: 0, md: 8 }}>
+                      <Box mt={2}>
                         <Suspense fallback={<Spinner size="md" color={accentColor} />}>
                           <LazyPhotoGallery images={groupedByYear[year] || []} />
                         </Suspense>
