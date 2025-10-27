@@ -397,15 +397,15 @@ const FullImageModal = memo(function FullImageModal({
           >
             <Box position="absolute" w="100%" h="100%" overflow="hidden" willChange="transform, opacity">
               <AnimatePresence>
-                {previousImage && previousImage !== imageUrl && (
-                  <MotionDiv
-                    key={`prev-${previousImage}`}
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.35, ease: EASING_CURVE }}
-                    style={{ position: 'absolute', inset: 0 }}
-                  >
+                 {previousImage && previousImage !== imageUrl && (
+                   <MotionDiv
+                     key={`prev-${previousImage}`}
+                     initial={{ opacity: 1 }}
+                     animate={{ opacity: 0 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                     style={{ position: 'absolute', inset: 0 }}
+                   >
                     <Image
                       src={previousImage}
                       alt=""
@@ -415,24 +415,24 @@ const FullImageModal = memo(function FullImageModal({
                   </MotionDiv>
                 )}
 
-                <MotionDiv
-                  key={`curr-${imageUrl}`}
-                  initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 22 }}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    x: scale.get() === 1 ? dragX : x,
-                    y,
-                    scale,
-                    willChange: 'transform, opacity',
-                  }}
-                >
+                 <MotionDiv
+                   key={`curr-${imageUrl}`}
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   exit={{ opacity: 0 }}
+                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                   style={{
+                     position: 'absolute',
+                     inset: 0,
+                     display: 'flex',
+                     justifyContent: 'center',
+                     alignItems: 'center',
+                     x: scale.get() === 1 ? dragX : x,
+                     y,
+                     scale,
+                     willChange: 'transform, opacity',
+                   }}
+                 >
                   {!imgLoaded && (
                     <Center position="absolute">
                       <Spinner size="lg" color="white" thickness="3px" emptyColor="gray.700" />
@@ -445,18 +445,18 @@ const FullImageModal = memo(function FullImageModal({
                     alt={countryName ? `Photo from ${countryName}` : 'Photo'}
                     draggable={false}
                     onLoad={handleImageLoad}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      objectFit: 'contain',
-                      opacity: imgLoaded ? 1 : 0,
-                      transition: 'opacity 0.25s ease',
-                      userSelect: 'none',
-                      WebkitUserSelect: 'none',
-                      pointerEvents: 'none',
-                      backfaceVisibility: 'hidden',
-                      transform: 'translateZ(0)',
-                    }}
+                     style={{
+                       maxWidth: '100%',
+                       maxHeight: '100%',
+                       objectFit: 'contain',
+                       opacity: imgLoaded ? 1 : 0,
+                       transition: 'opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                       userSelect: 'none',
+                       WebkitUserSelect: 'none',
+                       pointerEvents: 'none',
+                       backfaceVisibility: 'hidden',
+                       transform: 'translateZ(0)',
+                     }}
                   />
                 </MotionDiv>
               </AnimatePresence>
