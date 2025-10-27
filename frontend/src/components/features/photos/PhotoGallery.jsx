@@ -102,7 +102,7 @@ const PhotoGallery = memo(function PhotoGallery({
 
   const isMobile = useBreakpointValue({ base: true, sm: false });
   const isLargeScreen = useBreakpointValue({ base: false, lg: false, xl: true, '2xl': true });
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const bgColor = useColorModeValue('white.50', 'black.900');
   const textColor = useColorModeValue('gray.800', 'white');
   const selectionColor = useColorModeValue('blue.500', 'blue.300');
   const selectionBgColor = useColorModeValue('blue.50', 'blue.900');
@@ -112,10 +112,6 @@ const PhotoGallery = memo(function PhotoGallery({
   const shimmerColor2 = useColorModeValue('#cbd5e0', '#2d3748');
   const buttonBorderColor = useColorModeValue('blue.600', 'white');
   const buttonTextColor = useColorModeValue('blue.600', 'white');
-
-  // Debug: Log images data
-  console.log('🖼️ PhotoGallery received images:', images?.length || 0, 'images');
-  console.log('🖼️ First image sample:', images?.[0]);
 
   // O(1) lookup — garante que Select All/Unselect All reflitam imediatamente nos checkboxes
   const selectedSet = useMemo(

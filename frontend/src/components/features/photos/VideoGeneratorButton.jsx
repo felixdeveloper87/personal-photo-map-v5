@@ -74,7 +74,6 @@ const VideoGeneratorButton = ({
   return (
     <>
       <Button
-        leftIcon={<Icon as={FaVideo} />}
         colorScheme="green"
         variant="solid"
         size={{ base: "xs", sm: "sm", md: "sm" }}

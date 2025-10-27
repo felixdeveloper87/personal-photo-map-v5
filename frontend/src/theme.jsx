@@ -16,8 +16,8 @@ const styles = {
         body: {
             bgGradient:
                 props.colorMode === 'light'
-                    ? 'linear(to-r, rgb(235, 238, 239),rgb(186, 225, 230))'
-                    : 'linear(to-r,rgb(49, 50, 50),rgb(22, 47, 72))',
+                    ? 'linear(to-r, rgb(255, 255, 255),rgb(255, 255, 255))'
+                    : 'linear(to-r,rgb(5, 5, 5),rgb(6, 6, 6))',
             color: props.colorMode === 'light' ? 'gray.900' : 'gray.100',
             fontFamily: 'body',
         },

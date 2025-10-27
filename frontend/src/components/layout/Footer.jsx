@@ -11,14 +11,13 @@ import { FaHeart, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 const Footer = () => {
   // Cores adaptáveis ao tema
   const bgColor = useColorModeValue(
-    "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-    "linear-gradient(135deg, #1a202c 0%, #2d3748 100%)"
+    "linear-gradient(135deg, #f8fafc 0%,rgb(254, 254, 254) 100%)",
+    "linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(0, 0, 0) 100%)"
   );
   const textColor = useColorModeValue("gray.800", "white");
   const accentColor = useColorModeValue("blue.600", "blue.300");
   const linkColor = useColorModeValue("gray.600", "gray.300");
   const linkHoverColor = useColorModeValue("blue.600", "blue.300");
-  const dividerColor = useColorModeValue("gray.300", "gray.600");
   const copyrightColor = useColorModeValue("gray.500", "gray.400");
 
   return (
@@ -38,14 +37,9 @@ const Footer = () => {
         left: 0,
         right: 0,
         height: '1px',
-        bgGradient: useColorModeValue(
-          "linear-gradient(to-r, transparent, #60a5fa, transparent)",
-          "linear-gradient(to-r, transparent, #3b82f6, transparent)"
-        ),
-        opacity: 0.6
       }}
     >
-      <Container maxW="1400px" px={4}>
+      <Container maxW="1400px" px={6}>
         <VStack spacing={6}>
           {/* Main Footer Content */}
           <Flex 
@@ -184,10 +178,10 @@ const Footer = () => {
             w="full" 
             h="1px" 
             bgGradient={useColorModeValue(
-              "linear-gradient(to-r, transparent, #cbd5e1, transparent)",
-              "linear-gradient(to-r, transparent, #475569, transparent)"
+              "linear-gradient(to-r, transparent,rgb(8, 9, 9), transparent)",
+              "linear-gradient(to-r, transparent,rgb(246, 247, 248), transparent)"
             )}
-            opacity={0.5}
+            opacity={0.8}
           />
 
           {/* Copyright Section */}

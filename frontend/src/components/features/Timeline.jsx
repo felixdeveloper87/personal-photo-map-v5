@@ -13,6 +13,9 @@ import {
   useBreakpointValue,
   useDisclosure,
   Button,
+  Badge,
+  Divider,
+  Icon,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +25,7 @@ import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
 import TimelineVideoModal from '../modals/TimelineVideoModal';
 import VideoGeneratorButton from './photos/VideoGeneratorButton';
-import { FaGlobe, FaVideo } from 'react-icons/fa';
+import { FaGlobe, FaVideo, FaCamera, FaHistory } from 'react-icons/fa';
 
 // Lazy loading of PhotoGallery
 const LazyPhotoGallery = lazy(() => import('./photos/PhotoGallery'));
@@ -33,7 +36,7 @@ import { buildApiUrl, buildImageUrl } from '../../utils/apiConfig';
 const fetchAllPictures = async (year) => {
   let url = buildApiUrl('/api/images/allPictures');
   if (year) url += `?year=${year}`;
-  
+
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -62,7 +65,7 @@ const Timeline = ({ selectedYear }) => {
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
   const { isLoggedIn, fullname } = useContext(AuthContext);
   const [collapsedYears, setCollapsedYears] = useState({});
-  
+
   // Extrair o primeiro nome do usuário
   const getFirstName = () => {
     if (!fullname) return 'Your';
@@ -77,13 +80,9 @@ const Timeline = ({ selectedYear }) => {
   const padding = useBreakpointValue({ base: 4, md: 6, lg: 8 });
 
   // Color scheme
-  const bgGradient = useColorModeValue(
-    'linear(to-r, blue.100, teal.100)',
-    'linear(to-r, gray.700, gray.800)'
-  );
-  const textColor = useColorModeValue('gray.800', 'white');
-  const accentColor = useColorModeValue('teal.500', 'teal.300');
-  const cardBg = useColorModeValue('white', 'gray.900');
+  const textColor = useColorModeValue('black.800', 'white');
+  const accentColor = useColorModeValue('black.500', 'white.300');
+  const cardBg = useColorModeValue('white', 'black');
 
 
   // Fetch photos with React Query
@@ -121,7 +120,6 @@ const Timeline = ({ selectedYear }) => {
     return (
       <Box
         minH="100vh"
-        bgGradient={bgGradient}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -137,7 +135,6 @@ const Timeline = ({ selectedYear }) => {
     return (
       <Box
         minH="100vh"
-        bgGradient={bgGradient}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -153,8 +150,8 @@ const Timeline = ({ selectedYear }) => {
   // Don't render timeline content if user is not logged in
   if (!isLoggedIn) {
     return (
-      <Box minH="100vh" bgGradient={bgGradient} p={padding}>
-        <VStack spacing={6} align="stretch" maxW="1200px" mx="auto">
+      <Box minH="100vh" p={padding}>
+        <VStack spacing={6} align="stretch" maxW={{ base: "1200px", lg: "1600px", xl: "1800px" }} mx="auto">
           <Heading
             as="h1"
             size={fontSize}
@@ -164,12 +161,12 @@ const Timeline = ({ selectedYear }) => {
             letterSpacing="tight"
             mb={4}
           >
-{getFirstName()}'s Photo Timeline
+            {getFirstName()}'s Photo Timeline
           </Heading>
           <Text color={textColor} fontSize="lg" textAlign="center" mt={8}>
             Please log in to view your photo timeline and organize your travel memories.
           </Text>
-          
+
           <Button
             size="lg"
             colorScheme="blue"
@@ -190,7 +187,7 @@ const Timeline = ({ selectedYear }) => {
             Learn More About Timeline Features
           </Button>
         </VStack>
-        
+
         {/* Authentication Modals - Must be rendered even when not logged in */}
         <ConversionModal
           isOpen={conversionModal.isOpen}
@@ -201,30 +198,147 @@ const Timeline = ({ selectedYear }) => {
   }
 
   return (
-    <Box minH="100vh" bgGradient={bgGradient} p={padding}>
-      <VStack spacing={6} align="stretch" maxW="1200px" mx="auto">
-        <VStack spacing={4} mb={6}>
-          <Heading
-            as="h1"
-            size={fontSize}
-            textAlign="center"
-            color={textColor}
-            fontWeight="bold"
-            letterSpacing="tight"
-          >
-{selectedYear ? `Timeline for ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
-          </Heading>
-          
-          {/* Botão para gerar vídeo timeline */}
-          {sortedYears.length > 0 && (
-            <VideoGeneratorButton
-              images={images}
-              context="timeline"
-              contextName="Timeline"
-              contextYear={selectedYear}
-            />
-          )}
-        </VStack>
+    <Box minH="100vh" p={padding}>
+      <VStack spacing={6} align="stretch" maxW={{ base: "1200px", lg: "1600px", xl: "1800px" }} mx="auto">
+        {/* Professional Header Section */}
+        <Box
+          bg={cardBg}
+          borderRadius="2xl"
+          boxShadow="xl"
+          p={{ base: 6, md: 8 }}
+          borderWidth="1px"
+          borderColor={useColorModeValue('gray.200', 'gray.700')}
+          position="relative"
+          overflow="hidden"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            bgGradient: 'linear(to-r, teal.400, blue.500)',
+          }}
+        >
+          <VStack spacing={6} align="stretch">
+            {/* Title Section */}
+            <HStack spacing={4} justify="space-between" align="center" flexWrap="wrap">
+              <HStack spacing={3}>
+                <Icon as={FaHistory} color={accentColor} boxSize={8} />
+                <VStack align="start" spacing={0}>
+                  <Heading
+                    as="h1"
+                    fontSize={{ base: '2xl', md: '3xl' }}
+                    color={textColor}
+                    fontWeight="bold"
+                    letterSpacing="tight"
+                  >
+                    {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
+                  </Heading>
+                  <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                    Your journey through memories
+                  </Text>
+                </VStack>
+              </HStack>
+
+              {/* Generate Video Button */}
+              {sortedYears.length > 0 && images.length >= 2 && (
+                <VideoGeneratorButton
+                  images={images}
+                  context="timeline"
+                  contextName="Timeline"
+                  contextYear={selectedYear}
+                />
+              )}
+            </HStack>
+
+            {/* Divider */}
+            <Divider borderColor={useColorModeValue('gray.300', 'gray.600')} />
+
+            {/* Statistics */}
+            {sortedYears.length > 0 && (
+              <HStack
+                spacing={{ base: 3, md: 6 }}
+                justify="space-around"
+                flexWrap="wrap"
+                align="start"
+              >
+                {/* Total Photos */}
+                <VStack spacing={1}>
+                  <HStack spacing={2} color={accentColor}>
+                    <Icon as={FaCamera} />
+                    <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                      Total Photos
+                    </Text>
+                  </HStack>
+                  <Badge
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    colorScheme="teal"
+                    variant="subtle"
+                    px={4}
+                    py={1}
+                    borderRadius="full"
+                  >
+                    {images.length}
+                  </Badge>
+                </VStack>
+
+                {/* Years Covered */}
+                <VStack spacing={1}>
+                  <HStack spacing={2} color={accentColor}>
+                    <Icon as={FaHistory} />
+                    <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                      Years
+                    </Text>
+                  </HStack>
+                  <Badge
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    colorScheme="blue"
+                    variant="subtle"
+                    px={4}
+                    py={1}
+                    borderRadius="full"
+                  >
+                    {sortedYears.length}
+                  </Badge>
+                </VStack>
+
+                {/* Time Range */}
+                {sortedYears.length > 0 && (
+                  <VStack spacing={1}>
+                    <HStack spacing={2} color={accentColor}>
+                      <Icon as={FaGlobe} />
+                      <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold">
+                        Period
+                      </Text>
+                    </HStack>
+                    <Badge
+                      fontSize={{ base: 'lg', md: 'xl' }}
+                      colorScheme="purple"
+                      variant="subtle"
+                      px={4}
+                      py={1}
+                      borderRadius="full"
+                    >
+                      {selectedYear
+                        ? selectedYear
+                        : sortedYears.length > 1
+                        ? `${sortedYears[sortedYears.length - 1]} - ${sortedYears[0]}`
+                        : sortedYears[0]}
+                    </Badge>
+                  </VStack>
+                )}
+              </HStack>
+            )}
+
+            {/* Empty State */}
+            {sortedYears.length === 0 && (
+              <Text color="gray.500" fontSize="md" textAlign="center" py={4}>
+                No photos found. Start capturing your journey!
+              </Text>
+            )}
+          </VStack>
+        </Box>
 
         {sortedYears.length > 0 ? (
           <VStack spacing={3} align="stretch">
@@ -260,8 +374,8 @@ const Timeline = ({ selectedYear }) => {
                         fontSize="xl"
                         fontWeight="semibold"
                         color={textColor}
-                        _hover={{ color: accentColor }}
-                        transition="color 0.2s ease"
+                        _hover={{ color: 'blue.500' }}
+                        transition="color 0.3s ease"
                       >
                         {year}
                       </Text>
@@ -279,7 +393,6 @@ const Timeline = ({ selectedYear }) => {
                           size="sm"
                           variant="ghost"
                           color={textColor}
-                          _hover={{ color: accentColor, bg: 'transparent' }}
                           onClick={(e) => {
                             e?.stopPropagation?.();
                             toggleYear(year);
@@ -311,7 +424,7 @@ const Timeline = ({ selectedYear }) => {
         isOpen={conversionModal.isOpen}
         onClose={conversionModal.onClose}
       />
-      
+
       {/* Video Generator Modal */}
       <TimelineVideoModal
         isOpen={videoModal.isOpen}
