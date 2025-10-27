@@ -111,6 +111,18 @@ const Timeline = ({ selectedYear }) => {
   // Sort years in descending order (most recent to oldest)
   const sortedYears = Object.keys(groupedByYear).sort((a, b) => Number(b) - Number(a));
 
+  // Memoize sorted images for "Show All" mode (newest to oldest)
+  const sortedAllImages = useMemo(() => {
+    return [...images].sort((a, b) => {
+      // Sort by year first (descending)
+      if (b.year !== a.year) {
+        return b.year - a.year;
+      }
+      // If same year, sort by id (most recent uploads first)
+      return b.id - a.id;
+    });
+  }, [images]);
+
   // Toggle year collapse state
   const toggleYear = (year) => {
     setCollapsedYears((prev) => ({
@@ -357,9 +369,9 @@ const Timeline = ({ selectedYear }) => {
               </FormControl>
 
               {/* Generate Video Button - Only show when viewing all photos */}
-              {!viewByYear && images.length >= 2 && (
+              {!viewByYear && sortedAllImages.length >= 2 && (
                 <VideoGeneratorButton
-                  images={images}
+                  images={sortedAllImages}
                   context="timeline"
                   contextName="Timeline"
                   contextYear={selectedYear}
@@ -444,7 +456,7 @@ const Timeline = ({ selectedYear }) => {
               </AnimatePresence>
             </VStack>
           ) : (
-            // Show All - Single gallery with all photos
+            // Show All - Single gallery with all photos (sorted newest to oldest)
             <Box
               bg={cardBg}
               borderRadius="lg"
@@ -452,7 +464,7 @@ const Timeline = ({ selectedYear }) => {
               p={4}
             >
               <Suspense fallback={<Spinner size="xl" color={accentColor} />}>
-                <LazyPhotoGallery images={images} />
+                <LazyPhotoGallery images={sortedAllImages} />
               </Suspense>
             </Box>
           )
