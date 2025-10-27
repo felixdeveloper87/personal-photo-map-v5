@@ -28,35 +28,41 @@ const FullImageModal = memo(function FullImageModal({
   countryName,
   currentIndex = 0,
   totalCount = 1,
-  images = [], // lista completa de URLs
+  images = [],
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [direction, setDirection] = useState(0);
-  const [downPosition, setDownPosition] = useState(0);
-
   const isMobile = useBreakpointValue({ base: true, md: false });
+
   const textColor = useColorModeValue('white', 'white');
   const glassBg = useColorModeValue('rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)');
 
-  // --- Motion values ---
+  // Motion values
   const scale = useSpring(1, { stiffness: 220, damping: 28 });
   const x = useSpring(0, { stiffness: 220, damping: 28 });
   const y = useSpring(0, { stiffness: 220, damping: 28 });
   const dragX = useMotionValue(0);
 
-  // --- Cache ---
+  // Zoom control
+  const isZooming = useRef(false);
+  const lastTouchDistance = useRef(null);
+  const pointerStart = useRef({ x: 0, y: 0 });
+  const posStart = useRef({ x: 0, y: 0 });
+  const swipeStart = useRef({ x: 0, y: 0 });
+  const swipeActive = useRef(false);
+
   const loadedImages = useRef(new Set());
   const viewportRef = useRef(null);
 
-  // --- Helpers ---
   const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+
   const resetZoom = useCallback(() => {
     animate(scale, 1, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
     animate(x, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
     animate(y, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
   }, [scale, x, y]);
 
-  // --- Cache aware load ---
+  // preload
   useEffect(() => {
     setImgLoaded(loadedImages.current.has(imageUrl));
   }, [imageUrl]);
@@ -66,7 +72,6 @@ const FullImageModal = memo(function FullImageModal({
     setImgLoaded(true);
   }, [imageUrl]);
 
-  // --- Preload vizinhas ---
   useEffect(() => {
     if (!images?.length || !hasMultiple) return;
     const preload = (url) => {
@@ -75,50 +80,109 @@ const FullImageModal = memo(function FullImageModal({
       img.src = url;
       img.onload = () => loadedImages.current.add(url);
     };
-    const prevUrl = images[currentIndex - 1];
-    const nextUrl = images[currentIndex + 1];
-    preload(prevUrl);
-    preload(nextUrl);
+    preload(images[currentIndex - 1]);
+    preload(images[currentIndex + 1]);
   }, [images, currentIndex, hasMultiple]);
 
-  // --- Reset quando abre/troca ---
   useEffect(() => {
-    setDownPosition(0);
     dragX.set(0);
     resetZoom();
   }, [imageUrl, isOpen, dragX, resetZoom]);
 
-  // --- Swipe horizontal mobile ---
-  const swipeStart = useRef({ x: 0, y: 0 });
-  const swipeActive = useRef(false);
+  // --- Helpers for pinch
+  const getTouchDistance = (touches) => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
 
+  // --- Zoom wheel desktop
+  const handleWheel = useCallback(
+    (e) => {
+      if (!imgLoaded) return;
+      e.preventDefault();
+      const delta = -e.deltaY;
+      const newScale = clamp(scale.get() + delta * 0.001, MIN_SCALE, MAX_SCALE);
+      scale.set(newScale);
+    },
+    [scale, imgLoaded]
+  );
+
+  // --- Pointer pan
+  const handlePointerDown = useCallback((e) => {
+    if (scale.get() <= 1) return;
+    isZooming.current = true;
+    pointerStart.current = { x: e.clientX, y: e.clientY };
+    posStart.current = { x: x.get(), y: y.get() };
+  }, [x, y, scale]);
+
+  const handlePointerMove = useCallback((e) => {
+    if (!isZooming.current || scale.get() <= 1) return;
+    const dx = e.clientX - pointerStart.current.x;
+    const dy = e.clientY - pointerStart.current.y;
+    x.set(posStart.current.x + dx);
+    y.set(posStart.current.y + dy);
+  }, [x, y, scale]);
+
+  const handlePointerUp = useCallback(() => {
+    isZooming.current = false;
+  }, []);
+
+  // --- Pinch zoom
+  const handleTouchStartZoom = useCallback((e) => {
+    if (e.touches.length === 2) {
+      lastTouchDistance.current = getTouchDistance(e.touches);
+    }
+  }, []);
+
+  const handleTouchMoveZoom = useCallback(
+    (e) => {
+      if (e.touches.length === 2 && lastTouchDistance.current) {
+        const newDistance = getTouchDistance(e.touches);
+        const delta = newDistance - lastTouchDistance.current;
+        const newScale = clamp(scale.get() + delta * 0.005, MIN_SCALE, MAX_SCALE);
+        scale.set(newScale);
+        lastTouchDistance.current = newDistance;
+      }
+    },
+    [scale]
+  );
+
+  const handleTouchEndZoom = useCallback(() => {
+    lastTouchDistance.current = null;
+  }, []);
+
+  // --- Swipe navigation
   const handleTouchStart = useCallback((e) => {
-    if (scale.get() > 1) return; // com zoom, não swipa
+    if (scale.get() > 1) return;
     const touch = e.touches[0];
     swipeStart.current = { x: touch.clientX, y: touch.clientY };
     swipeActive.current = true;
   }, [scale]);
 
-  const handleTouchMove = useCallback((e) => {
-    if (!swipeActive.current || scale.get() > 1) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - swipeStart.current.x;
-    const dy = touch.clientY - swipeStart.current.y;
-    if (Math.abs(dy) > Math.abs(dx)) {
-      swipeActive.current = false;
-      return;
-    }
-    dragX.set(dx);
-  }, [dragX, scale]);
+  const handleTouchMove = useCallback(
+    (e) => {
+      if (!swipeActive.current || scale.get() > 1) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - swipeStart.current.x;
+      const dy = touch.clientY - swipeStart.current.y;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        swipeActive.current = false;
+        return;
+      }
+      dragX.set(dx);
+    },
+    [dragX, scale]
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (!swipeActive.current || scale.get() > 1) return;
     const dx = dragX.get();
-    const velocity = dragX.getVelocity ? dragX.getVelocity() : 0;
-    if (dx < -MIN_SWIPE_DISTANCE || velocity < -MIN_SWIPE_VELOCITY) {
+    if (dx < -MIN_SWIPE_DISTANCE) {
       setDirection(1);
       onNext?.();
-    } else if (dx > MIN_SWIPE_DISTANCE || velocity > MIN_SWIPE_VELOCITY) {
+    } else if (dx > MIN_SWIPE_DISTANCE) {
       setDirection(-1);
       onPrev?.();
     }
@@ -126,7 +190,13 @@ const FullImageModal = memo(function FullImageModal({
     swipeActive.current = false;
   }, [dragX, scale, onNext, onPrev]);
 
-  // --- Teclado ---
+  // --- Double click/tap
+  const handleDoubleClick = useCallback(() => {
+    if (scale.get() > 1) resetZoom();
+    else animate(scale, 2, { type: 'spring', stiffness: 200, damping: 25 });
+  }, [scale, resetZoom]);
+
+  // --- Keyboard
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
@@ -148,7 +218,7 @@ const FullImageModal = memo(function FullImageModal({
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose, onNext, onPrev, resetZoom, scale, hasMultiple]);
 
-  // --- Header ---
+  // --- Header
   const Header = (
     <Flex
       position="absolute"
@@ -207,10 +277,15 @@ const FullImageModal = memo(function FullImageModal({
             ref={viewportRef}
             position="absolute"
             inset={0}
-            style={{ touchAction: 'none' }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            style={{ touchAction: 'none', overflow: 'hidden' }}
+            onWheel={handleWheel}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onTouchStart={(e) => { handleTouchStart(e); handleTouchStartZoom(e); }}
+            onTouchMove={(e) => { handleTouchMove(e); handleTouchMoveZoom(e); }}
+            onTouchEnd={(e) => { handleTouchEnd(e); handleTouchEndZoom(e); }}
+            onDoubleClick={handleDoubleClick}
           >
             <AnimatePresence initial={false} custom={direction}>
               <MotionDiv
@@ -299,53 +374,6 @@ const FullImageModal = memo(function FullImageModal({
                   onNext?.();
                 }}
               />
-            </>
-          )}
-
-          {hasMultiple && isMobile && scale.get() === 1 && (
-            <>
-              <Box
-                position="absolute"
-                bottom={{ base: 8, md: 12 }}
-                left="50%"
-                transform="translateX(-50%)"
-                zIndex={100}
-                bg={glassBg}
-                backdropFilter="blur(10px)"
-                px={4}
-                py={2}
-                borderRadius="full"
-                pointerEvents="none"
-              >
-                <HStack spacing={2}>
-                  {Array.from({ length: Math.min(totalCount, 5) }).map((_, i) => (
-                    <Box
-                      key={i}
-                      w={2}
-                      h={2}
-                      borderRadius="full"
-                      bg={currentIndex % totalCount === i ? 'white' : 'rgba(255,255,255,0.3)'}
-                    />
-                  ))}
-                  {totalCount > 5 && (
-                    <Text fontSize="xs" color="white" opacity={0.7}>
-                      +{totalCount - 5}
-                    </Text>
-                  )}
-                </HStack>
-              </Box>
-              <Box
-                position="absolute"
-                bottom={{ base: 60, md: 20 }}
-                left="50%"
-                transform="translateX(-50%)"
-                zIndex={100}
-                pointerEvents="none"
-              >
-                <Text fontSize="xs" color="white" opacity={0.6} textAlign="center">
-                  Swipe to navigate
-                </Text>
-              </Box>
             </>
           )}
         </ModalBody>

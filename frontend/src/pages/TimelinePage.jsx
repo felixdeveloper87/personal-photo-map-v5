@@ -22,7 +22,7 @@ function TimelinePage() {
   const year = routeYear || queryYear;
 
   return (
-    <Box px={4} maxW="1600px" mx="auto"> {/* Responsive centered container */}
+    <Box px={0} mx="auto" maxW={{ base: "100%", lg: "1600px", xl: "2200px", '2xl': "2600px" }}> {/* Responsive centered container */}
       <Timeline selectedYear={year} /> {/* Passes the selected year to Timeline */}
     </Box>
   );

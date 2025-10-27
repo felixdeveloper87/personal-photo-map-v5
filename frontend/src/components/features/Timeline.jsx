@@ -151,7 +151,7 @@ const Timeline = ({ selectedYear }) => {
   if (!isLoggedIn) {
     return (
       <Box minH="100vh" p={padding}>
-        <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "2200px", '2xl': "2600px" }} mx="auto" px={{ base: 0, md: 0 }}>
+        <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }}>
           <Heading
             as="h1"
             size={fontSize}
@@ -199,7 +199,7 @@ const Timeline = ({ selectedYear }) => {
 
   return (
     <Box minH="100vh" p={padding}>
-      <VStack spacing={6} align="stretch" maxW={{ base: "100%", lg: "1600px", xl: "2200px", '2xl': "2600px" }} mx="auto" px={{ base: 0, md: 0 }}>
+      <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }}>
         {/* Professional Header Section */}
         <Box
           bg={cardBg}
