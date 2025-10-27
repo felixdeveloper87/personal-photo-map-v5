@@ -47,7 +47,7 @@ services:
       - SERVER_PORT=8080
       
       # App config
-      - APP_UPLOAD_DIR=/photomap/storage/uploads
+      - UPLOAD_DIR=/photomap/storage/uploads
       - APP_BASE_URL=${APP_BASE_URL}
       - BACKEND_URL=${BACKEND_URL}
       

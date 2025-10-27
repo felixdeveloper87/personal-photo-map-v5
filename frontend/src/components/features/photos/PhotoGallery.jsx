@@ -24,6 +24,7 @@ import {
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { IoCheckmark, IoDownload } from 'react-icons/io5';
+import { FaDownload } from 'react-icons/fa';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
@@ -356,6 +357,120 @@ const PhotoGallery = memo(function PhotoGallery({
                   >
                     {selectedCount} selected
                   </Badge>
+                  
+                  {/* Download Selected Button */}
+                  <Button
+                    onClick={async () => {
+                      try {
+                        // Get selected images
+                        const selectedImages = images.filter(img => selectedSet.has(String(img.id)));
+                        
+                        if (selectedImages.length === 0) {
+                          toast({
+                            title: 'No images selected',
+                            description: 'Please select images to download',
+                            status: 'warning',
+                            duration: 2000,
+                            isClosable: true,
+                          });
+                          return;
+                        }
+
+                        // Detect iOS/Safari mobile
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                        const isMobileSafari = isIOS && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+                        toast({
+                          title: 'Downloading...',
+                          description: `Preparing ${selectedImages.length} image(s)`,
+                          status: 'info',
+                          duration: 2000,
+                          isClosable: true,
+                        });
+
+                        // Download each image
+                        for (let i = 0; i < selectedImages.length; i++) {
+                          const image = selectedImages[i];
+                          
+                          try {
+                            const response = await fetch(image.url);
+                            const blob = await response.blob();
+                            
+                            // Use Web Share API for iOS Safari
+                            if (isMobileSafari && navigator.share && i === 0 && selectedImages.length === 1) {
+                              const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
+                              
+                              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                  files: [file],
+                                  title: `Photo ${i + 1}`,
+                                  text: 'Download photo',
+                                });
+                                continue;
+                              }
+                            }
+                            
+                            // Standard download for desktop/non-iOS browsers
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `image-${image.id}.jpg`;
+                            document.body.appendChild(link);
+                            link.click();
+                            
+                            // Clean up
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                            
+                            // Add small delay between downloads to avoid overwhelming the browser
+                            if (i < selectedImages.length - 1) {
+                              await new Promise(resolve => setTimeout(resolve, 100));
+                            }
+                          } catch (err) {
+                            console.error(`Failed to download image ${image.id}:`, err);
+                          }
+                        }
+                        
+                        toast({
+                          title: 'Download complete',
+                          description: `Successfully downloaded ${selectedImages.length} image(s)`,
+                          status: 'success',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      } catch (error) {
+                        console.error('Download error:', error);
+                        toast({
+                          title: 'Download failed',
+                          description: 'Could not download the images',
+                          status: 'error',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      }
+                    }}
+                    isDisabled={selectedCount === 0}
+                    size={{ base: 'xs', md: 'sm' }}
+                    colorScheme="blue"
+                    variant="outline"
+                    borderRadius="full"
+                    px={{ base: 3, md: 4 }}
+                    leftIcon={<FaDownload />}
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    borderColor={buttonBorderColor}
+                    color={buttonTextColor}
+                    _hover={{
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                      borderColor: 'blue.500',
+                      bg: 'blue.50',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    Download Selected
+                  </Button>
+
                   <DeleteButton
                     onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
                     isDisabled={selectedCount === 0}
