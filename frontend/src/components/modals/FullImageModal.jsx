@@ -13,7 +13,6 @@ const MotionOverlay = motion(ModalOverlay);
 const MotionDiv = motion.div;
 
 const MIN_SWIPE_DISTANCE = 50;
-const MIN_SWIPE_VELOCITY = 600;
 const EASING_CURVE = [0.25, 0.46, 0.45, 0.94];
 const MAX_SCALE = 4;
 const MIN_SCALE = 1;
@@ -32,64 +31,139 @@ const FullImageModal = memo(function FullImageModal({
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [direction, setDirection] = useState(0);
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [previousImage, setPreviousImage] = useState(null);
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const textColor = useColorModeValue('white', 'white');
   const glassBg = useColorModeValue('rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)');
 
-  // Motion values
+  // Motion values (zoom/pan)
   const scale = useSpring(1, { stiffness: 220, damping: 28 });
   const x = useSpring(0, { stiffness: 220, damping: 28 });
   const y = useSpring(0, { stiffness: 220, damping: 28 });
-  const dragX = useMotionValue(0);
+  const dragX = useMotionValue(0); // swipe nav (somente quando scale === 1)
 
-  // Zoom control
-  const isZooming = useRef(false);
+  // Refs e dimensões
+  const containerRef = useRef(null);
+  const imageElRef = useRef(null);
+  const containerSize = useRef({ w: 0, h: 0 });
+  const naturalSize = useRef({ w: 0, h: 0 });
+
+  // Estados auxiliares de gesto
+  const isPanning = useRef(false);
   const lastTouchDistance = useRef(null);
+  const pinchCenter = useRef({ x: 0, y: 0 });
+
   const pointerStart = useRef({ x: 0, y: 0 });
   const posStart = useRef({ x: 0, y: 0 });
   const swipeStart = useRef({ x: 0, y: 0 });
   const swipeActive = useRef(false);
 
   const loadedImages = useRef(new Set());
-  const viewportRef = useRef(null);
 
+  // Utils
   const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
 
-  const resetZoom = useCallback(() => {
-    animate(scale, 1, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
-    animate(x, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
-    animate(y, 0, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
+  const updateContainerSize = useCallback(() => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    containerSize.current = { w: rect.width, h: rect.height };
+  }, []);
+
+  useEffect(() => {
+    updateContainerSize();
+    const onResize = () => updateContainerSize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [updateContainerSize]);
+
+  // Calcula o tamanho base (object-fit: contain) para a imagem dentro do container
+  const getBaseFittedSize = useCallback(() => {
+    const { w: cw, h: ch } = containerSize.current;
+    const { w: iw, h: ih } = naturalSize.current;
+    if (cw === 0 || ch === 0 || iw === 0 || ih === 0) return { bw: 0, bh: 0 };
+
+    const containerRatio = cw / ch;
+    const imageRatio = iw / ih;
+
+    if (imageRatio > containerRatio) {
+      // imagem mais "larga" que o container → largura = containerWidth
+      const bw = cw;
+      const bh = cw / imageRatio;
+      return { bw, bh };
+    } else {
+      // imagem mais "alta" → altura = containerHeight
+      const bh = ch;
+      const bw = ch * imageRatio;
+      return { bw, bh };
+    }
+  }, []);
+
+  // Limites de pan dados scale + tamanhos
+  const getPanBounds = useCallback((s) => {
+    const { bw, bh } = getBaseFittedSize();
+    if (bw === 0 || bh === 0) return { maxX: 0, maxY: 0 };
+    const scaledW = bw * s;
+    const scaledH = bh * s;
+    // Excesso além do base (quanto "sobra" para mover em cada direção)
+    const maxX = Math.max(0, (scaledW - bw) / 2);
+    const maxY = Math.max(0, (scaledH - bh) / 2);
+    return { maxX, maxY };
+  }, [getBaseFittedSize]);
+
+  const clampPan = useCallback((nx, ny, s) => {
+    const { maxX, maxY } = getPanBounds(s);
+    return {
+      cx: clamp(nx, -maxX, maxX),
+      cy: clamp(ny, -maxY, maxY),
+    };
+  }, [getPanBounds]);
+
+  const resetZoom = useCallback((animated = true) => {
+    const to = { s: 1, nx: 0, ny: 0 };
+    if (animated) {
+      animate(scale, to.s, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
+      animate(x, to.nx, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
+      animate(y, to.ny, { type: 'tween', ease: EASING_CURVE, duration: 0.25 });
+    } else {
+      scale.set(to.s);
+      x.set(to.nx);
+      y.set(to.ny);
+    }
   }, [scale, x, y]);
 
-  // preload
+  // Atualiza previousImage e reseta zoom de forma segura ao trocar de foto
   useEffect(() => {
+    setPreviousImage((prev) => (prev !== imageUrl ? prev : prev)); // no-op para preservação
+    // reset imediato (sem "foto torta")
+    dragX.set(0);
+    resetZoom(false);
     setImgLoaded(loadedImages.current.has(imageUrl));
+  }, [imageUrl, resetZoom, dragX]);
+
+  // Preload e previous real
+  useEffect(() => {
+    // armazena a anterior de fato
+    setPreviousImage((prev) => (prev === imageUrl ? prev : prev ?? null));
   }, [imageUrl]);
 
-  const handleImageLoad = useCallback(() => {
+  // quando a imagem carrega, capture naturalWidth/Height para limites reais
+  const handleImageLoad = useCallback((e) => {
+    const el = e.currentTarget;
+    naturalSize.current = {
+      w: el.naturalWidth || 0,
+      h: el.naturalHeight || 0,
+    };
     loadedImages.current.add(imageUrl);
     setImgLoaded(true);
-  }, [imageUrl]);
+    // após medir, garanta bounds
+    const s = scale.get();
+    const { cx, cy } = clampPan(x.get(), y.get(), s);
+    x.set(cx);
+    y.set(cy);
+  }, [imageUrl, scale, x, y, clampPan]);
 
-  useEffect(() => {
-    if (!images?.length || !hasMultiple) return;
-    const preload = (url) => {
-      if (!url || loadedImages.current.has(url)) return;
-      const img = new Image();
-      img.src = url;
-      img.onload = () => loadedImages.current.add(url);
-    };
-    preload(images[currentIndex - 1]);
-    preload(images[currentIndex + 1]);
-  }, [images, currentIndex, hasMultiple]);
-
-  useEffect(() => {
-    dragX.set(0);
-    resetZoom();
-  }, [imageUrl, isOpen, dragX, resetZoom]);
-
-  // --- Helpers for pinch
+  // Helpers pinch
   const getTouchDistance = (touches) => {
     if (touches.length < 2) return 0;
     const dx = touches[0].clientX - touches[1].clientX;
@@ -97,63 +171,96 @@ const FullImageModal = memo(function FullImageModal({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // --- Zoom wheel desktop
-  const handleWheel = useCallback(
-    (e) => {
-      if (!imgLoaded) return;
-      e.preventDefault();
-      const delta = -e.deltaY;
-      const newScale = clamp(scale.get() + delta * 0.001, MIN_SCALE, MAX_SCALE);
-      scale.set(newScale);
-    },
-    [scale, imgLoaded]
-  );
+  const getPinchCenter = (touches) => {
+    const cx = (touches[0].clientX + touches[1].clientX) / 2;
+    const cy = (touches[0].clientY + touches[1].clientY) / 2;
+    return { x: cx, y: cy };
+  };
 
-  // --- Pointer pan
+  // Zoom com ponto focal (cursor/dedos)
+  const zoomAt = useCallback((clientX, clientY, nextScale) => {
+    const s = scale.get();
+    nextScale = clamp(nextScale, MIN_SCALE, MAX_SCALE);
+
+    // centro do container
+    const { w: cw, h: ch } = containerSize.current;
+    const centerX = cw / 2;
+    const centerY = ch / 2;
+
+    // ponto no espaço da imagem (considerando pan atual)
+    const dx = clientX - centerX - x.get();
+    const dy = clientY - centerY - y.get();
+
+    // ajuste para manter o ponto sob o cursor/dedos estável
+    const ratio = nextScale / (s || 1);
+    let nx = x.get() - dx * (ratio - 1);
+    let ny = y.get() - dy * (ratio - 1);
+
+    // clamp pan aos limites do novo scale
+    const { cx, cy } = clampPan(nx, ny, nextScale);
+
+    scale.set(nextScale);
+    x.set(cx);
+    y.set(cy);
+  }, [scale, x, y, clampPan]);
+
+  // Wheel desktop
+  const handleWheel = useCallback((e) => {
+    if (!imgLoaded) return;
+    e.preventDefault();
+    const delta = -e.deltaY;
+    const next = scale.get() + delta * 0.001;
+    const target = clamp(next, MIN_SCALE, MAX_SCALE);
+    zoomAt(e.clientX, e.clientY, target);
+  }, [imgLoaded, scale, zoomAt]);
+
+  // Pointer pan
   const handlePointerDown = useCallback((e) => {
     if (scale.get() <= 1) return;
-    isZooming.current = true;
+    isPanning.current = true;
     pointerStart.current = { x: e.clientX, y: e.clientY };
     posStart.current = { x: x.get(), y: y.get() };
   }, [x, y, scale]);
 
   const handlePointerMove = useCallback((e) => {
-    if (!isZooming.current || scale.get() <= 1) return;
-    const dx = e.clientX - pointerStart.current.x;
-    const dy = e.clientY - pointerStart.current.y;
-    x.set(posStart.current.x + dx);
-    y.set(posStart.current.y + dy);
-  }, [x, y, scale]);
+    if (!isPanning.current || scale.get() <= 1) return;
+    const dxVal = e.clientX - pointerStart.current.x;
+    const dyVal = e.clientY - pointerStart.current.y;
+    const s = scale.get();
+    const { cx, cy } = clampPan(posStart.current.x + dxVal, posStart.current.y + dyVal, s);
+    x.set(cx);
+    y.set(cy);
+  }, [x, y, scale, clampPan]);
 
   const handlePointerUp = useCallback(() => {
-    isZooming.current = false;
+    isPanning.current = false;
   }, []);
 
-  // --- Pinch zoom
+  // Pinch zoom (mobile) com ponto focal
   const handleTouchStartZoom = useCallback((e) => {
     if (e.touches.length === 2) {
       lastTouchDistance.current = getTouchDistance(e.touches);
+      pinchCenter.current = getPinchCenter(e.touches);
     }
   }, []);
 
-  const handleTouchMoveZoom = useCallback(
-    (e) => {
-      if (e.touches.length === 2 && lastTouchDistance.current) {
-        const newDistance = getTouchDistance(e.touches);
-        const delta = newDistance - lastTouchDistance.current;
-        const newScale = clamp(scale.get() + delta * 0.005, MIN_SCALE, MAX_SCALE);
-        scale.set(newScale);
-        lastTouchDistance.current = newDistance;
-      }
-    },
-    [scale]
-  );
+  const handleTouchMoveZoom = useCallback((e) => {
+    if (e.touches.length === 2 && lastTouchDistance.current) {
+      const newDistance = getTouchDistance(e.touches);
+      const delta = newDistance - lastTouchDistance.current;
+      const proposed = scale.get() + delta * 0.005;
+      const { x: cx, y: cy } = getPinchCenter(e.touches);
+      pinchCenter.current = { x: cx, y: cy };
+      zoomAt(cx, cy, proposed);
+      lastTouchDistance.current = newDistance;
+    }
+  }, [scale, zoomAt]);
 
   const handleTouchEndZoom = useCallback(() => {
     lastTouchDistance.current = null;
   }, []);
 
-  // --- Swipe navigation
+  // Swipe navigation (apenas quando scale === 1)
   const handleTouchStart = useCallback((e) => {
     if (scale.get() > 1) return;
     const touch = e.touches[0];
@@ -161,28 +268,25 @@ const FullImageModal = memo(function FullImageModal({
     swipeActive.current = true;
   }, [scale]);
 
-  const handleTouchMove = useCallback(
-    (e) => {
-      if (!swipeActive.current || scale.get() > 1) return;
-      const touch = e.touches[0];
-      const dx = touch.clientX - swipeStart.current.x;
-      const dy = touch.clientY - swipeStart.current.y;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        swipeActive.current = false;
-        return;
-      }
-      dragX.set(dx);
-    },
-    [dragX, scale]
-  );
+  const handleTouchMove = useCallback((e) => {
+    if (!swipeActive.current || scale.get() > 1) return;
+    const touch = e.touches[0];
+    const dxVal = touch.clientX - swipeStart.current.x;
+    const dyVal = touch.clientY - swipeStart.current.y;
+    if (Math.abs(dyVal) > Math.abs(dxVal)) {
+      swipeActive.current = false;
+      return;
+    }
+    dragX.set(dxVal);
+  }, [dragX, scale]);
 
   const handleTouchEnd = useCallback(() => {
     if (!swipeActive.current || scale.get() > 1) return;
-    const dx = dragX.get();
-    if (dx < -MIN_SWIPE_DISTANCE) {
+    const dxVal = dragX.get();
+    if (dxVal < -MIN_SWIPE_DISTANCE) {
       setDirection(1);
       onNext?.();
-    } else if (dx > MIN_SWIPE_DISTANCE) {
+    } else if (dxVal > MIN_SWIPE_DISTANCE) {
       setDirection(-1);
       onPrev?.();
     }
@@ -190,13 +294,17 @@ const FullImageModal = memo(function FullImageModal({
     swipeActive.current = false;
   }, [dragX, scale, onNext, onPrev]);
 
-  // --- Double click/tap
-  const handleDoubleClick = useCallback(() => {
-    if (scale.get() > 1) resetZoom();
-    else animate(scale, 2, { type: 'spring', stiffness: 200, damping: 25 });
-  }, [scale, resetZoom]);
+  // Double click/tap
+  const handleDoubleClick = useCallback((e) => {
+    if (scale.get() > 1) {
+      resetZoom();
+    } else {
+      const { clientX, clientY } = e;
+      zoomAt(clientX, clientY, 2);
+    }
+  }, [scale, resetZoom, zoomAt]);
 
-  // --- Keyboard
+  // Keyboard
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
@@ -218,7 +326,7 @@ const FullImageModal = memo(function FullImageModal({
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose, onNext, onPrev, resetZoom, scale, hasMultiple]);
 
-  // --- Header
+  // Header
   const Header = (
     <Flex
       position="absolute"
@@ -274,10 +382,10 @@ const FullImageModal = memo(function FullImageModal({
           {Header}
 
           <Center
-            ref={viewportRef}
+            ref={containerRef}
             position="absolute"
             inset={0}
-            style={{ touchAction: 'none', overflow: 'hidden' }}
+            style={{ touchAction: 'none', overflow: 'hidden', backgroundColor: 'black' }}
             onWheel={handleWheel}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -287,49 +395,72 @@ const FullImageModal = memo(function FullImageModal({
             onTouchEnd={(e) => { handleTouchEnd(e); handleTouchEndZoom(e); }}
             onDoubleClick={handleDoubleClick}
           >
-            <AnimatePresence initial={false} custom={direction}>
-              <MotionDiv
-                key={imageUrl}
-                custom={direction}
-                initial={{ opacity: 0, x: direction > 0 ? 100 : -100, scale: 0.98 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: direction < 0 ? 100 : -100, scale: 0.98 }}
-                transition={{ type: 'tween', ease: EASING_CURVE, duration: 0.3 }}
-                style={{
-                  x: scale.get() === 1 ? dragX : x,
-                  y,
-                  scale,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'absolute',
-                }}
-              >
-                {!imgLoaded && (
-                  <Center position="absolute">
-                    <Spinner size="xl" thickness="3px" color="white" emptyColor="gray.700" />
-                  </Center>
+            <Box position="absolute" w="100%" h="100%" overflow="hidden" willChange="transform, opacity">
+              <AnimatePresence>
+                {previousImage && previousImage !== imageUrl && (
+                  <MotionDiv
+                    key={`prev-${previousImage}`}
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASING_CURVE }}
+                    style={{ position: 'absolute', inset: 0 }}
+                  >
+                    <Image
+                      src={previousImage}
+                      alt=""
+                      draggable={false}
+                      style={{ objectFit: 'contain', width: '100%', height: '100%', pointerEvents: 'none' }}
+                    />
+                  </MotionDiv>
                 )}
-                <Image
-                  src={imageUrl}
-                  alt={countryName ? `Photo from ${countryName}` : 'Photo'}
-                  maxW="100%"
-                  maxH="100%"
-                  objectFit="contain"
-                  draggable={false}
-                  onLoad={handleImageLoad}
+
+                <MotionDiv
+                  key={`curr-${imageUrl}`}
+                  initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 22 }}
                   style={{
-                    opacity: imgLoaded ? 1 : 0,
-                    transition: 'opacity 0.25s ease',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    pointerEvents: 'none',
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    x: scale.get() === 1 ? dragX : x,
+                    y,
+                    scale,
+                    willChange: 'transform, opacity',
                   }}
-                />
-              </MotionDiv>
-            </AnimatePresence>
+                >
+                  {!imgLoaded && (
+                    <Center position="absolute">
+                      <Spinner size="lg" color="white" thickness="3px" emptyColor="gray.700" />
+                    </Center>
+                  )}
+
+                  <Image
+                    ref={imageElRef}
+                    src={imageUrl}
+                    alt={countryName ? `Photo from ${countryName}` : 'Photo'}
+                    draggable={false}
+                    onLoad={handleImageLoad}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      opacity: imgLoaded ? 1 : 0,
+                      transition: 'opacity 0.25s ease',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      pointerEvents: 'none',
+                      backfaceVisibility: 'hidden',
+                      transform: 'translateZ(0)',
+                    }}
+                  />
+                </MotionDiv>
+              </AnimatePresence>
+            </Box>
           </Center>
 
           {hasMultiple && (
@@ -350,6 +481,7 @@ const FullImageModal = memo(function FullImageModal({
                 _hover={{ bg: 'rgba(255,255,255,0.2)', transform: 'translateY(-50%) scale(1.1)' }}
                 onClick={() => {
                   if (scale.get() > 1) return;
+                  setPreviousImage(imageUrl);
                   setDirection(-1);
                   onPrev?.();
                 }}
@@ -370,6 +502,7 @@ const FullImageModal = memo(function FullImageModal({
                 _hover={{ bg: 'rgba(255,255,255,0.2)', transform: 'translateY(-50%) scale(1.1)' }}
                 onClick={() => {
                   if (scale.get() > 1) return;
+                  setPreviousImage(imageUrl);
                   setDirection(1);
                   onNext?.();
                 }}
