@@ -405,7 +405,6 @@ const PhotoGallery = memo(function PhotoGallery({
                                 await navigator.share({
                                   files: [file],
                                   title: `Photo ${i + 1}`,
-                                  text: 'Download photo',
                                 });
                                 continue;
                               }
@@ -752,7 +751,6 @@ const PhotoGallery = memo(function PhotoGallery({
                               await navigator.share({
                                 files: [file],
                                 title: 'Photo',
-                                text: 'Download photo',
                               });
                               
                               toast({
