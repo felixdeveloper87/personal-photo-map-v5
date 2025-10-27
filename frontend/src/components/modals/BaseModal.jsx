@@ -159,13 +159,13 @@ const BaseModal = ({
         borderRadius={{ base: "xl", sm: variant === 'minimal' ? "xl" : "2xl" }}
         shadow={shadowConfig.xl}
         maxHeight={{ 
-          base: "calc(100vh - 2rem)", // Full viewport height minus margins on mobile
+          base: "calc(100vh - 3rem)", // Full viewport height minus top and bottom margins on mobile
           sm: maxHeight 
         }}
         minHeight={{ base: "auto", sm: "auto" }}
         overflow="hidden"
         mx={{ base: 4, sm: 4 }}
-        my={{ base: 4, sm: "auto" }}
+        my={{ base: 6, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
