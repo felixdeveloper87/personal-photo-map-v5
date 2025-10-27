@@ -111,6 +111,13 @@
 			<version>0.4.20</version>
 		</dependency>
 
+		<!-- Cloudinary: External image processing service -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.38.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>

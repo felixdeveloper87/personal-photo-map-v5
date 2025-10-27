@@ -54,8 +54,14 @@ services:
       # JWT
       - JWT_SECRET=${JWT_SECRET}
       
-      # Java optimization for production
-      - JAVA_OPTS=-Xmx2g -Xms1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat
+      # Cloudinary configuration (external image processing)
+      - CLOUDINARY_ENABLED=${CLOUDINARY_ENABLED:-true}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
+      
+      # Java optimization for production (reduced for 1.8GB VPS + Cloudinary offloads processing)
+      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:MaxMetaspaceSize=256m
     volumes:
       - ./storage:/photomap/storage
     depends_on:

@@ -49,6 +49,12 @@ public class LocalFileStorageService {
     @Value("${app.images.passthrough:false}")
     private boolean passthroughStore;
 
+    private final CloudinaryProcessingService cloudinaryService;
+
+    public LocalFileStorageService(CloudinaryProcessingService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
+
     // Removed @PostConstruct to avoid initialization issues
 
     // Image size configurations
@@ -118,11 +124,35 @@ public class LocalFileStorageService {
             logger.info("🔍 Image size: {}KB ({}MB), needs processing: {}", fileSizeKB, fileSizeMB, fileSizeKB > 1024);
 
             if (fileSizeKB > 1024) {
-                // Process if larger than 1MB
-                logger.info("🔄 Image is larger than 1MB, processing and optimizing to ≤1MB: {}", file.getOriginalFilename());
+                // Try Cloudinary first if enabled, fallback to local processing
+                if (cloudinaryService.isEnabled()) {
+                    try {
+                        logger.info("☁️ Processing with Cloudinary: {}", file.getOriginalFilename());
+                        byte[] optimizedBytes = cloudinaryService.processImage(file);
+                        
+                        // Save the Cloudinary-processed image to VPS
+                        String nameWithoutExt = getFileNameWithoutExtension(customFileName);
+                        String finalFileName = nameWithoutExt + ".jpg";
+                        Path finalPath = uploadPath.resolve(finalFileName);
+                        Files.write(finalPath, optimizedBytes);
+                        
+                        long finalSizeKB = optimizedBytes.length / 1024;
+                        logger.info("✅ Cloudinary processed and saved to VPS: {} ({}KB)", finalFileName, finalSizeKB);
+                        
+                        String fileUrl = "/api/images/uploads/" + finalFileName;
+                        return fileUrl;
+                        
+                    } catch (Exception e) {
+                        logger.warn("⚠️ Cloudinary failed, falling back to local processing: {}", e.getMessage());
+                        // Continue to local processing
+                    }
+                }
+                
+                // Local processing (fallback or if Cloudinary disabled)
+                logger.info("🔄 Processing locally: {}", file.getOriginalFilename());
                 String finalFileName = createOptimizedImage(file, customFileName, uploadPath);
                 String fileUrl = "/api/images/uploads/" + finalFileName;
-                logger.info("✅ Optimized image uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
+                logger.info("✅ Locally optimized image uploaded: {} -> {}", file.getOriginalFilename(), fileUrl);
                 return fileUrl;
             } else {
                 logger.info("📁 Image is 1MB or smaller, storing original: {}", file.getOriginalFilename());
