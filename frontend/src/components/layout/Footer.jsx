@@ -37,6 +37,10 @@ const Footer = () => {
         left: 0,
         right: 0,
         height: '1px',
+        bgGradient: useColorModeValue(
+          "linear-gradient(to-r, transparent,rgb(6, 7, 7), transparent)",
+          "linear-gradient(to-r, transparent,rgb(241, 242, 244), transparent)"
+        ),
       }}
     >
       <Container maxW="1400px" px={6}>
@@ -171,18 +175,7 @@ const Footer = () => {
                 </Link>
               </HStack>
             </VStack>
-          </Flex>
-
-          {/* Divider */}
-          <Box 
-            w="full" 
-            h="1px" 
-            bgGradient={useColorModeValue(
-              "linear-gradient(to-r, transparent,rgb(8, 9, 9), transparent)",
-              "linear-gradient(to-r, transparent,rgb(246, 247, 248), transparent)"
-            )}
-            opacity={0.8}
-          />
+          </Flex>          
 
           {/* Copyright Section */}
           <Flex 

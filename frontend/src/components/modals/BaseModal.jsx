@@ -154,32 +154,22 @@ const BaseModal = ({
       <ModalContent
         bgGradient={bgGradient}
         backdropFilter="blur(24px)"
-        WebkitBackdropFilter="blur(24px)" // Safari support
         border="1px solid"
         borderColor={borderColor}
-        borderRadius={{ base: "none", sm: variant === 'minimal' ? "xl" : "2xl" }}
+        borderRadius={{ base: "xl", sm: variant === 'minimal' ? "xl" : "2xl" }}
         shadow={shadowConfig.xl}
         maxHeight={{ 
-          base: "100vh", // Full viewport height on mobile
+          base: "calc(100vh - 2rem)", // Full viewport height minus margins on mobile
           sm: maxHeight 
         }}
-        minHeight={{ base: "100vh", sm: "auto" }} // Ensure full height on mobile
+        minHeight={{ base: "auto", sm: "auto" }}
         overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
+        mx={{ base: 4, sm: 4 }}
+        my={{ base: 4, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
-        h={{ base: "100vh", sm: "auto" }} // Full height on mobile
-        // iOS Safari safe area support - only bottom for keyboard
-        paddingBottom={{ base: "env(safe-area-inset-bottom)", sm: 0 }}
-        // Prevent iOS zoom on input focus
-        css={{
-          '@supports (-webkit-touch-callout: none)': {
-            // iOS-specific styles
-            minHeight: '-webkit-fill-available',
-          }
-        }}
+        h={{ base: "auto", sm: "auto" }}
         _before={showShimmer ? {
           content: '""',
           position: "absolute",
@@ -213,15 +203,11 @@ const BaseModal = ({
           borderBottom="1px solid"
           borderColor={borderColor}
           pb={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
-          pt={{ 
-            base: "max(1.5rem, env(safe-area-inset-top))", 
-            sm: variant === 'minimal' ? 4 : 6 
-          }}
+          pt={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
           px={{ base: 4, sm: 6 }}
           position="relative"
           bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(30, 41, 59, 0.8)")}
           backdropFilter="blur(10px)"
-          WebkitBackdropFilter="blur(10px)"
           boxShadow={useColorModeValue("0 2px 8px rgba(0, 0, 0, 0.1)", "0 2px 8px rgba(0, 0, 0, 0.3)")}
           _after={variant === 'minimal' ? {} : {
             content: '""',
@@ -274,10 +260,7 @@ const BaseModal = ({
           <ModalCloseButton
             size="md"
             position="absolute"
-            top={{ 
-              base: "calc(0.75rem + env(safe-area-inset-top))", 
-              sm: 4 
-            }}
+            top={{ base: 4, sm: 4 }}
             right={{ base: 3, sm: 4 }}
             borderRadius="full"
             bg="transparent"
@@ -307,13 +290,7 @@ const BaseModal = ({
           flex="1"
           bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(26, 32, 44, 0.5)")}
           backdropFilter="blur(5px)"
-          WebkitBackdropFilter="blur(5px)" // Safari support
-          // iOS Safari smooth scrolling
-          WebkitOverflowScrolling="touch"
           css={{
-            // Smooth scrolling for iOS
-            '-webkit-overflow-scrolling': 'touch',
-            // Better touch handling
             'touch-action': 'pan-y',
             // Custom scrollbar
             '&::-webkit-scrollbar': {
