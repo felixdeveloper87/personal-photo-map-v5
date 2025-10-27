@@ -376,10 +376,8 @@ const PhotoGallery = memo(function PhotoGallery({
                           return;
                         }
 
-                        // Detect iOS/Safari mobile
-                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                        const isMobileSafari = isIOS && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+                        // Check if mobile and Web Share API is supported
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
                         toast({
                           title: 'Downloading...',
@@ -397,20 +395,32 @@ const PhotoGallery = memo(function PhotoGallery({
                             const response = await fetch(image.url);
                             const blob = await response.blob();
                             
-                            // Use Web Share API for iOS Safari
-                            if (isMobileSafari && navigator.share && i === 0 && selectedImages.length === 1) {
-                              const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
-                              
-                              if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                await navigator.share({
-                                  files: [file],
-                                  title: `Photo ${i + 1}`,
-                                });
-                                continue;
+                            // Use Web Share API for mobile devices (iOS and Android)
+                            if (isMobile && navigator.share && navigator.canShare && i === 0) {
+                              try {
+                                const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
+                                
+                                if (navigator.canShare({ files: [file] })) {
+                                  // For multiple images, only share first one via Web Share API
+                                  // Others will use standard download
+                                  if (selectedImages.length === 1) {
+                                    await navigator.share({
+                                      files: [file],
+                                      title: 'Photo',
+                                    });
+                                    continue;
+                                  }
+                                }
+                              } catch (shareError) {
+                                if (shareError.name === 'AbortError') {
+                                  // User cancelled, skip this download
+                                  continue;
+                                }
+                                // Continue to standard download if share fails
                               }
                             }
                             
-                            // Standard download for desktop/non-iOS browsers
+                            // Standard download for desktop or subsequent images
                             const url = window.URL.createObjectURL(blob);
                             const link = document.createElement('a');
                             link.href = url;
@@ -738,33 +748,44 @@ const PhotoGallery = memo(function PhotoGallery({
                           const response = await fetch(image.url);
                           const blob = await response.blob();
                           
-                          // Detect iOS/Safari mobile
-                          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                          const isMobileSafari = isIOS && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+                          // Check if Web Share API with files is supported (iOS Safari and Android)
+                          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                           
-                          // Use Web Share API only for iOS Safari
-                          if (isMobileSafari && navigator.share && navigator.canShare) {
-                            const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
-                            
-                            if (navigator.canShare({ files: [file] })) {
-                              await navigator.share({
-                                files: [file],
-                                title: 'Photo',
-                              });
+                          if (isMobile && navigator.share && navigator.canShare) {
+                            try {
+                              const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
                               
-                              toast({
-                                title: 'Share opened',
-                                description: 'Use "Save Image" to save to your Photos',
-                                status: 'success',
-                                duration: 3000,
-                                isClosable: true,
-                              });
-                              return;
+                              if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                  files: [file],
+                                  title: 'Photo',
+                                });
+                                
+                                toast({
+                                  title: 'Share opened',
+                                  description: 'Use "Save Image" to save to your device',
+                                  status: 'success',
+                                  duration: 3000,
+                                  isClosable: true,
+                                });
+                                return;
+                              }
+                            } catch (shareError) {
+                              // If Web Share fails, fall through to standard download
+                              if (shareError.name === 'AbortError') {
+                                toast({
+                                  title: 'Share cancelled',
+                                  status: 'info',
+                                  duration: 2000,
+                                  isClosable: true,
+                                });
+                                return;
+                              }
+                              // Continue to standard download if share fails
                             }
                           }
                           
-                          // Standard download for desktop/non-iOS browsers
+                          // Standard download for desktop or when Web Share is not available
                           const url = window.URL.createObjectURL(blob);
                           const link = document.createElement('a');
                           link.href = url;
