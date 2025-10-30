@@ -14,12 +14,23 @@ import {
   Button,
   Text,
   Flex,
+  VStack,
   Wrap,
   WrapItem,
   Input,
+  InputGroup,
+  InputRightElement,
   useToast,
   useDisclosure,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
+  Icon,
+  useColorModeValue,
 } from '@chakra-ui/react';
+import { FaPlus, FaTimes } from 'react-icons/fa';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   showSuccessToast,
@@ -28,7 +39,6 @@ import {
 } from '../../ui/CustomToast';
 import {
   DeleteAllByYearButton,
-  CreateAlbumButton,
   DeleteAlbum,
   DeleteByYearButton,
 } from '../../ui/buttons/CustomButtons';
@@ -119,6 +129,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [newAlbumName, setNewAlbumName] = useState('');
   const [showAllSelected, setShowAllSelected] = useState(false);
+  const createAlbumPopover = useDisclosure();
 
   const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -267,9 +278,10 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     },
     onSuccess: () => {
       showSuccessToast(toast, 'The album was successfully created.');
-      setNewAlbumName('');
       setSelectedImageIds([]);
-      queryClient.invalidateQueries(['albums']);
+      setIsSelectionMode(false);
+      // Invalidate the specific query for this country
+      queryClient.invalidateQueries(['albums', countryId]);
     },
     onError: () => showErrorToast(toast, 'There was an error creating the album.'),
   });
@@ -332,10 +344,27 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /* ---------------- Handlers ---------------- */
   const handleCreateAlbum = () => {
-    if (!isPremium) return showWarningToast(toast, 'Album creation is available only for premium users.');
-    if (!newAlbumName.trim()) return showWarningToast(toast, 'Please enter a name for the album.');
-    if (selectedImageIds.length === 0) return showWarningToast(toast, 'Please select at least one image.');
-    createAlbumMutation.mutate({ countryId, albumName: newAlbumName.trim(), imageIds: selectedImageIds });
+    if (!isPremium) {
+      showWarningToast(toast, 'Album creation is available only for premium users.');
+      return;
+    }
+    if (!newAlbumName.trim()) {
+      showWarningToast(toast, 'Please enter a name for the album.');
+      return;
+    }
+    if (selectedImageIds.length === 0) {
+      showWarningToast(toast, 'Please select at least one image.');
+      return;
+    }
+    createAlbumMutation.mutate(
+      { countryId, albumName: newAlbumName.trim(), imageIds: selectedImageIds },
+      {
+        onSuccess: () => {
+          setNewAlbumName('');
+          createAlbumPopover.onClose();
+        },
+      }
+    );
   };
 
   const handleDeleteMultipleImages = (ids) => {
@@ -382,6 +411,15 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     countryId: image.countryId,
   });
 
+  const mapAlbumDto = (album) => ({
+    id: album.id,
+    name: album.albumName || album.name, // Support both formats
+    albumName: album.albumName || album.name,
+    countryId: album.countryId,
+    userId: album.userId,
+    numberOfImages: album.numberOfImages || 0,
+  });
+
   const allImages = useMemo(
     () => (Array.isArray(allImagesData) ? allImagesData.map(mapImageDto) : []),
     [allImagesData]
@@ -393,7 +431,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   );
 
   const albumsWithImages = useMemo(
-    () => (Array.isArray(albumsData) ? albumsData.filter((a) => a.images && a.images.length > 0) : []),
+    () => (Array.isArray(albumsData) 
+      ? albumsData
+          .map(mapAlbumDto)
+          .filter((a) => a.numberOfImages && a.numberOfImages > 0)
+      : []),
     [albumsData]
   );
 
@@ -404,23 +446,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     <Box>
       {/* Controles / Filtros */}
       <Box mb={4}>
-        {isPremium && allImages.length > 0 && (
-          <Flex mb={4} justify="center">
-            <Input
-              placeholder="Album Name"
-              value={newAlbumName}
-              border="1px"
-              borderColor="teal.800"
-              onChange={(e) => setNewAlbumName(e.target.value)}
-              width="200px"
-              mr={2}
-            />
-            <CreateAlbumButton onClick={handleCreateAlbum} isLoading={createAlbumMutation.isLoading}>
-              Create Album
-            </CreateAlbumButton>
-          </Flex>
-        )}
-
         {allImages.length === 0 && (
           <JourneyStarterSection countryId={countryId} onUploadSuccess={onUploadSuccess} />
         )}
@@ -453,6 +478,110 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
                 />
               </WrapItem>
             ))}
+
+            {/* Botão para criar novo álbum (Premium) */}
+            {isPremium && (
+              <WrapItem>
+                <Popover
+                  isOpen={createAlbumPopover.isOpen}
+                  onOpen={createAlbumPopover.onOpen}
+                  onClose={createAlbumPopover.onClose}
+                  placement="bottom"
+                  closeOnBlur={true}
+                >
+                  <PopoverTrigger>
+                    <Button
+                      size={{ base: "xs", sm: "sm", md: "sm" }}
+                      borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
+                      fontWeight="semibold"
+                      px={{ base: 2, sm: 3, md: 4 }}
+                      py={{ base: 1, sm: 2, md: 2 }}
+                      fontSize={{ base: "xs", sm: "sm", md: "sm" }}
+                      bg={useColorModeValue("green.500", "green.400")}
+                      color="white"
+                      _hover={{
+                        bg: useColorModeValue("green.600", "green.500"),
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 12px rgba(34, 197, 94, 0.4)",
+                      }}
+                      _active={{
+                        transform: "translateY(0)",
+                      }}
+                      transition="all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                      leftIcon={<Icon as={FaPlus} boxSize={3} />}
+                    >
+                      New Album
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    bg={useColorModeValue("white", "gray.800")}
+                    borderColor={useColorModeValue("gray.200", "gray.600")}
+                    boxShadow="lg"
+                    w={{ base: "90vw", sm: "320px" }}
+                  >
+                    <PopoverArrow bg={useColorModeValue("white", "gray.800")} />
+                    <PopoverBody p={4}>
+                      <VStack spacing={3} align="stretch">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="semibold"
+                          color={useColorModeValue("gray.700", "gray.200")}
+                        >
+                          Create New Album
+                        </Text>
+                        <InputGroup size="md">
+                          <Input
+                            placeholder="Album name"
+                            value={newAlbumName}
+                            onChange={(e) => setNewAlbumName(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && newAlbumName.trim() && selectedImageIds.length > 0) {
+                                handleCreateAlbum();
+                              }
+                            }}
+                            borderColor={useColorModeValue("gray.300", "gray.600")}
+                            _focus={{
+                              borderColor: "green.500",
+                              boxShadow: "0 0 0 1px var(--chakra-colors-green-500)",
+                            }}
+                          />
+                          {newAlbumName && (
+                            <InputRightElement width="3rem">
+                              <Button
+                                h="1.5rem"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setNewAlbumName('')}
+                              >
+                                <Icon as={FaTimes} boxSize={2.5} />
+                              </Button>
+                            </InputRightElement>
+                          )}
+                        </InputGroup>
+                        <Text
+                          fontSize="xs"
+                          color={useColorModeValue("gray.500", "gray.400")}
+                        >
+                          {selectedImageIds.length > 0
+                            ? `${selectedImageIds.length} photo(s) selected`
+                            : 'Select photos to add to album'}
+                        </Text>
+                        <Button
+                          colorScheme="green"
+                          size="sm"
+                          onClick={handleCreateAlbum}
+                          isLoading={createAlbumMutation.isLoading}
+                          isDisabled={!newAlbumName.trim() || selectedImageIds.length === 0}
+                          w="full"
+                        >
+                          Create Album
+                        </Button>
+                      </VStack>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+              </WrapItem>
+            )}
 
             {(yearsData.length > 1 || (yearsData.length >= 1 && albumsWithImages.length >= 1)) && (
               <WrapItem>

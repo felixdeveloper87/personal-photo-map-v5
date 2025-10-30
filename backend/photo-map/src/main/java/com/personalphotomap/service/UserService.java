@@ -188,6 +188,38 @@ public class UserService {
     }
 
     /**
+     * Updates the premium status for the current authenticated user.
+     * Allows activating or deactivating premium status permanently.
+     *
+     * @param token The JWT token from the Authorization header
+     * @param premium The desired premium status (true to activate, false to deactivate)
+     * @return A response map with confirmation message and premium status
+     * @throws SecurityException        if token format is invalid
+     * @throws IllegalArgumentException if user is not found
+     */
+    public Map<String, Object> updatePremiumStatus(String token, boolean premium) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new SecurityException("Invalid token format");
+        }
+
+        String email = jwtUtil.extractUsername(token.substring(7));
+        AppUser user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
+
+        // Update premium status
+        user.setPremium(premium);
+        userRepository.save(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("premium", premium);
+        response.put("message", premium ? "Premium activated successfully!" : "Premium deactivated successfully!");
+        return response;
+    }
+
+    /**
      * Validates a JWT token and returns user information if valid.
      * Used by the frontend to check if the stored token is still valid.
      *
@@ -211,6 +243,7 @@ public class UserService {
                     response.put("email", email);
                     response.put("fullname", user.getFullname());
                     response.put("role", user.getRole());
+                    response.put("premium", user.isPremium());
                     response.put("message", "Token is valid");
                     return response;
                 } else {

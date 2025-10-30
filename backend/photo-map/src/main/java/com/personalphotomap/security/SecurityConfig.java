@@ -30,13 +30,14 @@ public class SecurityConfig {
                 System.out.println("🔧 Configuring authorization rules...");
                 auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()      // preflight
-                    .requestMatchers("/api/auth/**").permitAll()                 // login/registro públicos
+                    .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()  // login/registro públicos
                     .requestMatchers("/health").permitAll()                      // health público
                     .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
                     .requestMatchers("/favicon.ico").permitAll()                 // favicon público
                     .requestMatchers("/robots.txt").permitAll()                  // robots.txt público
                     .requestMatchers("/sitemap.xml").permitAll()                 // sitemap público
-                    .requestMatchers(HttpMethod.PUT, "/api/users/make-premium").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/auth/users/premium").authenticated()  // premium management requires auth
+                    .requestMatchers(HttpMethod.PUT, "/api/auth/users/make-premium").authenticated()  // history endpoint
                     .anyRequest().authenticated();
                 System.out.println("🔧 Authorization rules configured");
             });

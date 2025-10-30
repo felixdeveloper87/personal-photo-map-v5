@@ -69,6 +69,11 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        // Sync premium status from backend
+        if (data.premium !== undefined) {
+          updatePremiumStatus(data.premium);
+        }
         return true;
       } else if (response.status === 401) {
         // Token is invalid, logout user
@@ -284,16 +289,98 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
+   * togglePremiumStatus
+   * Activates or deactivates premium status for the current user.
+   *
+   * @param {boolean} premiumStatus - true to activate premium, false to deactivate
+   * @returns {Promise<Object>} - Promise that resolves with the update response
+   */
+  const togglePremiumStatus = useCallback(async (premiumStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const url = import.meta.env.VITE_BACKEND_URL 
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/premium`
+        : '/api/auth/users/premium';
+
+      console.log('🚀 Calling togglePremiumStatus:', { url, premiumStatus, hasToken: !!token });
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ premium: premiumStatus }),
+      });
+
+      console.log('🔍 Premium toggle response status:', response.status);
+      
+      if (!response.ok) {
+        let errorText = '';
+        let errorJson = null;
+        try {
+          errorText = await response.text();
+          console.error('❌ Premium toggle error response text:', errorText);
+          
+          // Try to parse as JSON
+          try {
+            errorJson = JSON.parse(errorText);
+            console.error('❌ Premium toggle error response JSON:', errorJson);
+          } catch {
+            // Not JSON, use as text
+          }
+        } catch (readError) {
+          console.error('❌ Could not read error response:', readError);
+        }
+
+        // Handle specific HTTP status codes
+        if (response.status === 403) {
+          const message = errorJson?.error || errorJson?.message || 'Access denied. Premium management is currently restricted.';
+          throw new Error(message);
+        } else if (response.status === 401) {
+          const message = errorJson?.error || errorJson?.message || 'Unauthorized. Please log in again.';
+          throw new Error(message);
+        } else if (response.status === 404) {
+          const message = errorJson?.error || errorJson?.message || 'Premium endpoint not found.';
+          throw new Error(message);
+        } else if (response.status >= 500) {
+          const message = errorJson?.error || errorJson?.message || 'Server error. Please try again later.';
+          throw new Error(message);
+        } else {
+          const message = errorJson?.error || errorJson?.message || errorText || `Premium toggle failed with status ${response.status}`;
+          throw new Error(message);
+        }
+      }
+
+      const data = await response.json();
+      
+      // Update premium status in state and localStorage
+      updatePremiumStatus(data.premium);
+      
+      return data;
+    } catch (error) {
+      console.error('💥 Premium toggle error:', error);
+      throw error;
+    }
+  }, [updatePremiumStatus]);
+
+  /**
    * upgradeToPremium
    * Upgrades the current user to premium status by calling the backend API.
+   * This is a convenience wrapper around togglePremiumStatus(true).
    *
    * @returns {Promise<Object>} - Promise that resolves with the upgrade response
    */
   const upgradeToPremium = useCallback(async () => {
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+    return togglePremiumStatus(true);
+  }, [togglePremiumStatus]);
+
+  /**
+   * Render a Provider that makes all state variables and functions
         throw new Error('No authentication token found');
       }
 
@@ -321,17 +408,17 @@ export const AuthProvider = ({ children }) => {
       }
 
       const url = import.meta.env.VITE_BACKEND_URL 
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/make-premium`
-        : '/api/users/make-premium';
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/premium`
+        : '/api/auth/users/premium';
 
-
-      // Use only PUT method as defined in the backend controller
+      // Use PUT method with body to toggle premium status
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ premium: true }),
       });
 
       if (!response.ok) {
@@ -385,7 +472,8 @@ export const AuthProvider = ({ children }) => {
         login, 
         logout, 
         updatePremiumStatus,
-        upgradeToPremium
+        upgradeToPremium,
+        togglePremiumStatus
       }}
     >
       {children}

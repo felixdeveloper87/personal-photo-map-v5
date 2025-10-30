@@ -25,7 +25,7 @@ import ModalButton from "./ModalButton";
  * Professional Premium Benefits Modal
  * Showcases premium features with attractive design
  */
-const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, isLoading = false, isPremium = false }) => {
+const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoading = false, isPremium = false }) => {
   const textColor = useColorModeValue("gray.700", "gray.200");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const bgColor = useColorModeValue("gray.50", "gray.700");
@@ -83,15 +83,26 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, isLoading = false, i
           </HStack>
         </>
       ) : (
-        <ModalButton
-          variant="success"
-          onClick={onClose}
-          w="full"
-          leftIcon={<FaCrown />}
-          size={{ base: "md", sm: "lg" }}
-        >
-          You're Already Premium! 🎉
-        </ModalButton>
+        <>
+          <ModalButton
+            variant="success"
+            onClick={onClose}
+            w="full"
+            leftIcon={<FaCrown />}
+            size={{ base: "md", sm: "lg" }}
+          >
+            You're Already Premium! 🎉
+          </ModalButton>
+          <ModalButton
+            variant="danger"
+            onClick={onDeactivate}
+            isLoading={isLoading}
+            w="full"
+            size={{ base: "md", sm: "lg" }}
+          >
+            Deactivate Premium
+          </ModalButton>
+        </>
       )}
     </VStack>
   );

@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * AuthController
@@ -150,6 +149,37 @@ public class AuthController {
             System.out.println("❌ Unexpected Exception: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Updates the premium status for the authenticated user.
+     * Allows activating or deactivating premium status permanently.
+     *
+     * @param token Authorization header containing Bearer token
+     * @param requestBody Map containing the premium status ({"premium": true/false})
+     * @return Confirmation of premium status update
+     */
+    @PutMapping("/users/premium")
+    public ResponseEntity<?> updatePremiumStatus(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Boolean> requestBody) {
+        try {
+            Boolean premiumValue = requestBody.get("premium");
+            if (premiumValue == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Premium status is required", "message", "Please provide 'premium' field in request body"));
+            }
+            
+            Map<String, Object> response = userService.updatePremiumStatus(token, premiumValue);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Internal server error", "message", e.getMessage()));
         }
     }
 

@@ -52,7 +52,7 @@ const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
 
   // Contextos
-  const { isLoggedIn, fullname, isPremium, logout } = useContext(AuthContext);
+  const { isLoggedIn, fullname, isPremium, logout, togglePremiumStatus } = useContext(AuthContext);
   const { countriesWithPhotos, photoCount, countryCount } =
     useContext(CountriesContext);
 
@@ -72,53 +72,8 @@ const Header = () => {
   const handlePremiumUpgrade = async () => {
     setIsUpgrading(true);
     try {
-      // Get authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-
-      const upgradeUrl = buildApiUrl('/api/users/make-premium');
-
-
-      // Use only PUT method as defined in the backend controller
-      const response = await fetch(upgradeUrl, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        let errorText = '';
-        try {
-          errorText = await response.text();
-
-        } catch (readError) {
-
-        }
-
-        // Handle specific HTTP status codes
-        if (response.status === 403) {
-          throw new Error('Access denied. Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.');
-        } else if (response.status === 401) {
-          throw new Error('Unauthorized. Please log in again.');
-        } else if (response.status === 404) {
-          throw new Error('Premium upgrade endpoint not found.');
-        } else if (response.status >= 500) {
-          throw new Error('Server error. Please try again later.');
-        } else {
-          throw new Error(errorText || `Upgrade failed with status ${response.status}`);
-        }
-      }
-
-      // Success! Parse response and update premium status
-      const data = await response.json();
-
-      // Update premium status in localStorage and reload
-      localStorage.setItem('premium', 'true');
+      // Use the togglePremiumStatus function from AuthContext
+      await togglePremiumStatus(true);
 
       toast({
         title: "Premium Upgrade Successful! 🎉",
@@ -142,7 +97,7 @@ const Header = () => {
       if (error.message.includes('Access denied') || error.message.includes('restricted')) {
         errorMessage = "Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.";
         // Don't redirect to login for permission issues
-      } else if (error.message.includes('session has expired') || error.message.includes('log in again')) {
+      } else if (error.message.includes('session has expired') || error.message.includes('log in again') || error.message.includes('Unauthorized')) {
         errorMessage = "Your session has expired. Please log in again to continue.";
         // Only redirect to login for actual authentication issues
         setTimeout(() => {
@@ -154,6 +109,51 @@ const Header = () => {
 
       toast({
         title: "Upgrade Failed",
+        description: errorMessage,
+        status: "error",
+        duration: 8000,
+        isClosable: true,
+        position: "top-right",
+      });
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  // Handle premium deactivation
+  const handlePremiumDeactivate = async () => {
+    setIsUpgrading(true);
+    try {
+      // Use the togglePremiumStatus function from AuthContext
+      await togglePremiumStatus(false);
+
+      toast({
+        title: "Premium Deactivated",
+        description: "You have successfully deactivated your premium status.",
+        status: "info",
+        duration: 8000,
+        isClosable: true,
+        position: "top-right",
+      });
+
+      premiumModal.onClose();
+
+      // Refresh page to update UI
+      window.location.reload();
+
+    } catch (error) {
+      let errorMessage = error.message || "Please try again later.";
+
+      // Handle specific error cases
+      if (error.message.includes('session has expired') || error.message.includes('log in again') || error.message.includes('Unauthorized')) {
+        errorMessage = "Your session has expired. Please log in again to continue.";
+        setTimeout(() => {
+          loginModal.onOpen();
+        }, 3000);
+      }
+
+      toast({
+        title: "Deactivation Failed",
         description: errorMessage,
         status: "error",
         duration: 8000,
@@ -248,8 +248,8 @@ const Header = () => {
             display={isCompact ? "none" : "flex"}
             maxW={centerMaxW}
           >
-            {/* Botão Premium (antes do Map) */}
-            {isLoggedIn && !isPremium && (
+            {/* Botão Premium (antes do Map) - sempre visível se logado */}
+            {isLoggedIn && (
               <PremiumButton
                 onClick={premiumModal.onOpen}
                 size={buttonSize}
@@ -362,8 +362,8 @@ const Header = () => {
                 gap={{ base: 0.5, sm: 1.5, md: 2 }}
                 w="100%"
               >
-                {/* Botão Premium - só aparece se não for premium */}
-                {!isPremium && (
+                {/* Botão Premium - sempre visível se logado */}
+                {isLoggedIn && (
                   <PremiumButton
                     onClick={premiumModal.onOpen}
                     size="xs"
@@ -453,7 +453,9 @@ const Header = () => {
         isOpen={premiumModal.isOpen}
         onClose={premiumModal.onClose}
         onUpgrade={handlePremiumUpgrade}
+        onDeactivate={handlePremiumDeactivate}
         isLoading={isUpgrading}
+        isPremium={isPremium}
       />
       <PhotoStorageModal
         isOpen={photoStorageModal.isOpen}
