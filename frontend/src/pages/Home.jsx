@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 import { AuthContext } from '../context/AuthContext';
+import { HiRocketLaunch, HiVideoCamera, HiChartBar } from 'react-icons/hi2';
 import HeroSection from '../components/features/landing/HeroSection';
 import FeaturesSection from '../components/features/landing/FeaturesSection';
 import CTASection from '../components/features/landing/CTASection';
@@ -39,7 +40,8 @@ function Home() {
         title="Interactive Learning Features"
         description="Discover how our platform combines travel memories with comprehensive educational data for a unique learning experience"
         features={features}
-        badgeText="🚀 Core Features"
+        badgeText="Core Features"
+        badgeIcon={HiRocketLaunch}
         columns={{ base: 1, md: 2, lg: 4 }}
         spacing={8}
         bg="gray.50"
@@ -51,7 +53,8 @@ function Home() {
         title="Social Media Video Creation"
         description="Create professional videos from your travel photos, optimized for Instagram, TikTok, YouTube and other social platforms"
         features={videoFeatures}
-        badgeText="🎬 Video Features"
+        badgeText="Video Features"
+        badgeIcon={HiVideoCamera}
         columns={{ base: 1, md: 2, lg: 3 }}
         spacing={8}
         bg="gray.50"
@@ -63,7 +66,8 @@ function Home() {
         title="Comprehensive Country Data"
         description="Access real-time economic, social, and cultural information from trusted sources including World Bank, CIA Factbook, and international databases"
         features={educationalFeatures}
-        badgeText="📊 Data Sources"
+        badgeText="Data Sources"
+        badgeIcon={HiChartBar}
         columns={{ base: 1, md: 2 }}
         spacing={10}
         bg="white"

@@ -1,50 +1,50 @@
 import {
-  FaMapMarkedAlt,
-  FaCamera,
-  FaGlobe,
-  FaUsers,
-  FaRocket,
-  FaStar,
-  FaGraduationCap,
-  FaChartLine,
-  FaUniversity,
-  FaBookOpen,
-  FaGlobeAmericas,
-  FaLightbulb,
-  FaBrain,
-  FaVideo,
-  FaPlay,
-  FaMusic,
-  FaMagic,
-  FaFilm,
-  FaShare,
-  FaDownload
-} from 'react-icons/fa';
+  HiMapPin,
+  HiCamera,
+  HiGlobeAlt,
+  HiUsers,
+  HiRocketLaunch,
+  HiStar,
+  HiAcademicCap,
+  HiChartBar,
+  HiBuildingLibrary,
+  HiBookOpen,
+  HiGlobeAmericas,
+  HiLightBulb,
+  HiCpuChip,
+  HiVideoCamera,
+  HiPlay,
+  HiMusicalNote,
+  HiSparkles,
+  HiFilm,
+  HiArrowUpTray,
+  HiArrowDownTray
+} from 'react-icons/hi2';
 
 export const features = [
   {
-    icon: FaMapMarkedAlt,
+    icon: HiMapPin,
     title: 'Interactive World Map',
     description: 'Explore countries through an interactive map with real-time data and educational insights for comprehensive global learning.',
     color: 'blue',
     gradient: 'linear(135deg, blue.400, cyan.500)'
   },
   {
-    icon: FaGraduationCap,
+    icon: HiAcademicCap,
     title: 'Educational Data',
     description: 'Access comprehensive economic, social, and cultural information for every country worldwide with verified sources.',
     color: 'purple',
     gradient: 'linear(135deg, purple.400, pink.500)'
   },
   {
-    icon: FaCamera,
+    icon: HiCamera,
     title: 'Photo Organization by Country & Date',
     description: 'Automatically organize your travel photos by country and date, creating a chronological journey of your adventures with smart categorization.',
     color: 'green',
     gradient: 'linear(135deg, green.400, teal.500)'
   },
   {
-    icon: FaChartLine,
+    icon: HiChartBar,
     title: 'Real-time Statistics',
     description: 'View live economic indicators, population data, and social metrics from trusted sources with interactive visualizations.',
     color: 'orange',
@@ -54,28 +54,28 @@ export const features = [
 
 export const educationalFeatures = [
   {
-    icon: FaUniversity,
+    icon: HiBuildingLibrary,
     title: 'Economic Indicators',
     description: 'GDP, PIB per capita, growth rates, inflation, and debt-to-GDP ratios from World Bank data with trend analysis.',
     color: 'teal',
     gradient: 'linear(135deg, teal.400, green.500)'
   },
   {
-    icon: FaUsers,
+    icon: HiUsers,
     title: 'Social Metrics',
     description: 'Life expectancy, literacy rates, internet usage, urbanization, and health expenditure data with comparative analysis.',
     color: 'pink',
     gradient: 'linear(135deg, pink.400, purple.500)'
   },
   {
-    icon: FaGlobeAmericas,
+    icon: HiGlobeAmericas,
     title: 'Cultural Insights',
     description: 'Native languages, currencies, capitals, and demographic information with cultural context.',
     color: 'indigo',
     gradient: 'linear(135deg, indigo.400, blue.500)'
   },
   {
-    icon: FaBookOpen,
+    icon: HiBookOpen,
     title: 'Geographic Data',
     description: 'Real-time weather, time zones, population statistics, and regional classifications with interactive maps.',
     color: 'cyan',
@@ -85,42 +85,42 @@ export const educationalFeatures = [
 
 export const videoFeatures = [
   {
-    icon: FaVideo,
+    icon: HiVideoCamera,
     title: 'Video Generation',
     description: 'Transform your travel photos into stunning videos with smooth transitions, effects, and intelligent photo sequencing.',
     color: 'red',
     gradient: 'linear(135deg, red.400, pink.500)'
   },
   {
-    icon: FaMusic,
+    icon: HiMusicalNote,
     title: 'Smart Audio Matching',
     description: 'Automatically sync background music with your video content, creating perfect audio-visual harmony for your travel memories.',
     color: 'purple',
     gradient: 'linear(135deg, purple.400, indigo.500)'
   },
   {
-    icon: FaMagic,
+    icon: HiSparkles,
     title: 'Smooth Transitions',
     description: 'Create smooth transitions between photos with smart timing and visual effects that enhance your storytelling.',
     color: 'blue',
     gradient: 'linear(135deg, blue.400, cyan.500)'
   },
   {
-    icon: FaFilm,
+    icon: HiFilm,
     title: 'Professional Templates',
     description: 'Choose from multiple video templates designed for different travel styles - adventure, cultural, nature, and urban exploration.',
     color: 'green',
     gradient: 'linear(135deg, green.400, teal.500)'
   },
   {
-    icon: FaPlay,
+    icon: HiPlay,
     title: 'Real-time Preview',
     description: 'Preview your video creation in real-time as you adjust settings, music, and transitions for the perfect result.',
     color: 'orange',
     gradient: 'linear(135deg, orange.400, red.500)'
   },
   {
-    icon: FaShare,
+    icon: HiArrowUpTray,
     title: 'Social Media Ready',
     description: 'Export your travel videos in formats optimized for Instagram, TikTok, YouTube, and other social platforms with perfect aspect ratios.',
     color: 'yellow',
@@ -132,28 +132,28 @@ export const benefits = [
   {
     title: 'Learning Through Travel',
     description: 'Transform your travel experiences into educational opportunities with comprehensive country data and interactive learning modules.',
-    icon: FaLightbulb,
+    icon: HiLightBulb,
     color: 'yellow',
     gradient: 'linear(135deg, yellow.400, orange.500)'
   },
   {
     title: 'Data-Driven Insights',
     description: 'Access real-time economic and social indicators from authoritative sources like World Bank with advanced analytics.',
-    icon: FaChartLine,
+    icon: HiChartBar,
     color: 'blue',
     gradient: 'linear(135deg, blue.400, cyan.500)'
   },
   {
     title: 'Cultural Understanding',
     description: 'Deepen your knowledge of world cultures and social development patterns through comprehensive research tools.',
-    icon: FaGlobeAmericas,
+    icon: HiGlobeAmericas,
     color: 'green',
     gradient: 'linear(135deg, green.400, teal.500)'
   },
   {
     title: 'Academic Research',
     description: 'Use reliable data for studies, presentations, or personal research on global development with citation-ready sources.',
-    icon: FaBookOpen,
+    icon: HiBookOpen,
     color: 'purple',
     gradient: 'linear(135deg, purple.400, pink.500)'
   }
@@ -202,24 +202,24 @@ export const learningSteps = [
     step: '01',
     title: 'Upload & Organize',
     description: 'Upload your travel photos and automatically organize them by country and date',
-    icon: FaCamera
+    icon: HiCamera
   },
   {
     step: '02',
     title: 'Learn About Destinations',
     description: 'Explore comprehensive educational data and statistics for each country you visit',
-    icon: FaGlobe
+    icon: HiGlobeAlt
   },
   {
     step: '03',
     title: 'Create Social Videos',
     description: 'Transform your photos into videos optimized for social media platforms',
-    icon: FaVideo
+    icon: HiVideoCamera
   },
   {
     step: '04',
     title: 'Share Your Journey',
     description: 'Export and share your travel stories across Instagram, TikTok, and YouTube',
-    icon: FaShare
+    icon: HiArrowUpTray
   }
 ];
