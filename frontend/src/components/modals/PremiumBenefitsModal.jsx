@@ -10,14 +10,14 @@ import {
   Icon
 } from "@chakra-ui/react";
 import { 
-  FaCrown, 
-  FaCloud, 
-  FaImages, 
-  FaHeadset, 
-  FaRocket,
-  FaCheckCircle,
-  FaStar
-} from "react-icons/fa";
+  HiSparkles as HiCrown, 
+  HiCloudArrowUp as HiCloud, 
+  HiRectangleStack as HiImages, 
+  HiChatBubbleLeftRight as HiHeadset, 
+  HiRocketLaunch as HiRocket,
+  HiCheckCircle,
+  HiStar
+} from "react-icons/hi2";
 import BaseModal from "./BaseModal";
 import ModalButton from "./ModalButton";
 
@@ -32,25 +32,25 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
 
   const benefits = [
     {
-      icon: FaCloud,
+      icon: HiCloud,
       title: "100GB Photo Storage",
       description: "Unlimited cloud storage for your travel memories",
       color: "blue"
     },
     {
-      icon: FaImages,
+      icon: HiImages,
       title: "Create Albums",
       description: "Organize photos into beautiful collections",
       color: "purple"
     },
     {
-      icon: FaHeadset,
+      icon: HiHeadset,
       title: "Priority Support",
       description: "24/7 dedicated customer service",
       color: "green"
     },
     {
-      icon: FaRocket,
+      icon: HiRocket,
       title: "Advanced Features",
       description: "Access to premium map tools and analytics",
       color: "orange"
@@ -58,15 +58,15 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
   ];
 
   const footer = (
-    <VStack spacing={{ base: 2, sm: 3 }} w="full">
+    <VStack spacing={{ base: 1.5, sm: 2, md: 3 }} w="full">
       {!isPremium ? (
         <>
-          <HStack spacing={{ base: 2, sm: 3 }} w="full" flexDirection={{ base: "column", sm: "row" }}>
+          <HStack spacing={{ base: 1.5, sm: 2, md: 3 }} w="full" flexDirection={{ base: "column", sm: "row" }}>
             <ModalButton
               variant="secondary"
               onClick={onClose}
               w="full"
-              size={{ base: "md", sm: "lg" }}
+              size={{ base: "sm", sm: "md", md: "lg" }}
             >
               Maybe Later
             </ModalButton>
@@ -74,9 +74,9 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
               variant="primary"
               onClick={onUpgrade}
               isLoading={isLoading}
-              rightIcon={<FaCrown />}
+              rightIcon={<Icon as={HiCrown} />}
               w="full"
-              size={{ base: "md", sm: "lg" }}
+              size={{ base: "sm", sm: "md", md: "lg" }}
             >
               Upgrade to Premium
             </ModalButton>
@@ -88,8 +88,8 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
             variant="success"
             onClick={onClose}
             w="full"
-            leftIcon={<FaCrown />}
-            size={{ base: "md", sm: "lg" }}
+            leftIcon={<Icon as={HiCrown} />}
+            size={{ base: "sm", sm: "md", md: "lg" }}
           >
             You're Already Premium! 🎉
           </ModalButton>
@@ -98,7 +98,7 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
             onClick={onDeactivate}
             isLoading={isLoading}
             w="full"
-            size={{ base: "md", sm: "lg" }}
+            size={{ base: "sm", sm: "md", md: "lg" }}
           >
             Deactivate Premium
           </ModalButton>
@@ -112,69 +112,76 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
       isOpen={isOpen}
       onClose={onClose}
       title="Premium Benefits"
-      icon={FaCrown}
+      icon={HiCrown}
       footer={footer}
       size={{ base: "full", sm: "md", md: "lg", lg: "xl" }}
     >
-      <VStack spacing={{ base: 4, sm: 5, md: 6 }} align="stretch">
+      <VStack spacing={{ base: 2.5, sm: 3, md: 5, lg: 6 }} align="stretch">
         {/* Premium Header */}
         <Box
           textAlign="center"
           p={{ base: 4, sm: 5, md: 6 }}
           borderRadius="xl"
-          bgGradient={useColorModeValue(
-            "linear(to-r, yellow.100, orange.100)",
-            "linear(to-r, yellow.900, orange.900)"
-          )}
+          bg={useColorModeValue("gray.50", "gray.800")}
           border="1px solid"
-          borderColor={useColorModeValue("yellow.200", "yellow.700")}
+          borderColor={useColorModeValue("gray.200", "gray.700")}
+          borderTop="3px solid"
+          borderTopColor={useColorModeValue("blue.400", "blue.500")}
           position="relative"
-          overflow="hidden"
+          boxShadow={useColorModeValue(
+            "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
+            "0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3)"
+          )}
         >
-          {/* Background Pattern */}
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            opacity={0.1}
-            backgroundImage={`url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stars" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="gold"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/></svg>')`}
-          />
-          
           <VStack spacing={{ base: 2, sm: 3 }} position="relative" zIndex={1}>
+            {/* Premium Icon */}
             <Box
-              p={{ base: 2, sm: 3 }}
+              p={{ base: 2, sm: 2.5 }}
               borderRadius="full"
-              bg={useColorModeValue("yellow.400", "yellow.600")}
-              color="white"
-              boxSize={{ base: "50px", sm: "60px" }}
+              bg={useColorModeValue("blue.50", "blue.900")}
+              color={useColorModeValue("blue.600", "blue.400")}
+              boxSize={{ base: "48px", sm: "56px", md: "64px" }}
               display="flex"
               alignItems="center"
               justifyContent="center"
+              border="1px solid"
+              borderColor={useColorModeValue("blue.200", "blue.700")}
             >
-              <FaCrown size={28} />
+              <Icon as={HiCrown} boxSize={{ base: "20px", sm: "24px", md: "28px" }} />
             </Box>
-            <Text fontSize={{ base: "xl", sm: "2xl" }} fontWeight="bold" color={textColor}>
-              {isPremium ? "Premium Features Unlocked! 🎉" : "Unlock Premium Features"}
-            </Text>
-            <Text fontSize={{ base: "sm", sm: "md" }} color={useColorModeValue("gray.600", "gray.300")}>
-              {isPremium 
-                ? "You have access to all premium features. Enjoy your enhanced experience!"
-                : "Take your photo mapping experience to the next level"
-              }
-            </Text>
+            
+            <VStack spacing={{ base: 1, sm: 1.5 }} w="full">
+              <Text 
+                fontSize={{ base: "xl", sm: "2xl", md: "2xl" }} 
+                fontWeight="bold" 
+                color={useColorModeValue("gray.900", "gray.100")}
+                letterSpacing="tight"
+              >
+                {isPremium ? "Premium Features Unlocked! 🎉" : "Unlock Premium Features"}
+              </Text>
+              <Text 
+                fontSize={{ base: "xs", sm: "sm", md: "md" }} 
+                color={useColorModeValue("gray.600", "gray.400")}
+                fontWeight="normal"
+                maxW="90%"
+              >
+                {isPremium 
+                  ? "You have access to all premium features. Enjoy your enhanced experience!"
+                  : "Take your photo mapping experience to the next level"
+                }
+              </Text>
+            </VStack>
           </VStack>
         </Box>
 
         <Divider />
 
         {/* Benefits List */}
-        <VStack spacing={{ base: 3, sm: 4 }} align="stretch">
+        <VStack spacing={{ base: 2, sm: 2.5, md: 4 }} align="stretch">
           {benefits.map((benefit, index) => (
             <Box
               key={index}
-              p={{ base: 3, sm: 4 }}
+              p={{ base: 2, sm: 2.5, md: 4 }}
               borderRadius="lg"
               bg={bgColor}
               border="1px solid"
@@ -186,32 +193,34 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
                 shadow: "md"
               }}
             >
-              <HStack spacing={{ base: 3, sm: 4 }} align="flex-start">
+              <HStack spacing={{ base: 2, sm: 2.5, md: 4 }} align="flex-start">
                 <Box
-                  p={{ base: 1.5, sm: 2 }}
+                  p={{ base: 1, sm: 1.5, md: 2 }}
                   borderRadius="lg"
                   bg={useColorModeValue(`${benefit.color}.100`, `${benefit.color}.900`)}
                   color={useColorModeValue(`${benefit.color}.600`, `${benefit.color}.300`)}
                   flexShrink={0}
                 >
-                  <Icon as={benefit.icon} boxSize={{ base: 4, sm: 5 }} />
+                  <Icon as={benefit.icon} boxSize={{ base: 3.5, sm: 4, md: 5 }} />
                 </Box>
                 <Box flex={1}>
-                  <VStack spacing={1} align="start">
-                    <HStack spacing={2} flexWrap="wrap">
-                      <Text fontWeight="bold" fontSize={{ base: "md", sm: "lg" }} color={textColor}>
+                  <VStack spacing={0.5} align="start">
+                    <HStack spacing={1.5} flexWrap="wrap">
+                      <Text fontWeight="bold" fontSize={{ base: "sm", sm: "md", md: "lg" }} color={textColor}>
                         {benefit.title}
                       </Text>
                       <Badge
                         colorScheme={benefit.color}
                         variant="subtle"
-                        fontSize="xs"
+                        fontSize={{ base: "2xs", sm: "xs" }}
                         borderRadius="full"
+                        px={{ base: 1, sm: 1.5 }}
+                        py={0}
                       >
                         PREMIUM
                       </Badge>
                     </HStack>
-                    <Text fontSize={{ base: "xs", sm: "sm" }} color={useColorModeValue("gray.600", "gray.400")}>
+                    <Text fontSize={{ base: "2xs", sm: "xs", md: "sm" }} color={useColorModeValue("gray.600", "gray.400")}>
                       {benefit.description}
                     </Text>
                   </VStack>
@@ -220,7 +229,7 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
                   color={useColorModeValue(`${benefit.color}.500`, `${benefit.color}.400`)}
                   display={{ base: "none", sm: "block" }}
                 >
-                  <FaCheckCircle size={20} />
+                  <Icon as={HiCheckCircle} boxSize={{ base: "16px", sm: "18px", md: "20px" }} />
                 </Box>
               </HStack>
             </Box>
@@ -230,21 +239,21 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
         {/* Special Offer - Only show for non-premium users */}
         {!isPremium && (
           <Box
-            p={{ base: 3, sm: 4 }}
+            p={{ base: 2, sm: 2.5, md: 4 }}
             borderRadius="lg"
             bg={useColorModeValue("green.50", "green.900")}
             border="1px solid"
             borderColor={useColorModeValue("green.200", "green.700")}
             textAlign="center"
           >
-            <HStack spacing={2} justify="center" mb={2} flexWrap="wrap">
-              <FaStar color="#F59E0B" />
-              <Text fontWeight="bold" fontSize={{ base: "sm", sm: "md" }} color={useColorModeValue("green.700", "green.200")}>
+            <HStack spacing={1.5} justify="center" mb={{ base: 1, sm: 1.5, md: 2 }} flexWrap="wrap">
+              <Icon as={HiStar} boxSize={{ base: "12px", sm: "14px", md: "16px" }} color="#F59E0B" />
+              <Text fontWeight="bold" fontSize={{ base: "xs", sm: "sm", md: "md" }} color={useColorModeValue("green.700", "green.200")}>
                 Special Launch Offer
               </Text>
-              <FaStar color="#F59E0B" />
+              <Icon as={HiStar} boxSize={{ base: "12px", sm: "14px", md: "16px" }} color="#F59E0B" />
             </HStack>
-            <Text fontSize={{ base: "xs", sm: "sm" }} color={useColorModeValue("green.600", "green.300")}>
+            <Text fontSize={{ base: "2xs", sm: "xs", md: "sm" }} color={useColorModeValue("green.600", "green.300")}>
               Limited time: Get 50% off your first year of Premium!
             </Text>
           </Box>
