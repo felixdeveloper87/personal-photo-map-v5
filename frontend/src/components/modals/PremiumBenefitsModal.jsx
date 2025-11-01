@@ -125,8 +125,6 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
           bg={useColorModeValue("gray.50", "black")}
           border="1px solid"
           borderColor={useColorModeValue("gray.200", "white")}
-          borderTop="2px solid"
-          borderTopColor={useColorModeValue("blue.400", "blue.500")}
           position="relative"
         >
           <VStack spacing={{ base: 2, sm: 3 }} position="relative" zIndex={1}>
