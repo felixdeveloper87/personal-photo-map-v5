@@ -23,7 +23,7 @@ import { CountriesContext } from '../../context/CountriesContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseModal from '../modals/BaseModal';
 import ModalButton from '../modals/ModalButton';
-import { FaSearch, FaGlobe, FaCalendar, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaSearch, FaGlobe, FaCalendar, FaInfoCircle} from 'react-icons/fa';
 
 // Motion components
 const MotionBox = motion(Box);
@@ -58,12 +58,11 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
   const navigate = useNavigate();
 
   // Theme-aware colors
-  const textColor = useColorModeValue('gray.700', 'gray.300');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const bgColor = useColorModeValue('gray.50', 'gray.700');
+  const textColor = useColorModeValue('gray.700', 'white');
+  const borderColor = useColorModeValue('gray.200', 'white');
+  const bgColor = useColorModeValue('gray.50', 'black');
   const accentColor = useColorModeValue('blue.500', 'blue.400');
   const successColor = useColorModeValue('green.500', 'green.400');
-  const warningColor = useColorModeValue('orange.500', 'orange.400');
 
   // Clear validation error when selections change
   // Also clear the other selection to enforce single choice
@@ -167,7 +166,7 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
         onClose={handleClose}
         title="Search Photos"
         icon={FaSearch}
-        size="md"
+        size={{ base: "sm", sm: "md", md: "lg" }}
       >
         <MotionVStack 
           spacing={6} 
@@ -183,7 +182,7 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
             borderRadius="lg"
             bg={useColorModeValue("blue.50", "blue.900")}
             border="1px solid"
-            borderColor={useColorModeValue("blue.200", "blue.700")}
+            borderColor={borderColor}
           >
             <AlertIcon />
             <Box>

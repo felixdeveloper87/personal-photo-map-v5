@@ -43,7 +43,6 @@ import {
 import BaseModal from './BaseModal';
 import { CountriesContext } from '../../context/CountriesContext';
 import { buildApiUrl } from '../../utils/apiConfig';
-import * as EXIF from 'exif-js';
 import { extractPhotoMetadata as extractMetadata } from '../../utils/photoMetadataExtractor';
 
 const CURRENT_YEAR = new Date().getFullYear();
