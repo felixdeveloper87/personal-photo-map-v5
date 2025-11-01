@@ -122,16 +122,12 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
           textAlign="center"
           p={{ base: 4, sm: 5, md: 6 }}
           borderRadius="xl"
-          bg={useColorModeValue("gray.50", "gray.800")}
+          bg={useColorModeValue("gray.50", "black")}
           border="1px solid"
-          borderColor={useColorModeValue("gray.200", "gray.700")}
-          borderTop="3px solid"
+          borderColor={useColorModeValue("gray.200", "white")}
+          borderTop="2px solid"
           borderTopColor={useColorModeValue("blue.400", "blue.500")}
           position="relative"
-          boxShadow={useColorModeValue(
-            "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
-            "0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3)"
-          )}
         >
           <VStack spacing={{ base: 2, sm: 3 }} position="relative" zIndex={1}>
             {/* Premium Icon */}
@@ -157,7 +153,7 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
                 color={useColorModeValue("gray.900", "gray.100")}
                 letterSpacing="tight"
               >
-                {isPremium ? "Premium Features Unlocked! 🎉" : "Unlock Premium Features"}
+                {isPremium ? "Premium Features Unlocked! " : "Unlock Premium Features"}
               </Text>
               <Text 
                 fontSize={{ base: "xs", sm: "sm", md: "md" }} 
