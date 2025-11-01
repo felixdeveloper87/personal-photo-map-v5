@@ -582,7 +582,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                             borderRadius="md"
                             textAlign="center"
                             border="1px solid"
-                            borderColor="rgba(59, 130, 246, 0.2)"
+                            borderColor={borderColor}
                             _hover={{
                               bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
                               transform: 'scale(1.05)'
