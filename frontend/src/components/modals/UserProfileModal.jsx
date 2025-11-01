@@ -277,7 +277,9 @@ const UserProfileModal = ({ isOpen, onClose }) => {
               borderRadius="xl"
               bg={useColorModeValue("gray.50", "black")}
               border="1px solid"
+              
               borderColor={useColorModeValue("gray.500", "white")}
+              
               position="relative"
               overflow="hidden"
             >

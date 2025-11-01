@@ -9,11 +9,11 @@ import {
   Divider,
   Icon
 } from "@chakra-ui/react";
-import { 
-  HiSparkles as HiCrown, 
-  HiCloudArrowUp as HiCloud, 
-  HiRectangleStack as HiImages, 
-  HiChatBubbleLeftRight as HiHeadset, 
+import {
+  HiSparkles as HiCrown,
+  HiCloudArrowUp as HiCloud,
+  HiRectangleStack as HiImages,
+  HiChatBubbleLeftRight as HiHeadset,
   HiRocketLaunch as HiRocket,
   HiCheckCircle,
   HiStar
@@ -124,7 +124,11 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
           borderRadius="xl"
           bg={useColorModeValue("gray.50", "black")}
           border="1px solid"
-          borderColor={useColorModeValue("gray.200", "white")}
+          borderColor={useColorModeValue("gray.200", "whiteAlpha.200")}
+          boxShadow={useColorModeValue(
+            "0 2px 6px rgba(0, 0, 0, 0.05)",
+            "0 2px 10px rgba(255, 255, 255, 0.06)"
+          )}
           position="relative"
         >
           <VStack spacing={{ base: 2, sm: 3 }} position="relative" zIndex={1}>
@@ -143,23 +147,23 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
             >
               <Icon as={HiCrown} boxSize={{ base: "20px", sm: "24px", md: "28px" }} />
             </Box>
-            
+
             <VStack spacing={{ base: 1, sm: 1.5 }} w="full">
-              <Text 
-                fontSize={{ base: "xl", sm: "2xl", md: "2xl" }} 
-                fontWeight="bold" 
+              <Text
+                fontSize={{ base: "xl", sm: "2xl", md: "2xl" }}
+                fontWeight="bold"
                 color={useColorModeValue("gray.900", "gray.100")}
                 letterSpacing="tight"
               >
                 {isPremium ? "Premium Features Unlocked! " : "Unlock Premium Features"}
               </Text>
-              <Text 
-                fontSize={{ base: "xs", sm: "sm", md: "md" }} 
+              <Text
+                fontSize={{ base: "xs", sm: "sm", md: "md" }}
                 color={useColorModeValue("gray.600", "gray.400")}
                 fontWeight="normal"
                 maxW="90%"
               >
-                {isPremium 
+                {isPremium
                   ? "You have access to all premium features. Enjoy your enhanced experience!"
                   : "Take your photo mapping experience to the next level"
                 }
@@ -179,7 +183,11 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
               borderRadius="lg"
               bg={bgColor}
               border="1px solid"
-              borderColor={borderColor}
+              borderColor={useColorModeValue("gray.200", "whiteAlpha.200")}
+              boxShadow={useColorModeValue(
+                "0 2px 6px rgba(0, 0, 0, 0.05)",
+                "0 2px 10px rgba(255, 255, 255, 0.06)"
+              )}
               transition="all 0.2s ease"
               _hover={{
                 transform: "translateX(4px)",
@@ -191,6 +199,7 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
                 <Box
                   p={{ base: 1, sm: 1.5, md: 2 }}
                   borderRadius="lg"
+                  
                   bg={useColorModeValue(`${benefit.color}.100`, `${benefit.color}.900`)}
                   color={useColorModeValue(`${benefit.color}.600`, `${benefit.color}.300`)}
                   flexShrink={0}
@@ -237,7 +246,7 @@ const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, onDeactivate, isLoad
             borderRadius="lg"
             bg={useColorModeValue("green.50", "green.900")}
             border="1px solid"
-            borderColor={useColorModeValue("green.200", "green.700")}
+            borderColor={useColorModeValue("green.200", "green.900")}
             textAlign="center"
           >
             <HStack spacing={1.5} justify="center" mb={{ base: 1, sm: 1.5, md: 2 }} flexWrap="wrap">

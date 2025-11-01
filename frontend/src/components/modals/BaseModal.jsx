@@ -129,7 +129,7 @@ const BaseModal = ({
       <ModalContent
         bg={bgColor}
         backdropFilter="blur(24px)"
-        border="1px solid"
+        border="2px solid"
         borderColor={borderColor}
         borderRadius={{ base: "xl", sm: variant === 'minimal' ? "xl" : "2xl" }}
         maxHeight={{ 
@@ -260,7 +260,7 @@ const BaseModal = ({
           overflowX="hidden"
           position="relative"
           flex="1"
-          bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(26, 32, 44, 0.5)")}
+          bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(0, 0, 0, 0.5)")}
           backdropFilter="blur(5px)"
           css={{
             'touch-action': 'pan-y',
@@ -307,7 +307,7 @@ const BaseModal = ({
             pt={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
             px={{ base: 4, sm: 6 }}
             pb={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
-            bg={useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(30, 41, 59, 0.6)")}
+            bg={useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(0, 0, 0, 0.6)")}
             backdropFilter="blur(8px)"
             position="relative"
             _before={variant === 'minimal' ? {} : {
