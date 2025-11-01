@@ -74,12 +74,10 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   const countryGridColumns = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
 
   // Theme colors
-  const cardBg = useColorModeValue("rgba(255, 255, 255, 0.9)", "rgba(26, 32, 44, 0.9)");
-  const cardBorder = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.1)");
   const textColor = useColorModeValue("gray.700", "gray.100");
-  const headingColor = useColorModeValue("gray.800", "white");
+  const headingColor = useColorModeValue("black", "white");
   const accentColor = useColorModeValue("blue.500", "blue.300");
-  const bgColor = useColorModeValue("gray.50", "gray.700");
+  const bgColor = useColorModeValue("gray.50", "black");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const premiumGradient = "linear-gradient(135deg, #fbbf24, #f59e0b)";
 
@@ -142,7 +140,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 0;
 
     const continents = new Set();
-    
+
     // Process countries in batches to avoid overwhelming the API
     const batchSize = 5;
     const batches = [];
@@ -158,21 +156,21 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         } else {
           countryCode = String(item || '').toUpperCase();
         }
-        
+
         // Skip if country code is empty or invalid
         if (!countryCode || countryCode === 'UNKNOWN' || countryCode === 'NULL') return null;
 
         try {
           const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
           if (!response.ok) return null;
-          
+
           const data = await response.json();
           const country = data[0];
-          
+
           // Get continent from region or subregion
           const region = country.region || '';
           const subregion = country.subregion || '';
-          
+
           // Map regions to continents
           if (region === 'Americas') {
             if (subregion === 'South America') return 'South America';
@@ -188,7 +186,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
           } else if (region === 'Antarctic') {
             return 'Antarctica';
           }
-          
+
           return region || 'Unknown';
         } catch (error) {
           console.warn(`Failed to fetch continent for ${countryCode}:`, error);
@@ -264,7 +262,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       onClose={onClose}
       title="User Profile"
       icon={FaUser}
-      size={{ base: "full", sm: "md", md: "lg", lg: "xl", xl: "2xl" }}
+      size={{ base: "full", sm: "md", md: "lg", lg: "xl" }}
     >
       <VStack spacing={{ base: 4, sm: 5, md: 6 }} align="stretch">
         <MotionBox
@@ -277,31 +275,17 @@ const UserProfileModal = ({ isOpen, onClose }) => {
             <Box
               p={{ base: 4, sm: 5, md: 6 }}
               borderRadius="xl"
-              bg={useColorModeValue("blue.50", "blue.900")}
+              bg={useColorModeValue("gray.50", "black")}
               border="1px solid"
-              borderColor={useColorModeValue("blue.200", "blue.700")}
+              borderColor={useColorModeValue("gray.500", "white")}
               position="relative"
               overflow="hidden"
             >
-              {/* Premium Background Pattern */}
-              {isPremium && (
-                <Box
-                  position="absolute"
-                  top={0}
-                  right={0}
-                  w="100px"
-                  h="100px"
-                  bg="linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1))"
-                  borderRadius="full"
-                  transform="translate(30px, -30px)"
-                />
-              )}
-
               <Flex align="center" justify="space-between" position="relative" direction={{ base: "column", sm: "row" }} gap={{ base: 3, sm: 0 }}>
                 <HStack spacing={{ base: 3, sm: 4 }}>
                   <Box position="relative">
                     <Avatar
-                      size={{ base: "lg", sm: "xl" }}
+                      size={{ base: "md", sm: "md" }}
                       name={fullname}
                       bg={isPremium ? premiumGradient : accentColor}
                       color="white"
@@ -315,7 +299,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         position="absolute"
                         bottom="-2px"
                         right="-2px"
-                        border="3px solid white"
+                        border="2px solid white"
                       >
                         <Icon as={FaCrown} color="white" w={3} h={3} />
                       </Circle>
@@ -324,21 +308,27 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
                   <VStack spacing={{ base: 1.5, sm: 2 }} align="start">
                     <HStack spacing={{ base: 2, sm: 3 }} align="center" flexWrap="wrap">
-                      <Heading as="h2" size={{ base: "md", sm: "lg" }} color={headingColor}>
+                      <Heading
+                        size={{ base: "md", sm: "md" }}
+                        color={headingColor}
+                      >
                         {fullname}
                       </Heading>
+
                       {isPremium && (
                         <Badge
-                          colorScheme="yellow"
                           px={{ base: 2, sm: 3 }}
                           py={1}
                           borderRadius="full"
-                          fontSize={{ base: "xs", sm: "sm" }}
+                          fontSize={"xs"}
                           fontWeight="bold"
                           bg={premiumGradient}
                           color="white"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
                         >
-                          <Icon as={FaStar} mr={1} w={3} h={3} />
+                          <Icon as={FaStar} w={3} h={3} />
                           PREMIUM
                         </Badge>
                       )}
@@ -348,13 +338,6 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                       <Icon as={FaEnvelope} color={textColor} w={{ base: 3, sm: 4 }} h={{ base: 3, sm: 4 }} />
                       <Text color={textColor} fontSize={{ base: "xs", sm: "sm" }}>
                         {email}
-                      </Text>
-                    </HStack>
-
-                    <HStack spacing={2} align="center">
-                      <Icon as={FaMapMarkerAlt} color={textColor} w={{ base: 3, sm: 4 }} h={{ base: 3, sm: 4 }} />
-                      <Text color={textColor} fontSize={{ base: "xs", sm: "sm" }}>
-                        {userStats.favoriteContinent}
                       </Text>
                     </HStack>
                   </VStack>
@@ -376,7 +359,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
           {/* Statistics Cards */}
           <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
-            <Heading as="h3" size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
+            <Heading size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
               <Icon as={FaTrophy} mr={2} color="yellow.400" />
               Travel Statistics
             </Heading>
@@ -388,14 +371,31 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 borderColor={borderColor}
                 p={{ base: 3, sm: 4 }}
                 textAlign="center"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
                 transition="all 0.2s"
               >
                 <Icon as={FaCamera} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="blue.400" mb={2} />
-                <Stat>
-                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.totalPhotos}</StatNumber>
-                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Photos</StatLabel>
-                </Stat>
+
+                <HStack justify="center" spacing={2}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "md" }}
+                    color={headingColor}
+                    fontWeight="semibold"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    p={1}
+                    borderRadius="md"
+                  >
+                    {userStats.totalPhotos}
+                  </Text>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={textColor}
+                    fontWeight="medium"
+                  >
+                    Photos
+                  </Text>
+                </HStack>
               </Box>
 
               <Box
@@ -408,17 +408,50 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaGlobe} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="green.400" mb={2} />
+                <Icon
+                  as={FaGlobe}
+                  w={{ base: 4, sm: 5 }}
+                  h={{ base: 4, sm: 5 }}
+                  color="green.400"
+                  mb={2}
+                />
+
                 <Stat>
-                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.countriesVisited}</StatNumber>
-                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Countries</StatLabel>
-                  <StatHelpText fontSize={{ base: "2xs", sm: "xs" }} lineHeight="1.2">
+                  <HStack justify="center" spacing={2}>
+                    <StatNumber
+                      fontSize={{ base: "xs", sm: "md" }}
+                      color={headingColor}
+                      lineHeight="1"
+                      border="1px solid"
+                      borderColor={borderColor}
+                      p={1}
+                      borderRadius="md"
+                    >
+                      {userStats.countriesVisited}
+                    </StatNumber>
+                    <StatLabel
+                      color={textColor}
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                    >
+                      Countries
+                    </StatLabel>
+
+                  </HStack>
+
+                  {/* Texto auxiliar abaixo */}
+                  <StatHelpText
+                    fontSize={{ base: "2xs", sm: "xs" }}
+                    lineHeight="1.2"
+                    mt={1}
+                    color={useColorModeValue("gray.600", "gray.400")}
+                  >
                     {((userStats.countriesVisited / 195) * 100).toFixed(1)}% of world
                   </StatHelpText>
                 </Stat>
               </Box>
 
-
+              {/* Continents */}
               <Box
                 bg={bgColor}
                 borderRadius="lg"
@@ -429,13 +462,37 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaGlobe} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="teal.400" mb={2} />
-                <Stat>
-                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{continentCount}</StatNumber>
-                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Continents</StatLabel>
-                </Stat>
+                <Icon
+                  as={FaGlobe}
+                  w={{ base: 4, sm: 5 }}
+                  h={{ base: 4, sm: 5 }}
+                  color="teal.400"
+                  mb={2}
+                />
+
+                <HStack justify="center" spacing={2}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "md" }}
+                    color={headingColor}
+                    fontWeight="semibold"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    p={1}
+                    borderRadius="md"
+                  >
+                    {continentCount}
+                  </Text>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={textColor}
+                    fontWeight="medium"
+                  >
+                    Continents
+                  </Text>
+                </HStack>
               </Box>
 
+              {/* Member Since */}
               <Box
                 bg={bgColor}
                 borderRadius="lg"
@@ -446,12 +503,37 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaCalendarAlt} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="purple.400" mb={2} />
-                <Stat>
-                  <StatNumber fontSize={{ base: "lg", sm: "xl" }} color={headingColor}>{userStats.joinDate}</StatNumber>
-                  <StatLabel color={textColor} fontSize={{ base: "xs", sm: "sm" }}>Member Since</StatLabel>
-                </Stat>
+                <Icon
+                  as={FaCalendarAlt}
+                  w={{ base: 4, sm: 5 }}
+                  h={{ base: 4, sm: 5 }}
+                  color="purple.400"
+                  mb={2}
+                />
+
+                <HStack justify="center" spacing={2}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={textColor}
+                    fontWeight="medium"
+                  >
+                    Member Since
+                  </Text>
+                  <Text
+                    fontSize={{ base: "xs", sm: "md" }}
+                    color={headingColor}
+                    fontWeight="semibold"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    p={1}
+                    borderRadius="md"
+                  >
+                    {userStats.joinDate}
+                  </Text>
+
+                </HStack>
               </Box>
+
             </SimpleGrid>
           </MotionBox>
 
@@ -494,7 +576,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.03 }}
-                            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))"
+                            bg={bgColor}
                             color={headingColor}
                             p={3}
                             borderRadius="md"
@@ -518,11 +600,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                             <Box
                               width="48px"
                               height="36px"
-                              borderRadius="sm"
                               overflow="hidden"
-                              border="1px solid"
-                              borderColor="rgba(255, 255, 255, 0.3)"
-                              boxShadow="sm"
                             >
                               <EnhancedFlag countryCode={country.code} />
                             </Box>

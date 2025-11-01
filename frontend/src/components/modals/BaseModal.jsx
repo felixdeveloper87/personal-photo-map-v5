@@ -67,18 +67,14 @@ const BaseModal = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Enhanced theme-aware colors with modern gradients
-  const bgGradient = useColorModeValue(
+  // Enhanced theme-aware colors
+  const bgColor = useColorModeValue(
     variant === 'minimal'
-      ? "linear(to-br, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95))"
-      : variant === 'premium'
-        ? "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))"
-        : "linear(to-br, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98))",
+      ? "gray.50"
+      : "white", 
     variant === 'minimal'
-      ? "linear(to-br, rgba(26, 32, 44, 0.98), rgba(26, 32, 44, 0.95))"
-      : variant === 'premium'
-        ? "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
-        : "linear(to-br, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.98))"
+      ? "gray.800"
+      : "black"
   );
 
   const borderColor = useColorModeValue(
@@ -90,32 +86,10 @@ const BaseModal = ({
       : "rgba(148, 163, 184, 0.1)"
   );
 
-  const shadowColor = useColorModeValue(
-    "rgba(0, 0, 0, 0.08)",
-    "rgba(0, 0, 0, 0.25)"
-  );
 
   const shimmerGradient = useColorModeValue(
     "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
     "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)"
-  );
-
-  // Enhanced shadow system
-  const shadowConfig = useColorModeValue(
-    {
-      sm: "0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)",
-      md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-      lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-      xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-      "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-    },
-    {
-      sm: "0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4)",
-      md: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
-      lg: "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-      xl: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
-      "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-    }
   );
 
   useEffect(() => {
@@ -143,7 +117,7 @@ const BaseModal = ({
       closeOnEsc={closeOnEsc}
     >
       <ModalOverlay
-        bg="blackAlpha.400"
+        bg="blackAlpha.300"
         backdropFilter="blur(12px)"
         animation={`${overlayEnter} 0.2s ease-out`}
         transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -153,14 +127,13 @@ const BaseModal = ({
       />
 
       <ModalContent
-        bgGradient={bgGradient}
+        bg={bgColor}
         backdropFilter="blur(24px)"
         border="1px solid"
         borderColor={borderColor}
         borderRadius={{ base: "xl", sm: variant === 'minimal' ? "xl" : "2xl" }}
-        shadow={shadowConfig.xl}
         maxHeight={{ 
-          base: "calc(100vh - 3rem)", // Full viewport height minus top and bottom margins on mobile
+          base: "calc(100vh - 3rem)", 
           sm: maxHeight 
         }}
         minHeight={{ base: "auto", sm: "auto" }}
@@ -186,12 +159,10 @@ const BaseModal = ({
         } : {}}
         _hover={{
           transform: { base: "none", sm: "translateY(-4px) scale(1.01)" },
-          shadow: { base: shadowConfig.xl, sm: shadowConfig["2xl"] },
           borderColor: useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(59, 130, 246, 0.2)")
         }}
         _focus={{
-          outline: "none",
-          boxShadow: `0 0 0 3px ${useColorModeValue("rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.2)")}`
+          outline: "none"
         }}
       >
         {/* Modern Header */}
@@ -208,9 +179,8 @@ const BaseModal = ({
           pt={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
           px={{ base: 4, sm: 6 }}
           position="relative"
-          bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(30, 41, 59, 0.8)")}
+          bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(0, 0, 0, 0.8)")}
           backdropFilter="blur(10px)"
-          boxShadow={useColorModeValue("0 2px 8px rgba(0, 0, 0, 0.1)", "0 2px 8px rgba(0, 0, 0, 0.3)")}
           _after={variant === 'minimal' ? {} : {
             content: '""',
             position: "absolute",

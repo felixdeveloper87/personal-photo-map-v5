@@ -11,7 +11,6 @@ export { default as SequentialImageUploaderModal } from './SequentialImageUpload
 export { default as FullImageModal } from './FullImageModal';
 export { default as ConversionModal } from './ConversionModal';
 export { default as TimelineVideoModal } from './TimelineVideoModal';
-export { default as EconomicModal } from './EconomicModal';
 export { default as SocialModal } from './SocialModal';
 export { default as ResetPasswordModal } from './ResetPasswordModal';
 
