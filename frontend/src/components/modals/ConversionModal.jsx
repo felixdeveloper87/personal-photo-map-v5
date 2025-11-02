@@ -15,7 +15,7 @@ import {
   useColorModeValue,
   Badge,
   IconButton,
-  Spinner
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FaGlobe,
@@ -26,53 +26,32 @@ import {
   FaUsers,
   FaStar,
   FaLock,
-  FaTimes
+  FaTimes,
 } from 'react-icons/fa';
 
-// Lazy loading para os modais
 const LoginModal = lazy(() => import('./LoginModal'));
 const RegisterModal = lazy(() => import('./RegisterModal'));
 
 const ConversionModal = ({ isOpen, onClose, country }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.700', 'gray.300');
+
+  const cardBg = useColorModeValue('rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)');
+  const borderColor = useColorModeValue('rgba(0,0,0,0.08)', 'rgba(255,255,255,0.12)');
+  const textColor = useColorModeValue('gray.700', 'gray.200');
   const headingColor = useColorModeValue('gray.900', 'white');
 
-  // Determine if this is for a specific country or general access
   const isCountrySpecific = country && country.name;
   const pageTitle = isCountrySpecific ? country.name : 'Timeline & Photo Gallery';
-  const pageDescription = isCountrySpecific 
+  const pageDescription = isCountrySpecific
     ? `You're about to discover amazing insights about ${country.name}.`
-    : "You're about to access your personal timeline and photo gallery.";
+    : 'Access your personal timeline and photo gallery with global data and insights.';
 
   const features = [
-    {
-      icon: FaGlobe,
-      title: 'Interactive World Map',
-      description: 'Explore countries with real-time data and educational insights',
-      color: 'blue'
-    },
-    {
-      icon: FaCamera,
-      title: 'Photo Organization',
-      description: 'Organize your travel memories by country with educational context',
-      color: 'green'
-    },
-    {
-      icon: FaChartLine,
-      title: 'Economic Data',
-      description: 'Access World Bank indicators and social metrics for every country',
-      color: 'purple'
-    },
-    {
-      icon: FaGraduationCap,
-      title: 'Learning Journey',
-      description: 'Transform travel experiences into educational opportunities',
-      color: 'orange'
-    }
+    { icon: FaGlobe, title: 'Interactive World Map', description: 'Explore countries with real-time data and insights', color: 'blue' },
+    { icon: FaCamera, title: 'Photo Organization', description: 'Organize travel memories with educational context', color: 'green' },
+    { icon: FaChartLine, title: 'Economic Data', description: 'Access social and economic indicators globally', color: 'purple' },
+    { icon: FaGraduationCap, title: 'Learning Journey', description: 'Transform your travels into global learning', color: 'orange' },
   ];
 
   const timelineBenefits = [
@@ -81,7 +60,7 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
     'Track your global journey',
     'Share travel experiences',
     'Educational insights for each location',
-    'Free photo storage and organization'
+    'Free photo storage and organization',
   ];
 
   const handleClose = () => {
@@ -90,28 +69,13 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
     onClose();
   };
 
-  const handleLogin = () => {
-    setShowLogin(true);
-  };
-
-  const handleRegister = () => {
-    setShowRegister(true);
-  };
-
   if (showLogin) {
     return (
-      <Suspense fallback={
-        <Box display="flex" justifyContent="center" alignItems="center" h="200px">
-          <Spinner size="xl" color="blue.500" />
-        </Box>
-      }>
+      <Suspense fallback={<Box py={20} textAlign="center"><Spinner size="xl" color="blue.400" /></Box>}>
         <LoginModal
           isOpen={showLogin}
           onClose={handleClose}
-          onSwitchToRegister={() => {
-            setShowLogin(false);
-            setShowRegister(true);
-          }}
+          onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }}
         />
       </Suspense>
     );
@@ -119,18 +83,11 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
 
   if (showRegister) {
     return (
-      <Suspense fallback={
-        <Box display="flex" justifyContent="center" alignItems="center" h="200px">
-          <Spinner size="xl" color="blue.500" />
-        </Box>
-      }>
+      <Suspense fallback={<Box py={20} textAlign="center"><Spinner size="xl" color="green.400" /></Box>}>
         <RegisterModal
           isOpen={showRegister}
           onClose={handleClose}
-          onSwitchToLogin={() => {
-            setShowRegister(false);
-            setShowLogin(true);
-          }}
+          onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }}
         />
       </Suspense>
     );
@@ -138,114 +95,102 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="3xl" isCentered>
-      <ModalOverlay />
+      <ModalOverlay backdropFilter="blur(10px)" />
       <ModalContent
-        bg={bgColor}
-        borderRadius="2xl"
-        boxShadow="2xl"
+        bg={cardBg}
+        backdropFilter="blur(12px)"
         border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.700')}
+        borderColor={borderColor}
+        borderRadius="2xl"
+        boxShadow={useColorModeValue('0 4px 30px rgba(0,0,0,0.08)', '0 4px 30px rgba(255,255,255,0.06)')}
       >
-        {/* Header with gradient */}
+        {/* Header */}
         <Box
-          bgGradient="linear(135deg, blue.500, purple.600)"
+          bgGradient="linear(135deg, rgba(56,128,255,0.85), rgba(168,85,247,0.85))"
+          backdropFilter="blur(8px)"
           color="white"
           p={6}
           textAlign="center"
+          borderTopRadius="2xl"
           position="relative"
         >
-          {/* Close button */}
           <IconButton
             icon={<FaTimes />}
             onClick={handleClose}
             position="absolute"
             top={4}
             right={4}
-            zIndex={2}
             variant="ghost"
-            color="white"
-            _hover={{
-              bg: 'whiteAlpha.200',
-              transform: 'scale(1.1)'
-            }}
+            color="whiteAlpha.900"
+            _hover={{ bg: 'whiteAlpha.300', transform: 'scale(1.1)' }}
             _active={{ transform: 'scale(0.95)' }}
-            transition="all 0.2s ease"
             aria-label="Close modal"
           />
-          
-          <Box position="relative" zIndex={1}>
-            <Badge
-              bgGradient="linear(135deg, yellow.400, orange.400)"
-              color="white"
-              variant="solid"
-              px={3}
-              py={1.5}
-              borderRadius="full"
-              fontSize="sm"
-              fontWeight="bold"
-              mb={3}
-            >
-              🔒 Login Required
-            </Badge>
-            
-            <Heading size="lg" mb={3} lineHeight="1.2">
-              Unlock {pageTitle} and the World! 🌍
-            </Heading>
-            
-            <Text fontSize="md" opacity={0.95} maxW="500px" mx="auto">
-              {pageDescription} 
-              Create a free account to access comprehensive data, organize your photos, 
-              and start your global learning journey!
-            </Text>
-          </Box>
+          <Badge
+            bgGradient="linear(135deg, yellow.400, orange.400)"
+            color="white"
+            px={3}
+            py={1.5}
+            borderRadius="full"
+            fontSize="sm"
+            fontWeight="bold"
+            mb={3}
+          >
+            🔒 Login Required
+          </Badge>
+
+          <Heading size="lg" mb={3}>Unlock {pageTitle} 🌍</Heading>
+          <Text fontSize="md" opacity={0.95} maxW="520px" mx="auto">
+            {pageDescription} Create your free account to access all features and begin your journey.
+          </Text>
         </Box>
 
         <ModalBody p={6}>
           <VStack spacing={6} align="stretch">
-            {/* Features Grid */}
+
+            {/* Features */}
             <Box>
               <Heading size="sm" color={headingColor} mb={4} textAlign="center">
                 Timeline & Photo Features:
               </Heading>
-              
               <Box
                 display="grid"
-                gridTemplateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
                 gap={4}
               >
-                {features.map((feature, index) => (
+                {features.map((f, i) => (
                   <HStack
-                    key={index}
+                    key={i}
                     p={4}
-                    bg={useColorModeValue('gray.50', 'gray.700')}
-                    borderRadius="lg"
+                    bg={cardBg}
                     border="1px solid"
-                    borderColor={useColorModeValue('gray.200', 'gray.600')}
+                    borderColor={borderColor}
+                    borderRadius="lg"
+                    backdropFilter="blur(8px)"
                     spacing={3}
                     align="start"
+                    transition="all 0.3s ease"
                     _hover={{
                       transform: 'translateY(-2px)',
-                      boxShadow: 'lg',
-                      borderColor: `${feature.color}.300`
+                      borderColor: `${f.color}.400`,
+                      boxShadow: `0 0 8px var(--chakra-colors-${f.color}-300)`,
                     }}
-                    transition="all 0.3s ease"
                   >
                     <Box
                       p={2.5}
-                      bgGradient={`linear(135deg, ${feature.color}.400, ${feature.color}.600)`}
                       borderRadius="md"
+                      bgGradient={`linear(135deg, ${f.color}.400, ${f.color}.600)`}
                       color="white"
                       boxShadow="md"
                     >
-                      <Icon as={feature.icon} boxSize={4} />
+                      <Icon as={f.icon} boxSize={4} />
                     </Box>
-                    
-                    <VStack align="start" spacing={1.5} flex={1}>
-                      <Heading size="xs" color={headingColor}>
-                        {feature.title}
-                      </Heading>
+                    <VStack align="start" spacing={1}>
+                      <Text fontWeight="bold" color={headingColor} fontSize="sm">
+                        {f.title}
+                      </Text>
                       <Text fontSize="xs" color={textColor} lineHeight="1.4">
-                        {feature.description}
+                        {f.description}
                       </Text>
                     </VStack>
                   </HStack>
@@ -253,23 +198,16 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
               </Box>
             </Box>
 
-            {/* Benefits List */}
+            {/* Benefits */}
             <Box>
               <Heading size="sm" color={headingColor} mb={3} textAlign="center">
                 Timeline Benefits:
               </Heading>
-              
-              <Box
-                display="grid"
-                gridTemplateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                gap={2.5}
-              >
-                {timelineBenefits.map((benefit, index) => (
-                  <HStack key={index} spacing={2.5}>
+              <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={2.5}>
+                {timelineBenefits.map((b, i) => (
+                  <HStack key={i} spacing={2}>
                     <Icon as={FaStar} color="yellow.400" boxSize={3} />
-                    <Text fontSize="xs" color={textColor}>
-                      {benefit}
-                    </Text>
+                    <Text fontSize="xs" color={textColor}>{b}</Text>
                   </HStack>
                 ))}
               </Box>
@@ -278,81 +216,73 @@ const ConversionModal = ({ isOpen, onClose, country }) => {
             {/* Social Proof */}
             <Box
               p={4}
-              bg={useColorModeValue('blue.50', 'blue.900')}
+              bg={useColorModeValue('rgba(219,234,254,0.6)', 'rgba(30,64,175,0.4)')}
               borderRadius="lg"
               border="1px solid"
               borderColor={useColorModeValue('blue.200', 'blue.700')}
+              backdropFilter="blur(8px)"
               textAlign="center"
             >
               <HStack justify="center" spacing={2} mb={2}>
-                <Icon as={FaUsers} color="blue.500" boxSize={4} />
-                <Text fontWeight="bold" color="blue.700" fontSize="sm">
+                <Icon as={FaUsers} color="blue.400" boxSize={4} />
+                <Text fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')} fontSize="sm">
                   Join thousands of learners worldwide
                 </Text>
               </HStack>
               <Text fontSize="xs" color={useColorModeValue('blue.600', 'blue.300')}>
-                "I love how I can organize my travel photos and see my journey through time. The timeline feature is incredible!" - Emma Rodriguez, Travel Blogger
+                “I love how I can organize my travel photos and see my journey through time.” — Emma R.
               </Text>
             </Box>
           </VStack>
         </ModalBody>
 
         <ModalFooter
-          p={6}
-          bg={useColorModeValue('gray.50', 'gray.800')}
+          bg={useColorModeValue('rgba(255,255,255,0.6)', 'rgba(0,0,0,0.6)')}
+          backdropFilter="blur(8px)"
           borderTop="1px solid"
-          borderColor={useColorModeValue('gray.200', 'gray.700')}
+          borderColor={borderColor}
+          borderBottomRadius="2xl"
         >
           <VStack spacing={3} w="100%">
-            <HStack spacing={7} justify="center" w="100%">
+            <HStack spacing={5} justify="center" w="100%">
               <Button
-                size="md"
-                bgGradient="linear(135deg, green.500, teal.500)"
+                bgGradient="linear(135deg, green.400, teal.400)"
                 color="white"
-                variant="solid"
+                fontWeight="bold"
+                px={6}
+                py={4}
+                borderRadius="xl"
                 _hover={{
-                  bgGradient: "linear(135deg, green.600, teal.600)",
+                  bgGradient: 'linear(135deg, green.500, teal.500)',
                   transform: 'translateY(-2px)',
-                  boxShadow: 'xl'
+                  boxShadow: '0 0 10px rgba(72,187,120,0.4)',
                 }}
                 _active={{ transform: 'translateY(0)' }}
                 leftIcon={<FaRocket />}
-                onClick={handleRegister}
-                px={6}
-                py={4}
-                fontSize="md"
-                fontWeight="bold"
-                borderRadius="xl"
-                transition="all 0.3s ease"
+                onClick={() => setShowRegister(true)}
               >
                 Create Free Account
               </Button>
-              
               <Button
-                size="md"
                 variant="outline"
                 borderColor={useColorModeValue('gray.400', 'gray.500')}
                 borderWidth="2px"
-                color={useColorModeValue('gray.700', 'gray.300')}
+                color={useColorModeValue('gray.700', 'gray.200')}
+                px={6}
+                py={4}
+                borderRadius="xl"
                 _hover={{
                   bg: useColorModeValue('gray.100', 'gray.700'),
-                  borderColor: useColorModeValue('gray.600', 'gray.400'),
-                  transform: 'translateY(-2px)'
+                  transform: 'translateY(-2px)',
                 }}
                 _active={{ transform: 'translateY(0)' }}
                 leftIcon={<FaLock />}
-                onClick={handleLogin}
-                px={6}
-                py={4}
-                fontSize="md"
-                fontWeight="semibold"
-                borderRadius="xl"
-                transition="all 0.3s ease"
+                onClick={() => setShowLogin(true)}
               >
                 I Already Have an Account
               </Button>
             </HStack>
-            
+
             <Text fontSize="xs" color={useColorModeValue('gray.500', 'gray.400')} textAlign="center">
               ✨ No credit card required • Setup in 2 minutes • 24/7 Support
             </Text>

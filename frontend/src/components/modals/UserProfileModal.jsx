@@ -10,52 +10,38 @@ import {
   Text,
   Avatar,
   Flex,
-  Grid,
   VStack,
   HStack,
   Badge,
   Icon,
   useColorModeValue,
-  Progress,
   SimpleGrid,
   Circle,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  StatArrow,
   Button,
-  useBreakpointValue,
   Divider,
   IconButton,
   Tooltip,
+  Progress,
 } from '@chakra-ui/react';
 import {
-  FaMapMarkerAlt,
+  FaUser,
+  FaEnvelope,
   FaCamera,
   FaGlobe,
   FaCalendarAlt,
-  FaMedal,
-  FaHeart,
   FaFlag,
-  FaRoute,
   FaTrophy,
-  FaStar,
-  FaFire,
+  FaRoute,
   FaCompass,
-  FaUser,
-  FaEnvelope,
-  FaCrown,
+  FaStar,
   FaEdit,
+  FaCrown
 } from 'react-icons/fa';
 import BaseModal from './BaseModal';
 import EnhancedFlag from '../features/CountryDetails/EnhancedFlag';
 
-// Configuring the ISO country library to use English as the default locale
 countries.registerLocale(en);
-
 const MotionBox = motion.create(Box);
-const MotionFlex = motion.create(Flex);
 
 const UserProfileModal = ({ isOpen, onClose }) => {
   const { isLoggedIn, fullname, email, isPremium } = useContext(AuthContext);
@@ -65,20 +51,14 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     countriesVisited: 0,
     joinDate: new Date().getFullYear(),
     favoriteContinent: 'Unknown',
-    travelScore: 0
   });
   const [continentCount, setContinentCount] = useState(0);
 
-  // Responsive values
-  const gridColumns = useBreakpointValue({ base: 2, sm: 2, md: 4, lg: 4 });
-  const countryGridColumns = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
-
-  // Theme colors
   const textColor = useColorModeValue("gray.700", "gray.100");
   const headingColor = useColorModeValue("black", "white");
   const accentColor = useColorModeValue("blue.500", "blue.300");
-  const bgColor = useColorModeValue("gray.50", "black");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const borderColor = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)");
+  const cardBg = useColorModeValue("rgba(255,255,255,0.65)", "rgba(0,0,0,0.55)");
   const premiumGradient = "linear-gradient(135deg, #fbbf24, #f59e0b)";
 
   useEffect(() => {
@@ -88,27 +68,20 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         countriesVisited: countryCount || 0,
         joinDate: new Date().getFullYear(),
         favoriteContinent: getFavoriteContinent(),
-        travelScore: calculateTravelScore()
       });
     }
   }, [isLoggedIn, photoCount, countryCount, countriesWithPhotos]);
 
-  // Load continent count when countries data changes
   useEffect(() => {
-    if (isLoggedIn && countriesWithPhotos && countriesWithPhotos.length > 0) {
-      getContinentCount().then(count => {
-        setContinentCount(count);
-      }).catch(error => {
-        console.error('Error loading continent count:', error);
-        setContinentCount(0);
-      });
+    if (isLoggedIn && countriesWithPhotos?.length > 0) {
+      getContinentCount().then(setContinentCount).catch(() => setContinentCount(0));
     } else {
       setContinentCount(0);
     }
   }, [isLoggedIn, countriesWithPhotos]);
 
   const getFavoriteContinent = () => {
-    const continentMap = {
+    const map = {
       'US': 'North America', 'CA': 'North America', 'MX': 'North America',
       'BR': 'South America', 'AR': 'South America', 'CL': 'South America',
       'FR': 'Europe', 'DE': 'Europe', 'IT': 'Europe', 'ES': 'Europe', 'UK': 'Europe',
@@ -117,144 +90,48 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       'EG': 'Africa', 'ZA': 'Africa', 'MA': 'Africa', 'KE': 'Africa'
     };
 
-    if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 'World Explorer';
-
-    const continentCounts = {};
-    countriesWithPhotos.forEach(item => {
-      let countryCode = '';
-      if (typeof item === 'object' && item !== null) {
-        countryCode = String(item.id || '').toUpperCase();
-      } else {
-        countryCode = String(item || '').toUpperCase();
-      }
-      const continent = continentMap[countryCode] || 'Other';
-      continentCounts[continent] = (continentCounts[continent] || 0) + 1;
+    if (!countriesWithPhotos?.length) return 'World Explorer';
+    const counts = {};
+    countriesWithPhotos.forEach((item) => {
+      const code = typeof item === 'object' ? String(item.id || '').toUpperCase() : String(item).toUpperCase();
+      const c = map[code] || 'Other';
+      counts[c] = (counts[c] || 0) + 1;
     });
-
-    return Object.keys(continentCounts).reduce((a, b) =>
-      continentCounts[a] > continentCounts[b] ? a : b
-    ) || 'World Explorer';
+    return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b), 'World Explorer');
   };
 
   const getContinentCount = async () => {
-    if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 0;
-
-    const continents = new Set();
-
-    // Process countries in batches to avoid overwhelming the API
+    if (!countriesWithPhotos?.length) return 0;
+    const set = new Set();
     const batchSize = 5;
-    const batches = [];
+
     for (let i = 0; i < countriesWithPhotos.length; i += batchSize) {
-      batches.push(countriesWithPhotos.slice(i, i + batchSize));
-    }
-
-    for (const batch of batches) {
-      const promises = batch.map(async (item) => {
-        let countryCode = '';
-        if (typeof item === 'object' && item !== null) {
-          countryCode = String(item.countryId || item.id || item.code || '').toUpperCase();
-        } else {
-          countryCode = String(item || '').toUpperCase();
-        }
-
-        // Skip if country code is empty or invalid
-        if (!countryCode || countryCode === 'UNKNOWN' || countryCode === 'NULL') return null;
-
+      const batch = countriesWithPhotos.slice(i, i + batchSize);
+      const results = await Promise.all(batch.map(async (item) => {
+        const code = typeof item === 'object'
+          ? String(item.countryId || item.id || item.code || '').toUpperCase()
+          : String(item || '').toUpperCase();
+        if (!code || code === 'UNKNOWN') return null;
         try {
-          const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
-          if (!response.ok) return null;
-
-          const data = await response.json();
-          const country = data[0];
-
-          // Get continent from region or subregion
-          const region = country.region || '';
-          const subregion = country.subregion || '';
-
-          // Map regions to continents
-          if (region === 'Americas') {
-            if (subregion === 'South America') return 'South America';
-            return 'North America';
-          } else if (region === 'Europe') {
-            return 'Europe';
-          } else if (region === 'Asia') {
-            return 'Asia';
-          } else if (region === 'Africa') {
-            return 'Africa';
-          } else if (region === 'Oceania') {
-            return 'Oceania';
-          } else if (region === 'Antarctic') {
-            return 'Antarctica';
-          }
-
-          return region || 'Unknown';
-        } catch (error) {
-          console.warn(`Failed to fetch continent for ${countryCode}:`, error);
+          const r = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+          if (!r.ok) return null;
+          const data = await r.json();
+          return data[0]?.region || 'Unknown';
+        } catch {
           return null;
         }
-      });
-
-      const results = await Promise.all(promises);
-      results.forEach(continent => {
-        if (continent) continents.add(continent);
-      });
+      }));
+      results.forEach((r) => r && set.add(r));
     }
 
-    return continents.size;
-  };
-
-  const calculateTravelScore = () => {
-    const photosScore = Math.min((photoCount || 0) * 2, 200);
-    const countriesScore = Math.min((countryCount || 0) * 10, 300);
-    return photosScore + countriesScore;
-  };
-
-  const getTravelBadges = () => {
-    const badges = [];
-    if (countryCount >= 10) badges.push({ name: "Globe Trotter", icon: FaGlobe, color: "blue" });
-    if (countryCount >= 25) badges.push({ name: "World Explorer", icon: FaCompass, color: "purple" });
-    if (countryCount >= 50) badges.push({ name: "Travel Master", icon: FaTrophy, color: "gold" });
-    if (photoCount >= 100) badges.push({ name: "Photo Enthusiast", icon: FaCamera, color: "green" });
-    if (photoCount >= 500) badges.push({ name: "Memory Keeper", icon: FaHeart, color: "red" });
-    if (isPremium) badges.push({ name: "Premium Explorer", icon: FaStar, color: "yellow" });
-
-    return badges;
+    return set.size;
   };
 
   const countryNamesList = countriesWithPhotos?.map((item) => {
-    if (typeof item === 'object' && item !== null) {
-      return {
-        code: String(item.countryId || '').toUpperCase(),
-        name: item.countryName || String(item.countryId || '').toUpperCase(),
-        photoCount: item.photoCount || 0
-      };
-    } else {
-      const countryCode = String(item || '').toUpperCase();
-      const countryName = countries.getName(countryCode, 'en');
-      return { code: countryCode, name: countryName || countryCode, photoCount: 0 };
-    }
+    const code = typeof item === 'object' ? String(item.countryId || '').toUpperCase() : String(item).toUpperCase();
+    const name = typeof item === 'object' ? item.countryName || code : countries.getName(code, 'en');
+    return { code, name: name || code, photoCount: item.photoCount || 0 };
   }) || [];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
 
   return (
     <BaseModal
@@ -264,412 +141,203 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       icon={FaUser}
       size={{ base: "full", sm: "md", md: "lg", lg: "xl" }}
     >
-      <VStack spacing={{ base: 4, sm: 5, md: 6 }} align="stretch">
-        <MotionBox
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+      <VStack spacing={{ base: 5, sm: 6, md: 8 }} align="stretch">
+
+        {/* Header */}
+        <Box
+          p={{ base: 4, sm: 5, md: 6 }}
+          borderRadius="xl"
+          bg={cardBg}
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor={borderColor}
+          boxShadow={useColorModeValue(
+            "0 1px 3px rgba(0,0,0,0.05)",
+            "0 1px 3px rgba(255,255,255,0.05)"
+          )}
+          position="relative"
         >
-          {/* Profile Header Section */}
-          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
-            <Box
-              p={{ base: 4, sm: 5, md: 6 }}
-              borderRadius="xl"
-              bg={useColorModeValue("gray.50", "black")}
-              border="1px solid"
-              
-              borderColor={useColorModeValue("gray.500", "white")}
-              
-              position="relative"
-              overflow="hidden"
-            >
-              <Flex align="center" justify="space-between" position="relative" direction={{ base: "column", sm: "row" }} gap={{ base: 3, sm: 0 }}>
-                <HStack spacing={{ base: 3, sm: 4 }}>
-                  <Box position="relative">
-                    <Avatar
-                      size={{ base: "md", sm: "md" }}
-                      name={fullname}
-                      bg={isPremium ? premiumGradient : accentColor}
-                      color="white"
-                      ring="3px"
-                      ringColor={isPremium ? "yellow.400" : accentColor}
-                    />
-                    {isPremium && (
-                      <Circle
-                        size="24px"
-                        bg={premiumGradient}
-                        position="absolute"
-                        bottom="-2px"
-                        right="-2px"
-                        border="2px solid white"
-                      >
-                        <Icon as={FaCrown} color="white" w={3} h={3} />
-                      </Circle>
-                    )}
-                  </Box>
-
-                  <VStack spacing={{ base: 1.5, sm: 2 }} align="start">
-                    <HStack spacing={{ base: 2, sm: 3 }} align="center" flexWrap="wrap">
-                      <Heading
-                        size={{ base: "md", sm: "md" }}
-                        color={headingColor}
-                      >
-                        {fullname}
-                      </Heading>
-
-                      {isPremium && (
-                        <Badge
-                          px={{ base: 2, sm: 3 }}
-                          py={1}
-                          borderRadius="full"
-                          fontSize={"xs"}
-                          fontWeight="bold"
-                          bg={premiumGradient}
-                          color="white"
-                          display="flex"
-                          alignItems="center"
-                          gap={1}
-                        >
-                          <Icon as={FaStar} w={3} h={3} />
-                          PREMIUM
-                        </Badge>
-                      )}
-                    </HStack>
-
-                    <HStack spacing={2} align="center">
-                      <Icon as={FaEnvelope} color={textColor} w={{ base: 3, sm: 4 }} h={{ base: 3, sm: 4 }} />
-                      <Text color={textColor} fontSize={{ base: "xs", sm: "sm" }}>
-                        {email}
-                      </Text>
-                    </HStack>
-                  </VStack>
-                </HStack>
-
-                <Tooltip label="Edit Profile" hasArrow>
-                  <IconButton
-                    aria-label="Edit Profile"
-                    icon={<FaEdit />}
-                    size="sm"
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: "rgba(255, 255, 255, 0.1)" }}
-                  />
-                </Tooltip>
-              </Flex>
-            </Box>
-          </MotionBox>
-
-          {/* Statistics Cards */}
-          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
-            <Heading size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
-              <Icon as={FaTrophy} mr={2} color="yellow.400" />
-              Travel Statistics
-            </Heading>
-            <SimpleGrid columns={gridColumns} spacing={{ base: 2, sm: 3, md: 4 }}>
-              <Box
-                bg={bgColor}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor={borderColor}
-                p={{ base: 3, sm: 4 }}
-                textAlign="center"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
-                transition="all 0.2s"
-              >
-                <Icon as={FaCamera} w={{ base: 4, sm: 5 }} h={{ base: 4, sm: 5 }} color="blue.400" mb={2} />
-
-                <HStack justify="center" spacing={2}>
-                  <Text
-                    fontSize={{ base: "xs", sm: "md" }}
-                    color={headingColor}
-                    fontWeight="semibold"
-                    border="1px solid"
-                    borderColor={borderColor}
-                    p={1}
-                    borderRadius="md"
+          <Flex align="center" justify="space-between" flexDir={{ base: "column", sm: "row" }} gap={3}>
+            <HStack spacing={4}>
+              <Box position="relative">
+                <Avatar
+                  size="md"
+                  name={fullname}
+                  bg={isPremium ? premiumGradient : accentColor}
+                  color="white"
+                  ring="3px"
+                  ringColor={isPremium ? "yellow.400" : accentColor}
+                />
+                {isPremium && (
+                  <Circle
+                    size="24px"
+                    bg={premiumGradient}
+                    position="absolute"
+                    bottom="-2px"
+                    right="-2px"
+                    border="2px solid white"
                   >
-                    {userStats.totalPhotos}
-                  </Text>
-                  <Text
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    color={textColor}
-                    fontWeight="medium"
-                  >
-                    Photos
-                  </Text>
-                </HStack>
+                    <Icon as={FaCrown} color="white" w={3} h={3} />
+                  </Circle>
+                )}
               </Box>
 
+              <VStack align="start" spacing={1}>
+                <HStack>
+                  <Heading size="md" color={headingColor}>
+                    {fullname}
+                  </Heading>
+                  {isPremium && (
+                    <Badge
+                      px={2.5}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="xs"
+                      fontWeight="bold"
+                      bg={premiumGradient}
+                      color="white"
+                      display="flex"
+                      alignItems="center"
+                      gap={1}
+                    >
+                      <Icon as={FaStar} w={3} h={3} />
+                      PREMIUM
+                    </Badge>
+                  )}
+                </HStack>
+                <HStack spacing={2}>
+                  <Icon as={FaEnvelope} color={textColor} w={3.5} h={3.5} />
+                  <Text color={textColor} fontSize="sm">{email}</Text>
+                </HStack>
+              </VStack>
+            </HStack>
+
+            <Tooltip label="Edit Profile" hasArrow>
+              <IconButton
+                aria-label="Edit Profile"
+                icon={<FaEdit />}
+                size="sm"
+                variant="ghost"
+                color={textColor}
+                _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
+              />
+            </Tooltip>
+          </Flex>
+        </Box>
+
+        {/* Statistics */}
+        <Box>
+          <Heading size="sm" mb={4} color={headingColor}>
+            <Icon as={FaTrophy} mr={2} color="yellow.400" />
+            Travel Statistics
+          </Heading>
+          <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={3}>
+            {[
+              { label: "Photos", value: userStats.totalPhotos, icon: FaCamera, color: "blue.400" },
+              { label: "Countries", value: userStats.countriesVisited, icon: FaGlobe, color: "green.400" },
+              { label: "Continents", value: continentCount, icon: FaFlag, color: "teal.400" },
+              { label: "Member Since", value: userStats.joinDate, icon: FaCalendarAlt, color: "purple.400" },
+            ].map((stat, i) => (
               <Box
-                bg={bgColor}
+                key={i}
+                bg={cardBg}
+                backdropFilter="blur(6px)"
                 borderRadius="lg"
                 border="1px solid"
                 borderColor={borderColor}
-                p={{ base: 3, sm: 4 }}
+                p={4}
                 textAlign="center"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
+                _hover={{
+                  transform: "translateY(-2px)",
+                  borderColor: useColorModeValue("rgba(59,130,246,0.3)", "rgba(59,130,246,0.4)"),
+                }}
               >
-                <Icon
-                  as={FaGlobe}
-                  w={{ base: 4, sm: 5 }}
-                  h={{ base: 4, sm: 5 }}
-                  color="green.400"
-                  mb={2}
-                />
+                <Icon as={stat.icon} w={5} h={5} color={stat.color} mb={2} />
+                <Text fontSize="lg" fontWeight="bold" color={headingColor}>{stat.value}</Text>
+                <Text fontSize="sm" color={textColor}>{stat.label}</Text>
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
 
-                <Stat>
-                  <HStack justify="center" spacing={2}>
-                    <StatNumber
-                      fontSize={{ base: "xs", sm: "md" }}
-                      color={headingColor}
-                      lineHeight="1"
+        {/* Countries */}
+        <Box>
+          <Heading size="sm" mb={4} color={headingColor}>
+            <Icon as={FaFlag} mr={2} color="blue.400" />
+            Countries Explored
+          </Heading>
+          <Box
+            p={4}
+            borderRadius="lg"
+            bg={cardBg}
+            backdropFilter="blur(8px)"
+            border="1px solid"
+            borderColor={borderColor}
+          >
+            {countryNamesList.length > 0 ? (
+              <>
+                <Progress
+                  value={(countryNamesList.length / 195) * 100}
+                  colorScheme="blue"
+                  size="md"
+                  borderRadius="full"
+                  mb={3}
+                />
+                <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={2}>
+                  {countryNamesList.slice(0, 12).map((c, i) => (
+                    <MotionBox
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      bg={cardBg}
                       border="1px solid"
                       borderColor={borderColor}
-                      p={1}
                       borderRadius="md"
+                      p={3}
+                      cursor="pointer"
+                      textAlign="center"
+                      _hover={{
+                        bg: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(147,51,234,0.2))",
+                        transform: "scale(1.05)",
+                      }}
                     >
-                      {userStats.countriesVisited}
-                    </StatNumber>
-                    <StatLabel
-                      color={textColor}
-                      fontSize={{ base: "xs", sm: "sm" }}
-                      fontWeight="medium"
-                    >
-                      Countries
-                    </StatLabel>
-
-                  </HStack>
-
-                  {/* Texto auxiliar abaixo */}
-                  <StatHelpText
-                    fontSize={{ base: "2xs", sm: "xs" }}
-                    lineHeight="1.2"
-                    mt={1}
-                    color={useColorModeValue("gray.600", "gray.400")}
-                  >
-                    {((userStats.countriesVisited / 195) * 100).toFixed(1)}% of world
-                  </StatHelpText>
-                </Stat>
-              </Box>
-
-              {/* Continents */}
-              <Box
-                bg={bgColor}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor={borderColor}
-                p={{ base: 3, sm: 4 }}
-                textAlign="center"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                transition="all 0.2s"
-              >
-                <Icon
-                  as={FaGlobe}
-                  w={{ base: 4, sm: 5 }}
-                  h={{ base: 4, sm: 5 }}
-                  color="teal.400"
-                  mb={2}
-                />
-
-                <HStack justify="center" spacing={2}>
-                  <Text
-                    fontSize={{ base: "xs", sm: "md" }}
-                    color={headingColor}
-                    fontWeight="semibold"
-                    border="1px solid"
-                    borderColor={borderColor}
-                    p={1}
-                    borderRadius="md"
-                  >
-                    {continentCount}
-                  </Text>
-                  <Text
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    color={textColor}
-                    fontWeight="medium"
-                  >
-                    Continents
-                  </Text>
-                </HStack>
-              </Box>
-
-              {/* Member Since */}
-              <Box
-                bg={bgColor}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor={borderColor}
-                p={{ base: 3, sm: 4 }}
-                textAlign="center"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                transition="all 0.2s"
-              >
-                <Icon
-                  as={FaCalendarAlt}
-                  w={{ base: 4, sm: 5 }}
-                  h={{ base: 4, sm: 5 }}
-                  color="purple.400"
-                  mb={2}
-                />
-
-                <HStack justify="center" spacing={2}>
-                  <Text
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    color={textColor}
-                    fontWeight="medium"
-                  >
-                    Member Since
-                  </Text>
-                  <Text
-                    fontSize={{ base: "xs", sm: "md" }}
-                    color={headingColor}
-                    fontWeight="semibold"
-                    border="1px solid"
-                    borderColor={borderColor}
-                    p={1}
-                    borderRadius="md"
-                  >
-                    {userStats.joinDate}
-                  </Text>
-
-                </HStack>
-              </Box>
-
-            </SimpleGrid>
-          </MotionBox>
-
-          {/* Countries Section */}
-          <MotionBox variants={itemVariants} mb={{ base: 4, sm: 5, md: 6 }}>
-            <Heading as="h3" size={{ base: "sm", sm: "md" }} mb={{ base: 3, sm: 4 }} color={headingColor}>
-              <Icon as={FaFlag} mr={2} color="blue.400" />
-              Countries Explored
-            </Heading>
-            <Box
-              p={{ base: 3, sm: 4 }}
-              borderRadius="lg"
-              bg={bgColor}
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              {countryNamesList.length > 0 ? (
-                <>
-                  <Progress
-                    value={(countryNamesList.length / 195) * 100}
-                    colorScheme="blue"
-                    size="md"
-                    borderRadius="full"
-                    mb={4}
-                  />
-                  <Text textAlign="center" color={textColor} mb={{ base: 3, sm: 4 }} fontSize={{ base: "xs", sm: "sm" }}>
-                    {countryNamesList.length} / 195 countries ({((countryNamesList.length / 195) * 100).toFixed(1)}%)
-                  </Text>
-                  <SimpleGrid columns={countryGridColumns} spacing={{ base: 2, sm: 3 }}>
-                    {countryNamesList
-                      .filter(country => country.name && country.name !== 'UNKNOWN') // Filter out invalid countries
-                      .slice(0, 12)
-                      .map((country, index) => {
-                        // Get photo count from the country data
-                        const photoCount = country.photoCount || 0;
-
-                        return (
-                          <MotionBox
-                            key={country.code || index}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            bg={bgColor}
-                            color={headingColor}
-                            p={3}
-                            borderRadius="md"
-                            textAlign="center"
-                            border="1px solid"
-                            borderColor={borderColor}
-                            _hover={{
-                              bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
-                              transform: 'scale(1.05)'
-                            }}
-                            cursor="pointer"
-                            fontSize="sm"
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            justifyContent="center"
-                            minH="70px"
-                            gap={2}
-                          >
-                            {/* Flag */}
-                            <Box
-                              width="48px"
-                              height="36px"
-                              overflow="hidden"
-                            >
-                              <EnhancedFlag countryCode={country.code} />
-                            </Box>
-
-                            {/* Photo Count */}
-                            <HStack spacing={1} align="center">
-                              <Icon as={FaCamera} w={3} h={3} color="blue.400" />
-                              <Text fontSize="xs" fontWeight="bold" color={textColor}>
-                                {photoCount}
-                              </Text>
-                            </HStack>
-                          </MotionBox>
-                        );
-                      })}
-                    {countryNamesList.length > 12 && (
-                      <Box
-                        bg="gray.100"
-                        color="gray.600"
-                        p={3}
-                        borderRadius="md"
-                        textAlign="center"
-                        fontSize="sm"
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="center"
-                        justifyContent="center"
-                        gap={1}
-                      >
-                        <Text fontWeight="bold">+{countryNamesList.length - 12} more</Text>
-                        <HStack spacing={1}>
-                          <Icon as={FaCamera} w={3} h={3} color="gray.500" />
-                          <Text fontSize="xs">
-                            {countryNamesList
-                              .slice(12)
-                              .reduce((total, country) => total + (country.photoCount || 0), 0)} photos
-                          </Text>
-                        </HStack>
+                      <Box width="48px" height="36px" mx="auto" mb={2}>
+                        <EnhancedFlag countryCode={c.code} />
                       </Box>
-                    )}
-                  </SimpleGrid>
-                </>
-              ) : (
-                <VStack spacing={3} py={6} textAlign="center">
-                  <Icon as={FaRoute} w={10} h={10} color="gray.400" />
-                  <Text color={textColor} fontSize="md">
-                    Start uploading photos to see your countries! ✈️
-                  </Text>
-                </VStack>
-              )}
-            </Box>
-          </MotionBox>
+                      <HStack justify="center" spacing={1}>
+                        <Icon as={FaCamera} w={3} h={3} color="blue.400" />
+                        <Text fontSize="xs" color={textColor}>{c.photoCount}</Text>
+                      </HStack>
+                    </MotionBox>
+                  ))}
+                </SimpleGrid>
+              </>
+            ) : (
+              <VStack py={6}>
+                <Icon as={FaRoute} w={10} h={10} color="gray.400" />
+                <Text color={textColor} fontSize="sm">
+                  Start uploading photos to see your countries! ✈️
+                </Text>
+              </VStack>
+            )}
+          </Box>
+        </Box>
 
-          {/* Action Buttons */}
-          <Flex justify="center" gap={{ base: 2, sm: 4 }}>
-            <Button
-              colorScheme="blue"
-              size={{ base: "sm", sm: "md" }}
-              onClick={onClose}
-              leftIcon={<FaCompass />}
-              _hover={{ transform: 'translateY(-2px)' }}
-              transition="all 0.2s"
-              w={{ base: "full", sm: "auto" }}
-            >
-              Continue Exploring
-            </Button>
-          </Flex>
-        </MotionBox>
+        {/* Action */}
+        <Flex justify="center">
+          <Button
+            colorScheme="blue"
+            onClick={onClose}
+            leftIcon={<FaCompass />}
+            _hover={{ transform: "translateY(-2px)" }}
+            transition="all 0.2s"
+          >
+            Continue Exploring
+          </Button>
+        </Flex>
+
       </VStack>
     </BaseModal>
   );

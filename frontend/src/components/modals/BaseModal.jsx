@@ -45,8 +45,8 @@ const shimmer = keyframes`
 `;
 
 /**
- * Modern Base Modal Component - Inspired by big tech design systems
- * Features smooth animations, elegant micro-interactions, and premium aesthetics
+ * Modern Base Modal Component
+ * Texture only in Header, solid background in body/footer
  */
 const BaseModal = ({
   isOpen,
@@ -67,14 +67,10 @@ const BaseModal = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Enhanced theme-aware colors
+  // Theme-aware colors
   const bgColor = useColorModeValue(
-    variant === 'minimal'
-      ? "gray.50"
-      : "white", 
-    variant === 'minimal'
-      ? "gray.800"
-      : "black"
+    variant === 'minimal' ? "gray.50" : "white",
+    variant === 'minimal' ? "gray.800" : "black"
   );
 
   const borderColor = useColorModeValue(
@@ -86,11 +82,17 @@ const BaseModal = ({
       : "rgba(148, 163, 184, 0.1)"
   );
 
-
   const shimmerGradient = useColorModeValue(
     "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
     "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)"
   );
+
+  // ✅ Texture pattern for header only
+  const texturePatternLight =
+    'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="white"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23000" stroke-width="1" opacity="0.55"/%3E%3C/svg%3E';
+  const texturePatternDark =
+    'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="black"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23fff" stroke-width="0.8" opacity="0.35"/%3E%3C/svg%3E';
+  const texturePattern = useColorModeValue(texturePatternLight, texturePatternDark);
 
   useEffect(() => {
     if (isOpen) {
@@ -100,11 +102,10 @@ const BaseModal = ({
     }
   }, [isOpen]);
 
-  // Support responsive sizes - size can be object or string
-  // On mobile, always use "full" width
-  const responsiveSize = typeof size === 'object'
-    ? size
-    : { base: "full", sm: size, md: size, lg: size };
+  const responsiveSize =
+    typeof size === 'object'
+      ? size
+      : { base: "full", sm: size, md: size, lg: size };
 
   return (
     <Modal
@@ -121,9 +122,7 @@ const BaseModal = ({
         backdropFilter="blur(12px)"
         animation={`${overlayEnter} 0.2s ease-out`}
         transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-        _hover={{
-          bg: "blackAlpha.500"
-        }}
+        _hover={{ bg: "blackAlpha.500" }}
       />
 
       <ModalContent
@@ -132,40 +131,32 @@ const BaseModal = ({
         border="2px solid"
         borderColor={borderColor}
         borderRadius={{ base: "xl", sm: variant === 'minimal' ? "xl" : "2xl" }}
-        maxHeight={{ 
-          base: "calc(100vh - 3rem)", 
-          sm: maxHeight 
-        }}
-        minHeight={{ base: "auto", sm: "auto" }}
+        maxHeight={{ base: "calc(100vh - 3rem)", sm: maxHeight }}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         mt={{ base: 6, sm: "auto" }}
         mb={{ base: 6, sm: "auto" }}
         animation={`${modalEnter} 0.3s cubic-bezier(0.4, 0, 0.2, 1)`}
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         position="relative"
-        h={{ base: "auto", sm: "auto" }}
-        _before={showShimmer ? {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "2px",
-          background: shimmerGradient,
-          backgroundSize: "200% 100%",
-          animation: `${shimmer} 2s infinite`,
-          zIndex: 1
-        } : {}}
+        boxShadow={useColorModeValue(
+          variant === 'premium'
+            ? "0 10px 35px rgba(0, 0, 0, 0.15)"   // Light mode premium
+            : variant === 'minimal'
+              ? "0 6px 20px rgba(0, 0, 0, 0.06)"   // Light mode minimal
+              : "0 8px 30px rgba(0, 0, 0, 0.1)",   // Light mode default
+          variant === 'premium'
+            ? "0 10px 45px rgba(0, 0, 0, 0.75)"  // Dark mode premium
+            : variant === 'minimal'
+              ? "0 6px 25px rgba(0, 0, 0, 0.5)"    // Dark mode minimal
+              : "0 8px 40px rgba(0, 0, 0, 0.6)"    // Dark mode default
+        )}
         _hover={{
           transform: { base: "none", sm: "translateY(-4px) scale(1.01)" },
           borderColor: useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(59, 130, 246, 0.2)")
         }}
-        _focus={{
-          outline: "none"
-        }}
+        _focus={{ outline: "none" }}
       >
-        {/* Modern Header */}
+        {/* ✅ Header with texture */}
         <ModalHeader
           display="flex"
           alignItems="center"
@@ -179,7 +170,11 @@ const BaseModal = ({
           pt={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
           px={{ base: 4, sm: 6 }}
           position="relative"
-          bg={useColorModeValue("rgba(209, 212, 215, 0.8)", "rgba(0, 0, 0, 0.8)")}
+          bg={useColorModeValue("rgba(255,255,255,0.8)", "rgba(0,0,0,0.8)")}
+          backgroundImage={texturePattern}
+          backgroundRepeat="repeat"
+          backgroundSize="6px 6px"
+          backgroundBlendMode="overlay"
           backdropFilter="blur(10px)"
           _after={variant === 'minimal' ? {} : {
             content: '""',
@@ -227,7 +222,7 @@ const BaseModal = ({
           </Text>
         </ModalHeader>
 
-        {/* Modern Close Button */}
+        {/* Close Button */}
         {showCloseButton && (
           <ModalCloseButton
             size="md"
@@ -252,7 +247,7 @@ const BaseModal = ({
           />
         )}
 
-        {/* Modern Body */}
+        {/* Body */}
         <ModalBody
           px={{ base: 4, sm: 6 }}
           py={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
@@ -264,7 +259,6 @@ const BaseModal = ({
           backdropFilter="blur(5px)"
           css={{
             'touch-action': 'pan-y',
-            // Custom scrollbar
             '&::-webkit-scrollbar': {
               width: '8px',
             },
@@ -299,7 +293,7 @@ const BaseModal = ({
           {children}
         </ModalBody>
 
-        {/* Modern Footer */}
+        {/* Footer */}
         {footer && (
           <ModalFooter
             borderTop={variant === 'minimal' ? "none" : "1px solid"}
@@ -309,18 +303,6 @@ const BaseModal = ({
             pb={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
             bg={useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(0, 0, 0, 0.6)")}
             backdropFilter="blur(8px)"
-            position="relative"
-            _before={variant === 'minimal' ? {} : {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "40px",
-              height: "1px",
-              background: useColorModeValue("gray.200", "gray.600"),
-              borderRadius: "full"
-            }}
           >
             {footer}
           </ModalFooter>

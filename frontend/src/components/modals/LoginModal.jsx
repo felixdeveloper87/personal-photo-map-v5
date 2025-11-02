@@ -14,67 +14,57 @@ import {
   useColorModeValue,
   Divider,
   useToast,
-  InputLeftElement
+  InputLeftElement,
 } from '@chakra-ui/react';
-import { FaEye, FaEyeSlash, FaSignInAlt, FaUser, FaLock, FaEnvelope, FaGoogle, FaGithub } from 'react-icons/fa';
+import {
+  FaEye,
+  FaEyeSlash,
+  FaSignInAlt,
+  FaUser,
+  FaLock,
+  FaEnvelope,
+  FaGoogle,
+  FaGithub,
+} from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
 import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
 import ResetPasswordModal from './ResetPasswordModal';
 import { buildApiUrl } from '../../utils/apiConfig';
 
-/**
- * Professional Login Modal
- * Provides a modern and secure login experience
- */
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const navigate = useNavigate();
   const toast = useToast();
   const { login } = useContext(AuthContext);
-  
-  // Form states
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  // Theme-aware colors
-  const textColor = useColorModeValue("gray.700", "gray.200");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
-  const bgColor = useColorModeValue("gray.50", "gray.700");
+  const textColor = useColorModeValue('gray.700', 'gray.100');
+  const borderColor = useColorModeValue('rgba(0,0,0,0.08)', 'rgba(255,255,255,0.12)');
+  const cardBg = useColorModeValue('rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)');
+  const accentColor = useColorModeValue('blue.500', 'blue.300');
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: "" }));
-    }
+    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const validateForm = () => {
     const errors = {};
-
-    if (!formData.email) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required";
-    }
-
+    if (!formData.email) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Please enter a valid email';
+    if (!formData.password) errors.password = 'Password is required';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setIsLoading(true);
     try {
       const response = await fetch(buildApiUrl('/api/auth/login'), {
@@ -83,72 +73,54 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage || 'Login failed');
-      }
+      if (!response.ok) throw new Error(await response.text() || 'Login failed');
 
       const data = await response.json();
       login(data);
-      
       onClose();
       navigate('/');
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
-        status: "error",
+        title: 'Login failed',
+        description: error.message || 'Please check your credentials and try again.',
+        status: 'error',
         duration: 5000,
         isClosable: true,
-        position: "top-right",
+        position: 'top-right',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialLogin = (provider) => {
+  const handleSocialLogin = provider => {
     toast({
-      title: "Coming Soon! 🚀",
-      description: `${provider} login will be available in the next update.`,
-      status: "info",
+      title: 'Coming Soon! 🚀',
+      description: `${provider} login will be available soon.`,
+      status: 'info',
       duration: 3000,
       isClosable: true,
-      position: "top-right",
+      position: 'top-right',
     });
   };
 
-  const handleForgotPassword = () => setShowResetModal(true);
-  const handleCloseResetModal = () => setShowResetModal(false);
-
   const footer = (
-    <VStack spacing={{ base: 2, sm: 3 }} w="full">
+    <VStack spacing={2.5} w="full">
       <ModalButton
         variant="primary"
         onClick={handleSubmit}
         isLoading={isLoading}
         leftIcon={<FaSignInAlt />}
         w="full"
-        size={{ base: "md", sm: "lg" }}
       >
         Sign In
       </ModalButton>
-      
-      <HStack spacing={{ base: 2, sm: 3 }} w="full">
-        <ModalButton 
-          variant="outline" 
-          onClick={handleForgotPassword} 
-          w="full"
-          size={{ base: "sm", sm: "md" }}
-        >
+
+      <HStack spacing={2} w="full">
+        <ModalButton variant="outline" onClick={() => setShowResetModal(true)} w="full">
           Forgot Password?
         </ModalButton>
-        <ModalButton 
-          variant="secondary" 
-          onClick={onSwitchToRegister} 
-          w="full"
-          size={{ base: "sm", sm: "md" }}
-        >
+        <ModalButton variant="secondary" onClick={onSwitchToRegister} w="full">
           Create Account
         </ModalButton>
       </HStack>
@@ -163,44 +135,53 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         title="Welcome Back"
         icon={FaUser}
         footer={footer}
-        size={{ base: "full", sm: "md", md: "lg" }}
-        variant="premium"
+        size={{ base: 'full', sm: 'md', md: 'lg' }}
         closeOnOverlayClick={false}
       >
-        <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch">
+        <VStack spacing={5} align="stretch">
+          {/* Intro card */}
           <Box
             textAlign="center"
-            p={{ base: 3, sm: 4 }}
-            borderRadius="lg"
-            bg={useColorModeValue("blue.50", "blue.900")}
+            p={5}
+            borderRadius="xl"
+            bg={cardBg}
+            backdropFilter="blur(8px)"
             border="1px solid"
-            borderColor={useColorModeValue("blue.200", "blue.700")}
+            borderColor={borderColor}
+            boxShadow={useColorModeValue(
+              '0 1px 3px rgba(0,0,0,0.05)',
+              '0 1px 3px rgba(255,255,255,0.05)'
+            )}
           >
-            <Text fontSize={{ base: "sm", sm: "md" }} color={useColorModeValue("blue.700", "blue.200")}>
+            <Text fontSize="md" color={useColorModeValue('blue.700', 'blue.200')}>
               Sign in to continue your photo mapping journey
             </Text>
           </Box>
 
-          <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
-            <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="semibold" color={textColor} textAlign="center">
+          {/* Social login */}
+          <VStack spacing={3} align="stretch">
+            <Text
+              fontSize="sm"
+              fontWeight="semibold"
+              color={textColor}
+              textAlign="center"
+            >
               Or continue with
             </Text>
-            <HStack spacing={{ base: 2, sm: 3 }} flexDirection={{ base: "column", sm: "row" }}>
+            <HStack spacing={3} flexDirection={{ base: 'column', sm: 'row' }}>
               <ModalButton
                 variant="outline"
-                onClick={() => handleSocialLogin("Google")}
+                onClick={() => handleSocialLogin('Google')}
                 leftIcon={<FaGoogle />}
                 w="full"
-                size={{ base: "md", sm: "sm" }}
               >
                 Google
               </ModalButton>
               <ModalButton
                 variant="outline"
-                onClick={() => handleSocialLogin("GitHub")}
+                onClick={() => handleSocialLogin('GitHub')}
                 leftIcon={<FaGithub />}
                 w="full"
-                size={{ base: "md", sm: "sm" }}
               >
                 GitHub
               </ModalButton>
@@ -209,8 +190,9 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
           <Divider />
 
+          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <VStack spacing={{ base: 3, sm: 4 }} align="stretch">
+            <VStack spacing={4} align="stretch">
               <FormControl isInvalid={!!formErrors.email}>
                 <FormLabel color={textColor} fontWeight="semibold">
                   Email Address
@@ -223,12 +205,15 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                     type="email"
                     placeholder="Enter your email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     borderRadius="lg"
+                    border="1px solid"
                     borderColor={borderColor}
+                    bg={cardBg}
+                    backdropFilter="blur(8px)"
                     _focus={{
-                      borderColor: "blue.400",
-                      boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.6)"
+                      borderColor: accentColor,
+                      boxShadow: `0 0 0 1px ${accentColor}`,
                     }}
                   />
                 </InputGroup>
@@ -244,22 +229,25 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                     <FaLock color="gray.400" />
                   </InputLeftElement>
                   <Input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={e => handleInputChange('password', e.target.value)}
                     borderRadius="lg"
+                    border="1px solid"
                     borderColor={borderColor}
+                    bg={cardBg}
+                    backdropFilter="blur(8px)"
                     _focus={{
-                      borderColor: "blue.400",
-                      boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.6)"
+                      borderColor: accentColor,
+                      boxShadow: `0 0 0 1px ${accentColor}`,
                     }}
                   />
                   <InputRightElement>
                     <Box
                       cursor="pointer"
                       color="gray.500"
-                      _hover={{ color: "gray.700" }}
+                      _hover={{ color: 'gray.700' }}
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -271,14 +259,20 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             </VStack>
           </form>
 
+          {/* Security note */}
           <Box
-            p={{ base: 2, sm: 3 }}
+            p={3}
             borderRadius="lg"
-            bg={bgColor}
+            bg={cardBg}
             border="1px solid"
             borderColor={borderColor}
+            backdropFilter="blur(8px)"
           >
-            <Text fontSize={{ base: "2xs", sm: "xs" }} color={useColorModeValue("gray.600", "gray.400")} textAlign="center">
+            <Text
+              fontSize="xs"
+              color={useColorModeValue('gray.600', 'gray.400')}
+              textAlign="center"
+            >
               🔒 Your data is encrypted and secure. We never store your password.
             </Text>
           </Box>
@@ -287,21 +281,19 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
       <ResetPasswordModal
         isOpen={showResetModal}
-        onClose={handleCloseResetModal}
-        onReset={(data) => {
-          handleCloseResetModal();
+        onClose={() => setShowResetModal(false)}
+        onReset={() => {
+          setShowResetModal(false);
           toast({
-            title: "Reset Email Sent",
-            description: "Check your email for password reset instructions.",
-            status: "success",
-            duration: 5000,
+            title: 'Reset Email Sent',
+            description: 'Check your inbox for reset instructions.',
+            status: 'success',
+            duration: 4000,
             isClosable: true,
-            position: "top-right",
+            position: 'top-right',
           });
         }}
         isLoading={false}
-        error={null}
-        success={null}
       />
     </>
   );

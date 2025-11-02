@@ -15,7 +15,6 @@ import {
   AlertDescription,
   Spinner,
   Badge,
-  Flex,
   useToast
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -23,71 +22,41 @@ import { CountriesContext } from '../../context/CountriesContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseModal from '../modals/BaseModal';
 import ModalButton from '../modals/ModalButton';
-import { FaSearch, FaGlobe, FaCalendar, FaInfoCircle} from 'react-icons/fa';
+import { FaSearch, FaGlobe, FaCalendar, FaInfoCircle } from 'react-icons/fa';
 
-// Motion components
 const MotionBox = motion(Box);
 const MotionVStack = motion(VStack);
 
-/**
- * SearchForm Component
- *
- * Opens a modal to allow the user to pick a country or year, then either:
- * - Navigates to /countries/[countryId]?year=[year], or
- * - Navigates to /timeline/[year], if only a year is selected.
- *
- * @param {function} onSearch - A callback function triggered when a country is selected (extra logic if needed).
- * @param {function} onClose - Optional callback function to be called when the modal is closed.
- * @returns {JSX.Element}
- */
 export default function SearchForm({ onSearch, onClose: externalOnClose }) {
-  // Chakra UI modal controls
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
-  // Retrieve country data and available years from context
   const { countriesWithPhotos, availableYears } = useContext(CountriesContext);
 
-  // Local states for selected country and year
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
-
-  // React Router navigation
   const navigate = useNavigate();
 
-  // Theme-aware colors
-  const textColor = useColorModeValue('gray.700', 'white');
-  const borderColor = useColorModeValue('gray.200', 'white');
-  const bgColor = useColorModeValue('gray.50', 'black');
+  // 🎨 Theme-aware colors
+  const cardBg = useColorModeValue('rgba(255,255,255,0.7)', 'rgba(0,0,0,0.45)');
+  const borderColor = useColorModeValue('rgba(0,0,0,0.1)', 'rgba(255,255,255,0.15)');
+  const textColor = useColorModeValue('gray.800', 'gray.100');
   const accentColor = useColorModeValue('blue.500', 'blue.400');
   const successColor = useColorModeValue('green.500', 'green.400');
 
-  // Clear validation error when selections change
-  // Also clear the other selection to enforce single choice
-  const handleCountryChange = (value) => {
-    setSelectedCountry(value);
-    if (value) {
-      setSelectedYear(''); // Clear year when country is selected
-    }
+  const handleCountryChange = (v) => {
+    setSelectedCountry(v);
+    if (v) setSelectedYear('');
     setValidationError('');
   };
 
-  const handleYearChange = (value) => {
-    setSelectedYear(value);
-    if (value) {
-      setSelectedCountry(''); // Clear country when year is selected
-    }
+  const handleYearChange = (v) => {
+    setSelectedYear(v);
+    if (v) setSelectedCountry('');
     setValidationError('');
   };
 
-  /**
-   * Handles the form submission when the user clicks "Search".
-   * - If a country is selected, call onSearch (if provided).
-   * - If only a year is selected, navigate to /timeline/[year] with year as route parameter.
-   * - If neither is selected, prompt the user to pick an option.
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -95,56 +64,47 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
 
     try {
       if (selectedCountry) {
-        if (onSearch) {
-          await onSearch({ country: selectedCountry });
-        }
+        onSearch?.({ country: selectedCountry });
         toast({
-          title: "Search initiated",
-          description: "Redirecting to country details...",
-          status: "success",
+          title: 'Search initiated',
+          description: 'Redirecting to country details...',
+          status: 'success',
           duration: 2000,
           isClosable: true,
         });
       } else if (selectedYear) {
         navigate(`/timeline/${selectedYear}`);
         toast({
-          title: "Timeline search",
+          title: 'Timeline search',
           description: `Redirecting to ${selectedYear} timeline...`,
-          status: "success",
+          status: 'success',
           duration: 2000,
           isClosable: true,
         });
       } else {
-        setValidationError('Please select either a country or a year to continue.');
+        setValidationError('Please select either a country or a year.');
+        setIsLoading(false);
         return;
       }
 
-      // Close the modal after a successful search
       setTimeout(() => {
         onClose();
         setIsLoading(false);
-        // Chamar função externa se fornecida
-        if (externalOnClose) {
-          externalOnClose();
-        }
-      }, 1000);
-    } catch (error) {
-      setValidationError('An error occurred during the search. Please try again.');
+        externalOnClose?.();
+      }, 800);
+    } catch {
+      setValidationError('An error occurred during the search.');
       setIsLoading(false);
     }
   };
 
-  // Reset form when modal closes
   const handleClose = () => {
     setSelectedCountry('');
     setSelectedYear('');
     setValidationError('');
     setIsLoading(false);
     onClose();
-    // Chamar função externa se fornecida
-    if (externalOnClose) {
-      externalOnClose();
-    }
+    externalOnClose?.();
   };
 
   const hasSelection = selectedCountry || selectedYear;
@@ -152,24 +112,17 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
 
   return (
     <>
-      {/* Hidden trigger button that can be clicked by external components */}
-      <Box
-        data-search-trigger
-        onClick={onOpen}
-        display="none"
-        aria-hidden="true"
-      />
+      <Box data-search-trigger onClick={onOpen} display="none" />
 
-      {/* Modal for selecting a country/year */}
       <BaseModal
         isOpen={isOpen}
         onClose={handleClose}
         title="Search Photos"
         icon={FaSearch}
-        size={{ base: "sm", sm: "md", md: "lg" }}
+        size={{ base: 'sm', sm: 'md', md: 'lg' }}
       >
-        <MotionVStack 
-          spacing={6} 
+        <MotionVStack
+          spacing={6}
           align="stretch"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,16 +132,17 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
           <Alert
             status="info"
             variant="subtle"
-            borderRadius="lg"
-            bg={useColorModeValue("blue.50", "blue.900")}
+            borderRadius="xl"
+            bg={useColorModeValue('rgba(219,234,254,0.6)', 'rgba(30,58,138,0.4)')}
             border="1px solid"
-            borderColor={borderColor}
+            borderColor={useColorModeValue('rgba(59,130,246,0.3)', 'rgba(147,197,253,0.3)')}
+            backdropFilter="blur(6px)"
           >
             <AlertIcon />
             <Box>
-              <AlertTitle>Search Options</AlertTitle>
-              <AlertDescription>
-                Choose <strong>either</strong> a country to see photos from that location, <strong>or</strong> select a year to browse photos by timeline. You can only select one option at a time.
+              <AlertTitle fontWeight="semibold">Search Options</AlertTitle>
+              <AlertDescription fontSize="sm">
+                Choose <strong>either</strong> a country to see photos from that location, or a year to browse by timeline.
               </AlertDescription>
             </Box>
           </Alert>
@@ -198,140 +152,164 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
             <MotionBox
               p={4}
               borderRadius="xl"
-              bg={bgColor}
-              border="2px solid"
+              bg={cardBg}
+              border="1px solid"
               borderColor={selectedCountry ? successColor : borderColor}
+              backdropFilter="blur(10px)"
               opacity={selectedYear ? 0.6 : 1}
-              _hover={selectedYear ? {} : { 
-                borderColor: selectedCountry ? successColor : accentColor,
-                transform: "translateY(-2px)",
-                shadow: "lg"
-              }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: selectedYear ? 0.6 : 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
+              _hover={
+                selectedYear
+                  ? {}
+                  : {
+                      borderColor: accentColor,
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(59,130,246,0.25)',
+                    }
+              }
+              transition="all 0.3s ease"
             >
               <HStack spacing={3} mb={3}>
                 <Box
                   p={2}
-                  borderRadius="lg"
-                  bg={useColorModeValue("blue.100", "blue.900")}
-                  color={useColorModeValue("blue.600", "blue.300")}
+                  borderRadius="md"
+                  bgGradient="linear(135deg, blue.400, blue.600)"
+                  color="white"
                 >
-                  <FaGlobe size={16} />
+                  <FaGlobe size={14} />
                 </Box>
                 <Text fontWeight="semibold" color={textColor}>
                   Country
                 </Text>
-                {selectedCountry && (
-                  <Badge colorScheme="green" variant="subtle">
-                    Selected
-                  </Badge>
-                )}
+                {selectedCountry && <Badge colorScheme="green">Selected</Badge>}
               </HStack>
-              
-              <Tooltip 
-                label="Select a country to view photos from that location"
-                placement="top"
-                hasArrow
+              <Select
+                placeholder={
+                  selectedYear
+                    ? 'Clear year selection to enable country'
+                    : 'Choose a country...'
+                }
+                value={selectedCountry}
+                onChange={(e) => handleCountryChange(e.target.value)}
+                borderRadius="lg"
+                borderColor={borderColor}
+                bg={useColorModeValue('rgba(255,255,255,0.7)', 'rgba(255,255,255,0.08)')}
+                color={useColorModeValue('gray.800', 'gray.100')}
+                _focus={{
+                  borderColor: accentColor,
+                  boxShadow: `0 0 0 2px ${accentColor}40`,
+                }}
+                _hover={{
+                  borderColor: accentColor,
+                  transform: 'translateY(-1px)',
+                  boxShadow: useColorModeValue(
+                    '0 2px 8px rgba(59,130,246,0.2)',
+                    '0 2px 8px rgba(59,130,246,0.3)'
+                  ),
+                }}
+                transition="all 0.2s ease"
+                disabled={!!selectedYear}
+                sx={{
+                  option: {
+                    bg: useColorModeValue('white', '#1a202c'),
+                    color: useColorModeValue('gray.800', 'gray.100'),
+                    _hover: { bg: useColorModeValue('blue.50', 'blue.700') },
+                    _selected: { bg: useColorModeValue('blue.100', 'blue.600') },
+                  },
+                }}
               >
-                <Select
-                  placeholder={selectedYear ? "Clear year selection to enable country" : "Choose a country..."}
-                  value={selectedCountry}
-                  onChange={(e) => handleCountryChange(e.target.value)}
-                  size="lg"
-                  borderRadius="lg"
-                  borderColor={selectedCountry ? successColor : borderColor}
-                  _focus={{ 
-                    borderColor: accentColor, 
-                    boxShadow: `0 0 0 3px ${accentColor}20` 
-                  }}
-                  _hover={{ borderColor: accentColor }}
-                  transition="all 0.2s ease"
-                  disabled={!!selectedYear}
-                >
-                  {(countriesWithPhotos || []).length > 0 ? (
-                    countriesWithPhotos.map((c) => (
-                      <option key={c.countryId || c.id} value={c.countryId || c.id}>
-                        {c.countryName || c.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>No countries available yet</option>
-                  )}
-                </Select>
-              </Tooltip>
+                {(countriesWithPhotos || []).length > 0 ? (
+                  countriesWithPhotos.map((c) => (
+                    <option key={c.countryId || c.id} value={c.countryId || c.id}>
+                      {c.countryName || c.name}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No countries available yet</option>
+                )}
+              </Select>
             </MotionBox>
 
-            <Divider />
+            <Divider opacity={0.3} my={4} />
 
             {/* Year Selection */}
             <MotionBox
               p={4}
               borderRadius="xl"
-              bg={bgColor}
-              border="2px solid"
+              bg={cardBg}
+              border="1px solid"
               borderColor={selectedYear ? successColor : borderColor}
+              backdropFilter="blur(10px)"
               opacity={selectedCountry ? 0.6 : 1}
-              _hover={selectedCountry ? {} : { 
-                borderColor: selectedYear ? successColor : accentColor,
-                transform: "translateY(-2px)",
-                shadow: "lg"
-              }}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: selectedCountry ? 0.6 : 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
+              _hover={
+                selectedCountry
+                  ? {}
+                  : {
+                      borderColor: accentColor,
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(59,130,246,0.25)',
+                    }
+              }
+              transition="all 0.3s ease"
             >
               <HStack spacing={3} mb={3}>
                 <Box
                   p={2}
-                  borderRadius="lg"
-                  bg={useColorModeValue("green.100", "green.900")}
-                  color={useColorModeValue("green.600", "green.300")}
+                  borderRadius="md"
+                  bgGradient="linear(135deg, green.400, teal.500)"
+                  color="white"
                 >
-                  <FaCalendar size={16} />
+                  <FaCalendar size={14} />
                 </Box>
                 <Text fontWeight="semibold" color={textColor}>
                   Year
                 </Text>
-                {selectedYear && (
-                  <Badge colorScheme="green" variant="subtle">
-                    Selected
-                  </Badge>
-                )}
+                {selectedYear && <Badge colorScheme="green">Selected</Badge>}
               </HStack>
-              
-              <Tooltip 
-                label="Select a year to browse photos from that time period"
-                placement="top"
-                hasArrow
+              <Select
+                placeholder={
+                  selectedCountry
+                    ? 'Clear country selection to enable year'
+                    : 'Choose a year...'
+                }
+                value={selectedYear}
+                onChange={(e) => handleYearChange(e.target.value)}
+                borderRadius="lg"
+                borderColor={borderColor}
+                bg={useColorModeValue('rgba(255,255,255,0.7)', 'rgba(255,255,255,0.08)')}
+                color={useColorModeValue('gray.800', 'gray.100')}
+                _focus={{
+                  borderColor: accentColor,
+                  boxShadow: `0 0 0 2px ${accentColor}40`,
+                }}
+                _hover={{
+                  borderColor: accentColor,
+                  transform: 'translateY(-1px)',
+                  boxShadow: useColorModeValue(
+                    '0 2px 8px rgba(59,130,246,0.2)',
+                    '0 2px 8px rgba(59,130,246,0.3)'
+                  ),
+                }}
+                transition="all 0.2s ease"
+                disabled={!!selectedCountry}
+                sx={{
+                  option: {
+                    bg: useColorModeValue('white', '#1a202c'),
+                    color: useColorModeValue('gray.800', 'gray.100'),
+                    _hover: { bg: useColorModeValue('blue.50', 'blue.700') },
+                    _selected: { bg: useColorModeValue('blue.100', 'blue.600') },
+                  },
+                }}
               >
-                <Select
-                  placeholder={selectedCountry ? "Clear country selection to enable year" : "Choose a year..."}
-                  value={selectedYear}
-                  onChange={(e) => handleYearChange(e.target.value)}
-                  size="lg"
-                  borderRadius="lg"
-                  borderColor={selectedYear ? successColor : borderColor}
-                  _focus={{ 
-                    borderColor: accentColor, 
-                    boxShadow: `0 0 0 3px ${accentColor}20` 
-                  }}
-                  _hover={{ borderColor: accentColor }}
-                  transition="all 0.2s ease"
-                  disabled={!!selectedCountry}
-                >
-                  {(availableYears || []).length > 0 ? (
-                    availableYears.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>No years available</option>
-                  )}
-                </Select>
-              </Tooltip>
+                {(availableYears || []).length > 0 ? (
+                  availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No years available</option>
+                )}
+              </Select>
             </MotionBox>
           </form>
 
@@ -339,23 +317,22 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
           <AnimatePresence>
             {validationError && (
               <MotionBox
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                overflow="hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
                 <Alert
                   status="warning"
                   variant="subtle"
-                  borderRadius="lg"
-                  bg={useColorModeValue("orange.50", "orange.900")}
+                  borderRadius="xl"
+                  bg={useColorModeValue('rgba(254,243,199,0.6)', 'rgba(180,83,9,0.35)')}
                   border="1px solid"
-                  borderColor={useColorModeValue("orange.200", "orange.700")}
+                  borderColor={useColorModeValue('orange.300', 'orange.700')}
+                  backdropFilter="blur(8px)"
                 >
                   <AlertIcon />
                   <Box>
-                    <AlertTitle>Please fix the following:</AlertTitle>
+                    <AlertTitle>Warning</AlertTitle>
                     <AlertDescription>{validationError}</AlertDescription>
                   </Box>
                 </Alert>
@@ -367,48 +344,44 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
           {hasSelection && (
             <MotionBox
               p={4}
-              borderRadius="lg"
-              bg={useColorModeValue("green.50", "green.900")}
+              borderRadius="xl"
+              bg={useColorModeValue('rgba(220,252,231,0.7)', 'rgba(21,128,61,0.35)')}
               border="1px solid"
-              borderColor={useColorModeValue("green.200", "green.700")}
+              borderColor={useColorModeValue('green.300', 'green.700')}
+              backdropFilter="blur(8px)"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               <HStack spacing={2} justify="center">
                 <FaInfoCircle color={successColor} />
-                <Text fontSize="sm" color={useColorModeValue("green.700", "green.300")}>
-                  {selectedCountry 
-                    ? `Searching for photos from ${countriesWithPhotos.find(c => c.id === selectedCountry)?.name}`
-                    : `Browsing photos from ${selectedYear}`
-                  }
+                <Text fontSize="sm" color={useColorModeValue('green.700', 'green.200')}>
+                  {selectedCountry
+                    ? `Searching for photos from ${
+                        countriesWithPhotos.find((c) => c.id === selectedCountry)?.name
+                      }`
+                    : `Browsing photos from ${selectedYear}`}
                 </Text>
               </HStack>
             </MotionBox>
           )}
         </MotionVStack>
 
-        {/* Footer with action buttons */}
+        {/* Footer */}
         <HStack spacing={3} justify="flex-end" mt={6}>
-          <ModalButton 
-            variant="secondary" 
-            onClick={handleClose}
-            size="lg"
-            disabled={isLoading}
-          >
+          <ModalButton variant="secondary" onClick={handleClose} size="lg" disabled={isLoading}>
             Cancel
           </ModalButton>
-          <ModalButton 
-            type="submit" 
+          <ModalButton
+            type="submit"
             form="search-form"
             variant="primary"
             size="lg"
             leftIcon={isLoading ? <Spinner size="sm" /> : <FaSearch />}
             isLoading={isLoading}
-            loadingText="Searching..."
             disabled={!isFormValid}
           >
-            {isLoading ? "Searching..." : "Search"}
+            {isLoading ? 'Searching...' : 'Search'}
           </ModalButton>
         </HStack>
       </BaseModal>
