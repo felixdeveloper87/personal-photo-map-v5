@@ -127,14 +127,14 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   );
 
   // Responsiveness
-  const containerPy = useBreakpointValue({ base: 6, sm: 8, md: 10, lg: 12 });
+  const containerPy = useBreakpointValue({ base: 6, sm: 6, md: 8 });
   const containerPx = useBreakpointValue({ base: 4, sm: 6, md: 8 });
   const ctaSize = useBreakpointValue({ base: 'sm', sm: 'md', md: 'lg' });
   const maxWidth = useBreakpointValue({
     base: '100%',
     sm: '95%',
     md: '90%',
-    lg: '900px',
+    lg: '1800px',
   });
 
   return (
@@ -150,7 +150,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         borderRadius="2xl"
         position="relative"
         overflow="hidden"
-        mb={8}
         boxShadow={heroShadow}
         border="1px solid"
         borderColor={borderColor}
@@ -175,11 +174,11 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
               </Alert>
             </Box>
           ) : wikipediaData?.summary ? (
-            <Box mb={8} maxW="900px" mx="auto">
+            <Box mb={8} maxW="1800px">
               <Box
                 bg={cardBg}
                 borderRadius="2xl"
-                p={6}
+                p={5}
                 border="1px solid"
                 borderColor={borderColor}
                 boxShadow={wikiSummaryCardShadow}
@@ -211,14 +210,15 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   <Box
                     display="flex"
                     alignItems="center"
-                    mb={5}
+                    mb={3}
                     p={4}
                     bg={wikiBoxBg}
                     borderRadius="xl"
-                    border="1px solid"
+                    border="2px solid"
                     borderColor={wikiBoxBorderColor}
+                    flexDirection="column"
                   >
-                    <HStack spacing={3} align="center" w="100%">
+                    <HStack spacing={3} align="center" w="100%" mb={3}>
                       <Box
                         p={2}
                         bg={wikiSmallIconBg}
@@ -245,25 +245,26 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                         </Text>
                       </HStack>
                     </HStack>
+
+                    <Text
+                      fontSize="md"
+                      color={textColor}
+                      lineHeight="1.7"
+                      textAlign="justify"
+                      px={1}
+                    >
+                      {wikipediaData.summary}
+                    </Text>
                   </Box>
 
                   <Divider borderColor={borderColor} />
-
-                  <Text
-                    fontSize="md"
-                    color={textColor}
-                    lineHeight="1.7"
-                    textAlign="justify"
-                  >
-                    {wikipediaData.summary}
-                  </Text>
 
                   <Box
                     mt={4}
                     p={4}
                     bg={wikiBoxBg}
                     borderRadius="xl"
-                    border="1px solid"
+                    border="2px solid"
                     borderColor={wikiBoxBorderColor}
                   >
                     <Box
