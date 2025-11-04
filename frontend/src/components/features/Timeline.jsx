@@ -350,9 +350,9 @@ const Timeline = ({ selectedYear }) => {
         </Box>
 
         {/* Cache Status */}
-        <Box px={{ base: 2, sm: 3, md: 4 }}>
+        {/* <Box px={{ base: 2, sm: 3, md: 4 }}>
           <CacheStatus />
-        </Box>
+        </Box> */}
 
         {/* View Toggle - Above Photos */}
         {sortedYears.length > 0 && (

@@ -593,9 +593,9 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       </Box>
 
       {/* Cache Status */}
-      <Box mb={4} px={{ base: 2, sm: 3, md: 4 }}>
+      {/* <Box mb={4} px={{ base: 2, sm: 3, md: 4 }}>
         <CacheStatus />
-      </Box>
+      </Box> */}
 
       {/* Listagem de imagens */}
       {((selectedYear || selectedAlbum || showAllSelected) && isLoadingImages) ||
