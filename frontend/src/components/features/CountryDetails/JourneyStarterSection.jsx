@@ -21,6 +21,7 @@ import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal'
 import { fetchWikipediaData } from './services';
 import { getName } from 'i18n-iso-countries';
 import darkThemeImage from '../../../assets/darkTheme.jpg';
+import lightThemeImage from '../../../assets/lightTheme.jpg';
 
 const MotionButton = motion.create(Button);
 
@@ -112,6 +113,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   
   // Overlay background for better text readability
   const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
+  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
 
   return (
     <>
@@ -120,8 +122,8 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         zIndex={2}
         maxW={maxWidth}
         mx="auto"
-        bg={colorMode === 'light' ? cardBg : 'transparent'}
-        bgImage={colorMode === 'dark' ? `url(${darkThemeImage})` : 'none'}
+        bg="transparent"
+        bgImage={backgroundImage}
         bgSize="cover"
         bgPosition="center"
         bgRepeat="no-repeat"
@@ -135,7 +137,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          bg: colorMode === 'dark' ? overlayBg : 'transparent',
+          bg: overlayBg,
           zIndex: 0,
           borderRadius: '2xl',
         }}
