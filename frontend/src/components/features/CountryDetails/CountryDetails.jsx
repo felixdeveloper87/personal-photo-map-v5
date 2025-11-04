@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, IconButton, useColorModeValue, Flex, Divider, useToast } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { Box, useColorModeValue, Flex, Divider, useToast } from '@chakra-ui/react';
 import { useState, useEffect, useContext } from 'react';
 import moment from 'moment-timezone';
 import { CountriesContext } from '../../../context/CountriesContext';
@@ -43,8 +42,8 @@ const CountryDetails = () => {
   }
 
   // Color mode values
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const cardBg = useColorModeValue('white', 'gray.700');
+  const bgColor = useColorModeValue('white', 'black');
+  const cardBg = useColorModeValue('white', 'black');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
 
@@ -141,20 +140,6 @@ const CountryDetails = () => {
       console.log('Economic/Social indicators loaded for', countryId, indicatorsData);
     }
   }, [indicatorsData, countryId]);
-
-  // Show success toast when country data is loaded
-  useEffect(() => {
-    if (countryInfo && !countryLoading) {
-      const countryName = countryInfo.nativeName || countryId?.toUpperCase();
-      // toast({
-      //   title: `Welcome to ${countryName}!`,
-      //   description: "Country information loaded successfully.",
-      //   status: "success",
-      //   duration: 2000,
-      //   isClosable: true,
-      // });
-    }
-  }, [countryInfo, countryLoading, countryId, toast]);
 
   if (countryLoading) return <LoadingState mutedTextColor={mutedTextColor} />;
   if (countryError) return null;

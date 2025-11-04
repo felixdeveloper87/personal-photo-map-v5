@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import PhotoGallery from './PhotoGallery';
-import JourneyStarterSection from './JourneyStarterSection';
+import JourneyStarterSection from '../CountryDetails/JourneyStarterSection';
 import { CountriesContext } from '../../../context/CountriesContext';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';

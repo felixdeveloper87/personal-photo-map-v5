@@ -51,7 +51,7 @@ export default function HeroHeader({
 
   const headerBg = useColorModeValue(
     'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-    'linear-gradient(135deg,rgb(11, 12, 13) 0%,rgb(4, 5, 6) 100%)'
+    'linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(0, 0, 0) 100%)'
   )
 
   // Linha principal (País • Capital • Hora • Data)
