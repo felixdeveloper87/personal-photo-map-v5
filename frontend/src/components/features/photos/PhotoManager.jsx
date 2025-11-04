@@ -9,6 +9,8 @@ import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
 import { buildApiUrl, buildImageUrl } from '../../../utils/apiConfig';
 import '../../../styles/photoManagerAnimations.css';
+import darkThemeImage from '../../../assets/darkTheme.jpg';
+import lightThemeImage from '../../../assets/lightTheme.jpg';
 import {
   Box,
   Button,
@@ -29,6 +31,7 @@ import {
   PopoverArrow,
   Icon,
   useColorModeValue,
+  useColorMode,
 } from '@chakra-ui/react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -137,6 +140,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const loginModal = useDisclosure();
   const registerModal = useDisclosure();
+
+  // Theme
+  const { colorMode } = useColorMode();
+  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
 
   // Confirms
   const {
@@ -439,11 +447,25 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     [albumsData]
   );
 
-  // qual lista está ativa no momento?
-  const activeList = (selectedYear || selectedAlbum || showAllSelected) ? images : allImages;
-
   return (
-    <Box>
+    <Box
+      bgImage={backgroundImage}
+      bgSize="cover"
+      bgPosition="center"
+      bgRepeat="no-repeat"
+      position="relative"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        bg: overlayBg,
+        zIndex: 0,
+      }}
+    >
+      <Box position="relative" zIndex={1}>
       {/* Controles / Filtros */}
       <Box mb={4}>
         {allImages.length === 0 && (
@@ -773,6 +795,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
           loginModal.onOpen();
         }}
       />
+      </Box>
     </Box>
   );
 };

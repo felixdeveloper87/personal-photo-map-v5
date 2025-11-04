@@ -9,7 +9,6 @@ import {
   Button,
   VStack,
   useColorModeValue,
-  useColorMode,
   SimpleGrid,
   HStack,
   useBreakpointValue,
@@ -28,8 +27,6 @@ import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
 import { motion } from 'framer-motion';
 import { useImageCache } from '../../../hooks/useImageCache';
-import darkThemeImage from '../../../assets/darkTheme.jpg';
-import lightThemeImage from '../../../assets/lightTheme.jpg';
 
 // Registrar nomes de países
 countries.registerLocale(en);
@@ -100,10 +97,7 @@ const PhotoGallery = memo(function PhotoGallery({
   // Image cache hook
   const { cacheImage } = useImageCache();
 
-  const { colorMode } = useColorMode();
   const isMobile = useBreakpointValue({ base: true, sm: false });
-  const isLargeScreen = useBreakpointValue({ base: false, lg: false, xl: true, '2xl': true });
-  const bgColor = useColorModeValue('white.50', 'black.900');
   const textColor = useColorModeValue('gray.800', 'white');
   const selectionColor = useColorModeValue('blue.500', 'blue.300');
   const selectionBgColor = useColorModeValue('blue.50', 'blue.900');
@@ -271,28 +265,8 @@ const PhotoGallery = memo(function PhotoGallery({
   const total = images.length;
   const selectedCount = selectedImageIds.length;
 
-  // Overlay background for better text readability
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
-  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
-
   return (
-    <Box
-    bgImage={backgroundImage}
-    position="relative"
-    backdropFilter="blur(12px)"
-    _before={{
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      bg: useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(0, 0, 0, 0.65)'),
-      zIndex: 0,
-      borderRadius: 'lg',
-    }}
-    >
-      <Box position="relative" zIndex={1}>
+    <Box py={2}>
       {/* Global styles for shimmer animation */}
       <Box
         as="style"
@@ -745,6 +719,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     bottom="0"
                     left="0"
                     right="0"
+                    bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
                     p={isMobile ? 2 : 3}
                     color="white"
                     opacity={0}
@@ -882,7 +857,6 @@ const PhotoGallery = memo(function PhotoGallery({
           totalCount={images.length}
         />
       )}
-      </Box>
     </Box>
   );
 });
