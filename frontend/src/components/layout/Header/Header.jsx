@@ -69,6 +69,8 @@ const Header = () => {
   const styles = useHeaderStyles(colorMode);
   // Precompute any theme-dependent values used in conditional branches
   const mobileDividerBorderColor = useColorModeValue("rgba(0, 0, 0, 0.3)", "rgba(255, 255, 255, 0.3)");
+  const borderBottom = useBreakpointValue({ base: '2px solid', md: '5px solid' });
+  const borderBottomColor = useColorModeValue('black', 'white');
 
   // Handle premium upgrade
   const handlePremiumUpgrade = async () => {
@@ -206,6 +208,8 @@ const Header = () => {
         borderTop="2px solid"
         borderTopColor={useColorModeValue('black', 'white')}
         {...headerContainerStyles(styles)}
+        borderBottom={borderBottom}
+        borderBottomColor={borderBottomColor}
       >
         <Flex
           align="center"
