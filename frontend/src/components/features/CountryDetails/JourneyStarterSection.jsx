@@ -14,7 +14,6 @@ import {
   AlertIcon,
   VStack,
   HStack,
-  Divider,
 } from '@chakra-ui/react';
 import { FaRocket, FaWikipediaW } from 'react-icons/fa';
 import { motion } from 'framer-motion';
