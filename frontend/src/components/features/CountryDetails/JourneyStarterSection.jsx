@@ -6,6 +6,7 @@ import {
   Icon,
   useDisclosure,
   useColorModeValue,
+  useColorMode,
   useBreakpointValue,
   usePrefersReducedMotion,
   Spinner,
@@ -20,6 +21,7 @@ import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { fetchWikipediaData } from './services';
 import { getName } from 'i18n-iso-countries';
+import darkThemeImage from '../../../assets/darkTheme.jpg';
 
 const MotionButton = motion.create(Button);
 
@@ -69,6 +71,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
   // Theme + motion prefs
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { colorMode } = useColorMode();
 
   const cardBg = useColorModeValue('white', 'black');
   const textColor = useColorModeValue('gray.700', 'gray.300');
@@ -84,21 +87,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
     'linear(to-r, blue.600, purple.600, pink.500)',
     'linear(to-r, blue.300, purple.300, pink.300)'
   );
-  const wikiBoxBg = useColorModeValue('blue.50', 'blue.900');
+
   const wikiBoxBorderColor = useColorModeValue('blue.200', 'blue.700');
   const wikiSmallIconBg = useColorModeValue('blue.100', 'blue.800');
-  const wikiPromptTextColor = useColorModeValue('gray.600', 'gray.300');
-  const wikiUnavailableColor = useColorModeValue('gray.500', 'gray.400');
-  const wikiUnavailableBg = useColorModeValue('gray.100', 'gray.700');
-  const wikiUnavailableBorder = useColorModeValue('gray.200', 'gray.600');
-
-  const wikiLinkBg = useColorModeValue('white', 'gray.600');
-  const wikiLinkBorderColor = useColorModeValue('gray.200', 'gray.500');
-  const wikiLinkHoverBg = useColorModeValue('gray.50', 'gray.500');
-  const wikiLinkHoverShadow = useColorModeValue(
-    '0 4px 12px rgba(0,0,0,0.1)',
-    '0 4px 12px rgba(0,0,0,0.3)'
-  );
 
   const infoCardShadow = useColorModeValue(
     '0 4px 12px rgba(0,0,0,0.06)',
@@ -119,11 +110,38 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
   const ctaSize = useBreakpointValue({ base: 'sm', sm: 'md', md: 'lg' });
   const maxWidth = useBreakpointValue({ base: '100%', lg: '1600px', xl: '2200px', '2xl': '2600px' });
-
+  
+  // Overlay background for better text readability
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
 
   return (
     <>
-      <Box position="relative" zIndex={2} maxW={maxWidth} mx="auto">
+      <Box
+        position="relative"
+        zIndex={2}
+        maxW={maxWidth}
+        mx="auto"
+        bg={colorMode === 'light' ? cardBg : 'transparent'}
+        bgImage={colorMode === 'dark' ? `url(${darkThemeImage})` : 'none'}
+        bgSize="cover"
+        bgPosition="center"
+        bgRepeat="no-repeat"
+        borderRadius="2xl"
+        overflow="hidden"
+        p={{ base: 4, md: 6 }}
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bg: colorMode === 'dark' ? overlayBg : 'transparent',
+          zIndex: 0,
+          borderRadius: '2xl',
+        }}
+      >
+        <Box position="relative" zIndex={1}>
         {isLoadingWikipedia ? (
           <Box textAlign="center" py={6} mb={8}>
             <VStack spacing={4}>
@@ -145,7 +163,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         ) : wikipediaData?.summary ? (
           <Box mb={8} maxW={maxWidth}>
             <Box
-              bg={cardBg}
               borderRadius="2xl"
               p={5}
               border="1px solid"
@@ -214,6 +231,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   alignItems="center"
                   mb={3}
                   p={4}
+                  bg={cardBg}
                   borderRadius="xl"
                   border="2px solid"
                   borderColor={wikiBoxBorderColor}
@@ -263,8 +281,8 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   borderRadius="xl"
                   border="2px solid"
                   borderColor={wikiBoxBorderColor}
-                  maxW="2220px"
                   mx="auto"
+                  bg={cardBg}
                   boxShadow={infoCardShadow}
                   position="relative"
                   overflow="hidden"
@@ -324,8 +342,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
           </Text>
         )}
 
-
-
+        </Box>
       </Box>
 
       <EnhancedImageUploaderModal

@@ -68,7 +68,7 @@ const Header = () => {
 
   const styles = useHeaderStyles(colorMode);
   // Precompute any theme-dependent values used in conditional branches
-  const mobileDividerBorderColor = useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)");
+  const mobileDividerBorderColor = useColorModeValue("rgba(0, 0, 0, 0.3)", "rgba(255, 255, 255, 0.3)");
 
   // Handle premium upgrade
   const handlePremiumUpgrade = async () => {
@@ -207,8 +207,14 @@ const Header = () => {
         borderTopColor={useColorModeValue('black', 'white')}
         {...headerContainerStyles(styles)}
       >
-        {/* Primeira linha do header */}
-        <Flex align="center" justify="space-between" w="100%" h="auto" gap={{ base: 1, sm: 2, md: 4 }}>
+        <Flex
+          align="center"
+          justify="space-between"
+          w="100%"
+          h="auto"
+          gap={{ base: 1, sm: 2, md: 4 }}
+          pb={isLoggedIn && isCompact ? 4 : 0}
+        >
           {/* ESQUERDA: Logo (canto esquerdo) */}
           <HStack spacing={{ base: 0.5, sm: 2, md: 3 }} align="center" flex="0 0 auto">
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />

@@ -120,7 +120,7 @@ export const headerContainerStyles = (backgroundPattern) => ({
   backdropFilter: "blur(24px)",
   borderBottom: "2px solid",
   borderColor: "rgba(39, 143, 195, 0.2)",
-  py: { base: 1, sm: 1.5, md: 2 }, // Responsive padding
+  py: { base: 2, sm: 3, md: 5 }, // Responsive padding - increased for taller header
   _before: {
     content: '""',
     position: 'absolute',
