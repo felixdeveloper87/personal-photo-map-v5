@@ -20,7 +20,7 @@ const Footer = () => {
   const linkHoverColor = useColorModeValue('blue.600', 'blue.300');
   const copyrightColor = useColorModeValue('gray.500', 'gray.400');
 
-  const borderTop = useBreakpointValue({ base: '2px solid', md: '5px solid' });
+  const borderTop = useBreakpointValue({ base: '4px solid', md: '5px solid' });
   const borderTopColor = useColorModeValue('black', 'white');
 
   return (
