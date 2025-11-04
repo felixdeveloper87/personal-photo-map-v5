@@ -162,9 +162,9 @@ const CountryDetails = () => {
   return (
     <Box bg={bgColor} minH="100vh" className="country-details-page">
       <Box 
-        px={{ base: 4, md: 6, lg: 8 }} 
-        pt={{ base: 4, md: 6, lg: 8 }} 
-        pb={{ base: 6, md: 8 }} 
+        px={{ base: 1, md: 4 }} 
+        pt={{ base: 4, md: 6 }} 
+        pb={{ base: 1, md: 4 }} 
         position="relative" 
         maxW={{ base: '100%', lg: '1600px', xl: '2200px', '2xl': '2600px' }} 
         mx="auto"
