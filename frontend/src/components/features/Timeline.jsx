@@ -395,6 +395,8 @@ const Timeline = ({ selectedYear }) => {
             boxShadow="sm"
             p={2}
             borderWidth="1px"
+            maxW="230px"
+            mx="auto"
             borderColor={viewToggleBorderColor}
           >
             <HStack justify="space-between" align="center" spacing={4} flexWrap="wrap">
