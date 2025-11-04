@@ -20,10 +20,19 @@ const Footer = () => {
   const linkHoverColor = useColorModeValue("blue.600", "blue.300");
   const copyrightColor = useColorModeValue("gray.500", "gray.400");
 
+  // Texture pattern (same used in modal headers)
+  const texturePatternLight = 'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="white"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23000" stroke-width="1" opacity="0.55"/%3E%3C/svg%3E';
+  const texturePatternDark = 'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="black"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23fff" stroke-width="0.8" opacity="0.35"/%3E%3C/svg%3E';
+  const texturePattern = useColorModeValue(texturePatternLight, texturePatternDark);
+
   return (
     <Box
       as="footer"
       bg={bgColor}
+      backgroundImage={texturePattern}
+      backgroundRepeat="repeat"
+      backgroundSize="6px 6px"
+      backgroundBlendMode="overlay"
       color={textColor}
       py={8}
       w="100%"

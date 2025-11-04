@@ -88,6 +88,10 @@ const Timeline = ({ selectedYear }) => {
   const textColor = useColorModeValue('black.800', 'white');
   const accentColor = useColorModeValue('black.500', 'white.300');
   const cardBg = useColorModeValue('white', 'black');
+  // Precompute theme values used in conditional branches
+  const headerBorderColor = useColorModeValue('gray.200', 'gray.700');
+  const headerDividerColor = useColorModeValue('gray.300', 'gray.600');
+  const viewToggleBorderColor = useColorModeValue('gray.200', 'gray.700');
 
 
   // Fetch photos with React Query
@@ -224,7 +228,7 @@ const Timeline = ({ selectedYear }) => {
           boxShadow="xl"
           p={{ base: 4, md: 8 }}
           borderWidth="1px"
-          borderColor={useColorModeValue('gray.200', 'gray.700')}
+          borderColor={headerBorderColor}
           position="relative"
           overflow="hidden"
           _before={{
@@ -258,7 +262,7 @@ const Timeline = ({ selectedYear }) => {
             </HStack>
 
             {/* Divider */}
-            <Divider borderColor={useColorModeValue('gray.300', 'gray.600')} />
+            <Divider borderColor={headerDividerColor} />
 
             {/* Statistics */}
             {sortedYears.length > 0 && (
@@ -358,7 +362,7 @@ const Timeline = ({ selectedYear }) => {
             boxShadow="sm"
             p={4}
             borderWidth="1px"
-            borderColor={useColorModeValue('gray.200', 'gray.700')}
+            borderColor={viewToggleBorderColor}
           >
             <HStack justify="space-between" align="center" spacing={4} flexWrap="wrap">
               <FormControl display="flex" alignItems="center" justifyContent="center" w="auto">

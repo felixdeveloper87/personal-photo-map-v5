@@ -12,7 +12,6 @@ import {
   Container,
   HStack,
   VStack,
-  keyframes,
 } from "@chakra-ui/react";
 
 
@@ -68,6 +67,8 @@ const Header = () => {
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const styles = useHeaderStyles(colorMode);
+  // Precompute any theme-dependent values used in conditional branches
+  const mobileDividerBorderColor = useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)");
 
   // Handle premium upgrade
   const handlePremiumUpgrade = async () => {
@@ -218,7 +219,6 @@ const Header = () => {
                 hideText={true}
               />
               <MapButton
-                isLoggedIn={isLoggedIn}
                 onClick={() => navigate("/map/private")}
                 size={buttonSize}
                 hideText={true}
@@ -260,7 +260,6 @@ const Header = () => {
             {/* Botão Map - responsivo - apenas para usuários logados */}
             {isLoggedIn && (
               <MapButton
-                isLoggedIn={isLoggedIn}
                 onClick={() =>
                   isLoggedIn ? navigate("/map/private") : navigate("/map")
                 }
@@ -353,7 +352,7 @@ const Header = () => {
             pt={4}
             pb={2}
             borderTop="1px solid"
-            borderColor={useColorModeValue("rgba(226, 232, 240, 0.3)", "rgba(51, 65, 85, 0.3)")}
+            borderColor={mobileDividerBorderColor}
           >
             <VStack spacing={{ base: 1, sm: 1.5 }} w="100%">
               {/* Grid de 5 botões em 1 linha */}
@@ -483,3 +482,4 @@ const Header = () => {
 };
 
 export default Header;
+

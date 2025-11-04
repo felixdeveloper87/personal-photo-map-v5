@@ -12,7 +12,7 @@ import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
 // =======================================================
 // Motion
 // =======================================================
-const MotionButton = motion(Button);
+const MotionButton = motion.create(Button);
 
 // =======================================================
 // Hooks de estilo
@@ -199,3 +199,4 @@ export const ModernRegisterButton = ({ onClick, children = "Register", ...props 
     {children}
   </ModernButtonBase>
 );
+

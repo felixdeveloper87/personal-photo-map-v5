@@ -70,7 +70,21 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)");
   const bgCard = useColorModeValue("rgba(255,255,255,0.65)", "rgba(0,0,0,0.55)");
+  // Precompute warning colors to avoid calling hooks in conditional JSX
+  const warningBg = useColorModeValue("rgba(255,237,213,0.8)", "rgba(154,52,18,0.6)");
+  const warningBorderColor = useColorModeValue("orange.200", "orange.700");
+  const warningTitleColor = useColorModeValue("orange.700", "orange.200");
+  const warningTextColor = useColorModeValue("orange.600", "orange.300");
   const toast = useToast();
+  // Theme values used throughout (precomputed to keep hooks order stable)
+  const cardShadow = useColorModeValue(
+    "0 1px 3px rgba(0,0,0,0.05)",
+    "0 1px 3px rgba(255,255,255,0.05)"
+  );
+  const cloudBg = useColorModeValue("blue.100", "blue.900");
+  const cloudColor = useColorModeValue("blue.600", "blue.400");
+  const muted600 = useColorModeValue("gray.600", "gray.400");
+  const muted500 = useColorModeValue("gray.500", "gray.400");
 
   const { isLoggedIn, isPremium } = useContext(AuthContext);
   const { photoCount, refreshCountriesWithPhotos } = useContext(CountriesContext);
@@ -207,18 +221,15 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
           backdropFilter="blur(8px)"
           border="1px solid"
           borderColor={borderColor}
-          boxShadow={useColorModeValue(
-            "0 1px 3px rgba(0,0,0,0.05)",
-            "0 1px 3px rgba(255,255,255,0.05)"
-          )}
+          boxShadow={cardShadow}
           textAlign="center"
         >
           <VStack spacing={3}>
             <Box
               p={3}
               borderRadius="full"
-              bg={useColorModeValue("blue.100", "blue.900")}
-              color={useColorModeValue("blue.600", "blue.400")}
+              bg={cloudBg}
+              color={cloudColor}
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -228,7 +239,7 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
             <Text fontSize="xl" fontWeight="bold" color={textColor}>
               Storage Usage
             </Text>
-            <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.400")}>
+            <Text fontSize="sm" color={muted600}>
               {localStorageData.used} GB of {localStorageData.total} GB used
             </Text>
           </VStack>
@@ -238,7 +249,7 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
         <Box bg={bgCard} borderRadius="lg" border="1px solid" borderColor={borderColor} p={4} backdropFilter="blur(8px)">
           <HStack justify="space-between" mb={2}>
             <Text fontWeight="semibold" color={textColor}>Storage Used</Text>
-            <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.400")}>
+            <Text fontSize="sm" color={muted600}>
               {usagePercentage.toFixed(1)}%
             </Text>
           </HStack>
@@ -249,10 +260,10 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
             size="lg"
           />
           <HStack justify="space-between" mt={2}>
-            <Text fontSize="xs" color={useColorModeValue("gray.500", "gray.400")}>
+            <Text fontSize="xs" color={muted500}>
               {localStorageData.used} GB used
             </Text>
-            <Text fontSize="xs" color={useColorModeValue("gray.500", "gray.400")}>
+            <Text fontSize="xs" color={muted500}>
               {(localStorageData.total - localStorageData.used).toFixed(2)} GB free
             </Text>
           </HStack>
@@ -263,18 +274,18 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
           <Box
             p={4}
             borderRadius="lg"
-            bg={useColorModeValue("rgba(255,237,213,0.8)", "rgba(154,52,18,0.6)")}
+            bg={warningBg}
             border="1px solid"
-            borderColor={useColorModeValue("orange.200", "orange.700")}
+            borderColor={warningBorderColor}
             backdropFilter="blur(6px)"
           >
             <HStack spacing={3}>
               <Icon as={HiExclamationTriangle} color="orange.500" boxSize={5} />
               <Box>
-                <Text fontWeight="bold" color={useColorModeValue("orange.700", "orange.200")}>
+                <Text fontWeight="bold" color={warningTitleColor}>
                   {isAtLimit ? "Storage Full!" : "Storage Almost Full"}
                 </Text>
-                <Text fontSize="sm" color={useColorModeValue("orange.600", "orange.300")}>
+                <Text fontSize="sm" color={warningTextColor}>
                   {isAtLimit
                     ? "You cannot upload more photos. Please upgrade your storage plan."
                     : "Consider upgrading your plan to avoid interruptions."}
@@ -298,7 +309,7 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
             <Text fontWeight="bold" border="1px solid" borderColor={borderColor} p={1} borderRadius="md">
               {localStorageData.photos}
             </Text>
-            <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.400")}>
+            <Text fontSize="sm" color={muted600}>
               Total photos in your collection
             </Text>
           </HStack>

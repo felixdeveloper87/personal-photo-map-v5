@@ -24,8 +24,8 @@ import BaseModal from '../modals/BaseModal';
 import ModalButton from '../modals/ModalButton';
 import { FaSearch, FaGlobe, FaCalendar, FaInfoCircle } from 'react-icons/fa';
 
-const MotionBox = motion(Box);
-const MotionVStack = motion(VStack);
+const MotionBox = motion.create(Box);
+const MotionVStack = motion.create(VStack);
 
 export default function SearchForm({ onSearch, onClose: externalOnClose }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -388,3 +388,4 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
     </>
   );
 }
+

@@ -44,6 +44,13 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
   const subtleBorder = useColorModeValue('gray.200', 'gray.600');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
+  // Precompute button theme values so hook order stays stable even if section returns null
+  const addPhotoBtnBg = useColorModeValue('blue.50', 'blue.900');
+  const addPhotoBtnColor = useColorModeValue('blue.600', 'blue.200');
+  const addPhotoBtnHoverBg = useColorModeValue('blue.100', 'blue.800');
+  const shareBtnBg = useColorModeValue('gray.100', 'gray.700');
+  const shareBtnColor = useColorModeValue('gray.600', 'gray.300');
+  const shareBtnHoverBg = useColorModeValue('gray.200', 'gray.600');
   
   // Share functionality - In development
   const handleShare = () => {
@@ -104,10 +111,10 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   variant="ghost"
                   colorScheme="blue"
                   size={{ base: "xs", sm: "sm" }}
-                  bg={useColorModeValue('blue.50', 'blue.900')}
-                  color={useColorModeValue('blue.600', 'blue.200')}
+                  bg={addPhotoBtnBg}
+                  color={addPhotoBtnColor}
                   _hover={{
-                    bg: useColorModeValue('blue.100', 'blue.800'),
+                    bg: addPhotoBtnHoverBg,
                     transform: "translateY(-1px)",
                   }}
                   _active={{
@@ -132,10 +139,10 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   variant="ghost"
                   colorScheme="gray"
                   size={{ base: "xs", sm: "sm" }}
-                  bg={useColorModeValue('gray.100', 'gray.700')}
-                  color={useColorModeValue('gray.600', 'gray.300')}
+                  bg={shareBtnBg}
+                  color={shareBtnColor}
                   _hover={{
-                    bg: useColorModeValue('gray.200', 'gray.600'),
+                    bg: shareBtnHoverBg,
                     transform: "translateY(-1px)",
                   }}
                   _active={{

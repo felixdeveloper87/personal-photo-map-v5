@@ -87,6 +87,39 @@ const BaseModal = ({
     "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)"
   );
 
+  // Precompute values used in conditional styles to keep hook order stable
+  const shimmerBarBg = useColorModeValue(
+    "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent)",
+    "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent)"
+  );
+  // Header icon styles
+  const headerIconBg = useColorModeValue(
+    variant === 'premium' ? "blue.50" : "gray.50",
+    variant === 'premium' ? "blue.900" : "gray.700"
+  );
+  const headerIconColor = useColorModeValue(
+    variant === 'premium' ? "blue.600" : "gray.600",
+    variant === 'premium' ? "blue.200" : "gray.300"
+  );
+  const headerIconHoverBg = useColorModeValue(
+    variant === 'premium' ? "blue.100" : "gray.100",
+    variant === 'premium' ? "blue.800" : "gray.600"
+  );
+  // Close button colors
+  const closeBtnColor = useColorModeValue("gray.500", "gray.400");
+  const closeBtnHoverColor = useColorModeValue("gray.700", "gray.200");
+  const closeBtnHoverBg = useColorModeValue("gray.100", "gray.700");
+  const closeBtnActiveBg = useColorModeValue("gray.200", "gray.600");
+  // Body and footer backgrounds
+  const bodyBg = useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(0, 0, 0, 0.5)");
+  const footerBg = useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(0, 0, 0, 0.6)");
+  // Scrollbar colors
+  const scrollTrackBg = useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)');
+  const scrollThumbBg = useColorModeValue('rgba(0,0,0,0.1)', 'rgba(255,255,255,0.1)');
+  const scrollThumbHoverBg = useColorModeValue('rgba(0,0,0,0.2)', 'rgba(255,255,255,0.2)');
+  const scrollThumbActiveBg = useColorModeValue('rgba(0,0,0,0.3)', 'rgba(255,255,255,0.3)');
+  const transparentBorder = useColorModeValue('transparent', 'transparent');
+
   // ✅ Texture pattern for header only
   const texturePatternLight =
     'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="white"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23000" stroke-width="1" opacity="0.55"/%3E%3C/svg%3E';
@@ -192,21 +225,12 @@ const BaseModal = ({
             <Box
               p={{ base: 1.5, sm: variant === 'minimal' ? 1.5 : 2 }}
               borderRadius={variant === 'minimal' ? "md" : "lg"}
-              bg={useColorModeValue(
-                variant === 'premium' ? "blue.50" : "gray.50",
-                variant === 'premium' ? "blue.900" : "gray.700"
-              )}
-              color={useColorModeValue(
-                variant === 'premium' ? "blue.600" : "gray.600",
-                variant === 'premium' ? "blue.200" : "gray.300"
-              )}
+              bg={headerIconBg}
+              color={headerIconColor}
               transition="all 0.2s ease"
               _hover={{
                 transform: "scale(1.05)",
-                bg: useColorModeValue(
-                  variant === 'premium' ? "blue.100" : "gray.100",
-                  variant === 'premium' ? "blue.800" : "gray.600"
-                )
+                bg: headerIconHoverBg
               }}
             >
               <Icon as={icon} boxSize={{ base: 4, sm: variant === 'minimal' ? 5 : 6 }} />
@@ -231,17 +255,17 @@ const BaseModal = ({
             right={{ base: 3, sm: 4 }}
             borderRadius="full"
             bg="transparent"
-            color={useColorModeValue("gray.500", "gray.400")}
+            color={closeBtnColor}
             transition="all 0.15s ease-in-out"
             zIndex={10}
             _hover={{
-              color: useColorModeValue("gray.700", "gray.200"),
+              color: closeBtnHoverColor,
               transform: "scale(1.1)",
-              bg: useColorModeValue("gray.100", "gray.700"),
+              bg: closeBtnHoverBg,
             }}
             _active={{
               transform: "scale(0.95)",
-              bg: useColorModeValue("gray.200", "gray.600"),
+              bg: closeBtnActiveBg,
             }}
             _focus={{ boxShadow: "none" }}
           />
@@ -255,7 +279,7 @@ const BaseModal = ({
           overflowX="hidden"
           position="relative"
           flex="1"
-          bg={useColorModeValue("rgba(255, 255, 255, 0.5)", "rgba(0, 0, 0, 0.5)")}
+          bg={bodyBg}
           backdropFilter="blur(5px)"
           css={{
             'touch-action': 'pan-y',
@@ -263,20 +287,20 @@ const BaseModal = ({
               width: '8px',
             },
             '&::-webkit-scrollbar-track': {
-              background: useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)'),
+              background: scrollTrackBg,
               borderRadius: '4px',
             },
             '&::-webkit-scrollbar-thumb': {
-              background: useColorModeValue('rgba(0,0,0,0.1)', 'rgba(255,255,255,0.1)'),
+              background: scrollThumbBg,
               borderRadius: '4px',
-              border: `2px solid ${useColorModeValue('transparent', 'transparent')}`,
+              border: `2px solid ${transparentBorder}`,
               backgroundClip: 'content-box'
             },
             '&::-webkit-scrollbar-thumb:hover': {
-              background: useColorModeValue('rgba(0,0,0,0.2)', 'rgba(255,255,255,0.2)'),
+              background: scrollThumbHoverBg,
             },
             '&::-webkit-scrollbar-thumb:active': {
-              background: useColorModeValue('rgba(0,0,0,0.3)', 'rgba(255,255,255,0.3)'),
+              background: scrollThumbActiveBg,
             }
           }}
           _after={isAnimating ? {
@@ -286,7 +310,7 @@ const BaseModal = ({
             left: 0,
             right: 0,
             height: "1px",
-            background: useColorModeValue("linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent)", "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent)"),
+            background: shimmerBarBg,
             animation: `${shimmer} 1.5s ease-out`
           } : {}}
         >
@@ -301,7 +325,7 @@ const BaseModal = ({
             pt={{ base: 3, sm: variant === 'minimal' ? 2 : 4 }}
             px={{ base: 4, sm: 6 }}
             pb={{ base: 4, sm: variant === 'minimal' ? 4 : 6 }}
-            bg={useColorModeValue("rgba(248, 250, 252, 0.7)", "rgba(0, 0, 0, 0.6)")}
+            bg={footerBg}
             backdropFilter="blur(8px)"
           >
             {footer}

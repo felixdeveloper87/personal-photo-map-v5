@@ -9,8 +9,8 @@ import { FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { motion, AnimatePresence, useMotionValue, useSpring, animate } from 'framer-motion';
 import logo from '../../assets/logo.png';
 
-const MotionOverlay = motion(ModalOverlay);
-const MotionDiv = motion.div;
+const MotionOverlay = motion.create(ModalOverlay);
+const MotionDiv = motion.create('div');
 
 const MIN_SWIPE_DISTANCE = 50;
 const EASING_CURVE = [0.25, 0.46, 0.45, 0.94];
@@ -529,3 +529,4 @@ FullImageModal.propTypes = {
 };
 
 export default FullImageModal;
+

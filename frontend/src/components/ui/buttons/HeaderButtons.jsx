@@ -1,34 +1,22 @@
 import React from "react";
-import {
-  Button,
-  useColorModeValue,
-  Box,
-  HStack,
-  Icon,
-  Text,
-} from "@chakra-ui/react";
+import { Button, useColorModeValue, HStack, Icon, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
   FaMoon,
   FaSun,
   FaCrown,
   FaImages,
-  FaMap,
+  FaGlobe,
   FaSignOutAlt,
   FaClock,
   FaSearch,
-  FaUser,
   FaUserPlus,
   FaSignInAlt,
   FaUserCircle,
-  FaGlobe,
 } from "react-icons/fa";
 
-const MotionButton = motion(Button);
+const MotionButton = motion.create(Button);
 
-/* =====================================
-   🎨 Material Theme Palette
-   ===================================== */
 const MATERIAL_COLORS = {
   blue: { light: "#1a73e8", container: "#e8f0fe", dark: "#174ea6" },
   green: { light: "#188038", container: "#e6f4ea", dark: "#0d652d" },
@@ -39,53 +27,30 @@ const MATERIAL_COLORS = {
   gray: { light: "#5f6368", container: "#f1f3f4", dark: "#3c4043" },
 };
 
-/* =====================================
-   🔹 Base: ModernMaterialButton
-   ===================================== */
 const ModernMaterialButton = ({
   icon,
   text,
   tone = "blue",
   onClick,
   size = "sm",
-  variant = "filled", // "filled" | "outlined" | "tonal"
-  hideText = false, // Nova prop para esconder o texto
+  variant = "filled",
+  hideText = false,
   ...props
 }) => {
-  const mode = useColorModeValue("light", "dark");
   const c = MATERIAL_COLORS[tone] || MATERIAL_COLORS.blue;
-
-  // Dynamic palette per mode
   const bg = useColorModeValue(c.container, c.dark);
   const color = useColorModeValue(c.light, "#fff");
   const border = useColorModeValue(c.light + "40", c.container);
   const hoverBg = useColorModeValue(c.light + "1A", c.light + "33");
-
-  const boxShadow = useColorModeValue(
-    "0 1px 3px rgba(60,64,67,0.25)",
-    "0 2px 6px rgba(0,0,0,0.35)"
-  );
-
+  const boxShadow = useColorModeValue("0 1px 3px rgba(60,64,67,0.25)", "0 2px 6px rgba(0,0,0,0.35)");
   const iconSize = { xs: 16, sm: 16, md: 18, lg: 20 }[size] || 18;
 
   const variantStyles =
     variant === "outlined"
-      ? {
-          bg: "transparent",
-          color: color,
-          border: `1px solid ${border}`,
-        }
+      ? { bg: "transparent", color, border: `1px solid ${border}` }
       : variant === "tonal"
-      ? {
-          bg: bg,
-          color: useColorModeValue(c.light, "#fff"),
-          border: "none",
-        }
-      : {
-          bg: c.light,
-          color: "#fff",
-          border: "none",
-        };
+      ? { bg, color: useColorModeValue(c.light, "#fff"), border: "none" }
+      : { bg: c.light, color: "#fff", border: "none" };
 
   return (
     <MotionButton
@@ -98,28 +63,18 @@ const ModernMaterialButton = ({
       py={2}
       transition="all 0.2s ease-in-out"
       boxShadow={boxShadow}
-      _hover={{
-        bg: hoverBg,
-        transform: "translateY(-1px)",
-      }}
-      _active={{
-        transform: "translateY(0)",
-        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.15)",
-      }}
+      _hover={{ bg: hoverBg, transform: "translateY(-1px)" }}
+      _active={{ transform: "translateY(0)", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.15)" }}
       {...variantStyles}
       {...props}
     >
       <HStack spacing={2}>
-        {icon && <Icon as={icon} boxSize={`${iconSize}px`} />}
+        {icon && <Icon as={icon} boxSize={`${iconSize}px`} />} 
         {text && !hideText && <Text fontSize="sm">{text}</Text>}
       </HStack>
     </MotionButton>
   );
 };
-
-/* =====================================
-   🔹 Specific Buttons (Material Edition)
-   ===================================== */
 
 export const ThemeToggleButton = ({ colorMode, toggleColorMode, hideText, ...props }) => (
   <ModernMaterialButton
@@ -134,14 +89,7 @@ export const ThemeToggleButton = ({ colorMode, toggleColorMode, hideText, ...pro
 );
 
 export const PremiumButton = ({ onClick, hideText, ...props }) => (
-  <ModernMaterialButton
-    icon={FaCrown}
-    text="Premium"
-    tone="yellow"
-    onClick={onClick}
-    hideText={hideText}
-    {...props}
-  />
+  <ModernMaterialButton icon={FaCrown} text="Premium" tone="yellow" onClick={onClick} hideText={hideText} {...props} />
 );
 
 export const PhotoStorageButton = ({ onClick, hideText, ...props }) => (
@@ -175,3 +123,4 @@ export const LoginButton = ({ onClick }) => (
 export const RegisterButton = ({ onClick }) => (
   <ModernMaterialButton icon={FaUserPlus} text="" tone="green" onClick={onClick} />
 );
+
