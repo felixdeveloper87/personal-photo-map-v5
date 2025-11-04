@@ -34,9 +34,9 @@ export default function HeroHeader({
   const { isOpen: isExpanded, onToggle } = useDisclosure({ defaultIsOpen: true })
 
   const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const textPrimary = useColorModeValue('gray.900', 'gray.100')
-  const textSecondary = useColorModeValue('gray.600', 'gray.400')
-  const dateFaded = useColorModeValue('gray.500', 'gray.400')
+  const textPrimary = useColorModeValue('black', 'white')
+  const textSecondary = useColorModeValue('gray.800', 'gray.300')
+  const dateFaded = useColorModeValue('gray.600', 'gray.200')
   const isSmall = useBreakpointValue({ base: true, md: false })
   const buttonText = useBreakpointValue({ base: 'View Data', sm: 'View Data', md: 'View Indicators' })
   const flightsButtonText = useBreakpointValue({ base: 'Flights', md: 'Check Flights' })
@@ -51,7 +51,7 @@ export default function HeroHeader({
 
   const headerBg = useColorModeValue(
     'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-    'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+    'linear-gradient(135deg,rgb(11, 12, 13) 0%,rgb(4, 5, 6) 100%)'
   )
 
   // Linha principal (País • Capital • Hora • Data)
