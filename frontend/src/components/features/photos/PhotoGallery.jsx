@@ -26,7 +26,7 @@ import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
 import FullImageModal from '../../modals/FullImageModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useImageCache } from '../../../hooks/useImageCache';
 import darkThemeImage from '../../../assets/darkTheme.jpg';
 import lightThemeImage from '../../../assets/lightTheme.jpg';
@@ -745,7 +745,6 @@ const PhotoGallery = memo(function PhotoGallery({
                     bottom="0"
                     left="0"
                     right="0"
-                    bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
                     p={isMobile ? 2 : 3}
                     color="white"
                     opacity={0}
