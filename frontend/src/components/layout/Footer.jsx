@@ -1,207 +1,152 @@
 import React from 'react';
-import { Box, Flex, Text, Link, HStack, Container, VStack, Icon, useColorModeValue } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Text,
+  Link,
+  HStack,
+  Container,
+  VStack,
+  Icon,
+  useColorModeValue,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import { FaHeart, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
-/**
- * The Footer component provides a modern and professional footer
- * with social links, navigation, and copyright information.
- *
- * @returns {JSX.Element} A responsive and modern footer section.
- */
 const Footer = () => {
-  // Cores adaptáveis ao tema
-  const bgColor = useColorModeValue(
-    "linear-gradient(135deg, #f8fafc 0%,rgb(254, 254, 254) 100%)",
-    "linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(0, 0, 0) 100%)"
-  );
-  const textColor = useColorModeValue("gray.800", "white");
-  const accentColor = useColorModeValue("blue.600", "blue.300");
-  const linkColor = useColorModeValue("gray.600", "gray.300");
-  const linkHoverColor = useColorModeValue("blue.600", "blue.300");
-  const copyrightColor = useColorModeValue("gray.500", "gray.400");
+  const textColor = useColorModeValue('gray.800', 'white');
+  const accentColor = useColorModeValue('blue.600', 'blue.300');
+  const linkColor = useColorModeValue('gray.600', 'gray.300');
+  const linkHoverColor = useColorModeValue('blue.600', 'blue.300');
+  const copyrightColor = useColorModeValue('gray.500', 'gray.400');
 
-  // Texture pattern (same used in modal headers)
-  const texturePatternLight = 'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="white"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23000" stroke-width="1" opacity="0.55"/%3E%3C/svg%3E';
-  const texturePatternDark = 'data:image/svg+xml,%3Csvg width="6" height="6" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="6" height="6" fill="black"/%3E%3Cpath d="M0 3L3 0M3 6L6 3M0 3L3 6" stroke="%23fff" stroke-width="0.8" opacity="0.35"/%3E%3C/svg%3E';
-  const texturePattern = useColorModeValue(texturePatternLight, texturePatternDark);
+  const borderTop = useBreakpointValue({ base: '2px solid', md: '5px solid' });
+  const borderTopColor = useColorModeValue('black', 'white');
 
   return (
     <Box
       as="footer"
-      bg={bgColor}
-      backgroundImage={texturePattern}
-      backgroundRepeat="repeat"
-      backgroundSize="6px 6px"
-      backgroundBlendMode="overlay"
       color={textColor}
-      py={8}
+      py={2}
+      px={10}
       w="100%"
-      mt={8}
-      boxShadow={useColorModeValue("0 -4px 20px rgba(0, 0, 0, 0.05)", "0 -4px 20px rgba(0, 0, 0, 0.1)")}
-      position="relative"
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '1px',
-        bgGradient: useColorModeValue(
-          "linear-gradient(to-r, transparent,rgb(6, 7, 7), transparent)",
-          "linear-gradient(to-r, transparent,rgb(241, 242, 244), transparent)"
-        ),
-      }}
+      borderTop={borderTop}
+      borderTopColor={borderTop ? borderTopColor : undefined}
     >
-      <Container maxW="1400px" px={6}>
+      <Container maxW="2200px" px={1} position="relative" zIndex={2}>
         <VStack spacing={6}>
-          {/* Main Footer Content */}
-          <Flex 
-            direction={{ base: 'column', md: 'row' }} 
-            justify="space-between" 
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            justify="space-between"
             align={{ base: 'center', md: 'flex-start' }}
             w="full"
             spacing={6}
           >
-            {/* Brand Section */}
-            <VStack align={{ base: 'center', md: 'flex-start' }} spacing={3} mb={{ base: 4, md: 0 }}>
-              <Text 
-                fontSize="2xl" 
-                fontWeight="800" 
+            {/* Brand */}
+            <VStack
+              align={{ base: 'center', md: 'flex-start' }}
+              spacing={3}
+              mb={{ base: 4, md: 0 }}
+            >
+              <Text
+                fontSize="2xl"
+                fontWeight="800"
                 bgGradient={useColorModeValue(
-                  "linear-gradient(to-r, #60a5fa, #3b82f6)",
-                  "linear-gradient(to-r, #93c5fd, #60a5fa)"
+                  'linear-gradient(to-r, #60a5fa, #3b82f6)',
+                  'linear-gradient(to-r, #93c5fd, #60a5fa)'
                 )}
                 bgClip="text"
                 letterSpacing="tight"
               >
                 Photomap
               </Text>
-              <Text 
-                color={linkColor} 
-                fontSize="sm" 
+              <Text
+                color={linkColor}
+                fontSize="sm"
                 textAlign={{ base: 'center', md: 'left' }}
                 maxW="300px"
               >
-                Capture your memories around the world and explore them through an interactive map experience.
+                Capture your memories around the world and explore them through
+                an interactive map experience.
               </Text>
             </VStack>
 
-            {/* Navigation Links */}
-            <VStack align={{ base: 'center', md: 'flex-start' }} spacing={3} mb={{ base: 4, md: 0 }}>
+            {/* Navigation */}
+            <VStack
+              align={{ base: 'center', md: 'flex-start' }}
+              spacing={3}
+              mb={{ base: 4, md: 0 }}
+            >
               <Text fontSize="lg" fontWeight="700" color={accentColor}>
                 Navigation
               </Text>
               <VStack spacing={2} align={{ base: 'center', md: 'flex-start' }}>
-                <Link
-                  href="/about"
-                  fontSize="md"
-                  fontWeight="500"
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    textDecoration: "none",
-                    transform: "translateX(5px)"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  fontSize="md"
-                  fontWeight="500"
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    textDecoration: "none",
-                    transform: "translateX(5px)"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  Contact
-                </Link>
-                <Link
-                  href="/timeline"
-                  fontSize="md"
-                  fontWeight="500"
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    textDecoration: "none",
-                    transform: "translateX(5px)"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  Timeline
-                </Link>
+                {['About', 'Contact', 'Timeline'].map((item) => (
+                  <Link
+                    key={item}
+                    href={`/${item.toLowerCase()}`}
+                    fontSize="md"
+                    fontWeight="500"
+                    color={linkColor}
+                    _hover={{
+                      color: linkHoverColor,
+                      textDecoration: 'none',
+                      transform: 'translateX(5px)',
+                    }}
+                    transition="all 0.3s ease"
+                  >
+                    {item}
+                  </Link>
+                ))}
               </VStack>
             </VStack>
 
-            {/* Social Links */}
+            {/* Social */}
             <VStack align={{ base: 'center', md: 'flex-start' }} spacing={4}>
               <Text fontSize="lg" fontWeight="700" color={accentColor}>
                 Connect
               </Text>
               <HStack spacing={4}>
-                <Link
-                  href="https://github.com"
-                  isExternal
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    transform: "scale(1.2)",
-                    textDecoration: "none"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  <Icon as={FaGithub} boxSize={6} />
-                </Link>
-                <Link
-                  href="https://linkedin.com"
-                  isExternal
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    transform: "scale(1.2)",
-                    textDecoration: "none"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  <Icon as={FaLinkedin} boxSize={6} />
-                </Link>
-                <Link
-                  href="https://twitter.com"
-                  isExternal
-                  color={linkColor}
-                  _hover={{ 
-                    color: linkHoverColor, 
-                    transform: "scale(1.2)",
-                    textDecoration: "none"
-                  }}
-                  transition="all 0.3s ease"
-                >
-                  <Icon as={FaTwitter} boxSize={6} />
-                </Link>
+                {[
+                  { icon: FaGithub, href: 'https://github.com' },
+                  { icon: FaLinkedin, href: 'https://linkedin.com' },
+                  { icon: FaTwitter, href: 'https://twitter.com' },
+                ].map((s, i) => (
+                  <Link
+                    key={i}
+                    href={s.href}
+                    isExternal
+                    color={linkColor}
+                    _hover={{
+                      color: linkHoverColor,
+                      transform: 'scale(1.2)',
+                      textDecoration: 'none',
+                    }}
+                    transition="all 0.3s ease"
+                  >
+                    <Icon as={s.icon} boxSize={6} />
+                  </Link>
+                ))}
               </HStack>
             </VStack>
-          </Flex>          
+          </Flex>
 
-          {/* Copyright Section */}
-          <Flex 
+          {/* Copyright */}
+          <Flex
             direction={{ base: 'column', md: 'row' }}
-            justify="space-between" 
-            align="center" 
+            justify="space-between"
+            align="center"
             w="full"
             spacing={4}
           >
-            <Text 
-              fontSize="sm" 
+            <Text
+              fontSize="sm"
               color={copyrightColor}
               textAlign={{ base: 'center', md: 'left' }}
             >
               &copy; {new Date().getFullYear()} Photomap. All Rights Reserved.
             </Text>
-            
+
             <HStack spacing={2} color={copyrightColor}>
               <Text fontSize="sm">Made with</Text>
               <Icon as={FaHeart} color="red.400" boxSize={4} />

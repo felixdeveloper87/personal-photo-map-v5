@@ -7,8 +7,8 @@ import {
   useBreakpointValue,
   Skeleton,
   Tooltip,
-} from '@chakra-ui/react';
-import { motion } from 'framer-motion';
+} from "@chakra-ui/react";
+import { motion } from "framer-motion";
 
 const MotionBox = motion.create(Box);
 
@@ -16,31 +16,31 @@ export default function InfoBox({
   icon,
   label,
   value,
-  colorScheme = 'blue',
+  colorScheme = "blue",
   onClick,
-  size = 'default',
+  size = "default",
   isLoading = false,
   tooltip = null,
-  variant = 'elevated', // novo padrão
+  variant = "elevated",
   sx = {},
 }) {
-  // === Material Color Palettes (desaturadas, soft) ===
-  const tone = useColorModeValue('light', 'dark');
-  const colorSchemes = {
-    blue: tone === 'light'
-      ? { icon: '#1a73e8', bg: '#e8f0fe', border: '#c6dafc' }
-      : { icon: '#8ab4f8', bg: '#1e3a8a', border: '#3b82f6' },
-    green: tone === 'light'
-      ? { icon: '#188038', bg: '#e6f4ea', border: '#b7dfb9' }
-      : { icon: '#81c995', bg: '#1f3d28', border: '#34a853' },
-    orange: tone === 'light'
-      ? { icon: '#f29900', bg: '#fef7e0', border: '#f3dea0' }
-      : { icon: '#f9ab00', bg: '#3d2e00', border: '#f9ab00' },
-    red: tone === 'light'
-      ? { icon: '#d93025', bg: '#fce8e6', border: '#f5b9b2' }
-      : { icon: '#f28b82', bg: '#3b0d0c', border: '#ea4335' },
-  };
+  const tone = useColorModeValue("light", "dark");
 
+  // === Refined Soft Color Palettes ===
+  const colorSchemes = {
+    blue: tone === "light"
+      ? { icon: "#1a73e8", bg: "#f7f9ff", border: "#e0e7ff" }
+      : { icon: "#8ab4f8", bg: "#0c1424", border: "#1e3a8a" },
+    green: tone === "light"
+      ? { icon: "#188038", bg: "#f6faf8", border: "#d8eee0" }
+      : { icon: "#81c995", bg: "#0f1d12", border: "#1f3d28" },
+    orange: tone === "light"
+      ? { icon: "#d97706", bg: "#fff9f2", border: "#f4e3c5" }
+      : { icon: "#f9ab00", bg: "#1e1500", border: "#3d2e00" },
+    red: tone === "light"
+      ? { icon: "#d93025", bg: "#fff6f5", border: "#f5d4d2" }
+      : { icon: "#f28b82", bg: "#1e0f0f", border: "#3b0d0c" },
+  };
   const currentColors = colorSchemes[colorScheme] || colorSchemes.blue;
 
   // === Sizes ===
@@ -48,17 +48,17 @@ export default function InfoBox({
   const sizes = {
     default: {
       p: isMobile ? 3 : 4,
-      borderRadius: '16px',
+      borderRadius: "16px",
       iconSize: isMobile ? 6 : 8,
-      labelFontSize: isMobile ? 'xs' : 'sm',
-      valueFontSize: isMobile ? 'sm' : 'md',
+      labelFontSize: isMobile ? "xs" : "sm",
+      valueFontSize: isMobile ? "sm" : "md",
     },
     compact: {
       p: isMobile ? 2 : 3,
-      borderRadius: '12px',
+      borderRadius: "12px",
       iconSize: isMobile ? 5 : 6,
-      labelFontSize: isMobile ? '10px' : 'xs',
-      valueFontSize: isMobile ? 'xs' : 'sm',
+      labelFontSize: isMobile ? "10px" : "xs",
+      valueFontSize: isMobile ? "xs" : "sm",
     },
   };
   const currentSize = sizes[size];
@@ -66,22 +66,22 @@ export default function InfoBox({
   // === Variants ===
   const variants = {
     flat: {
-      bg: useColorModeValue('white', 'gray.800'),
-      border: `1px solid ${useColorModeValue('#e0e0e0', '#333')}`,
-      shadow: 'none',
+      bg: useColorModeValue("white", "gray.800"),
+      border: `1px solid ${useColorModeValue("#e0e0e0", "#333")}`,
+      shadow: "none",
     },
     elevated: {
       bg: currentColors.bg,
       border: `1px solid ${currentColors.border}`,
       shadow: useColorModeValue(
-        '0 1px 3px rgba(60,64,67,0.15)',
-        '0 1px 3px rgba(0,0,0,0.4)'
+        "0 2px 6px rgba(0,0,0,0.08)",
+        "0 2px 6px rgba(0,0,0,0.4)"
       ),
     },
     outlined: {
-      bg: 'transparent',
+      bg: "transparent",
       border: `1px solid ${currentColors.icon}`,
-      shadow: 'none',
+      shadow: "none",
     },
   };
   const currentVariant = variants[variant] || variants.elevated;
@@ -89,27 +89,50 @@ export default function InfoBox({
   // === Motion Variants ===
   const boxMotion = {
     initial: { opacity: 0, y: 12 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
     hover: {
       y: -3,
-      transition: { duration: 0.15, ease: 'easeInOut' },
+      transition: { duration: 0.18, ease: "easeInOut" },
       boxShadow: useColorModeValue(
-        '0 4px 10px rgba(60,64,67,0.15)',
-        '0 4px 10px rgba(0,0,0,0.3)'
+        "0 6px 14px rgba(0,0,0,0.08)",
+        "0 6px 14px rgba(0,0,0,0.4)"
       ),
     },
-    tap: { scale: 0.98 },
+    tap: { scale: 0.985 },
   };
 
   // === Typography ===
-  const labelColor = useColorModeValue('gray.700', 'gray.300');
-  const valueColor = useColorModeValue('gray.900', 'gray.100');
+  const labelColor = useColorModeValue("gray.700", "gray.300");
+  const valueColor = useColorModeValue("gray.900", "gray.100");
+
+  // === Texture (subtle carbon lines) ===
+  const texturePattern = useColorModeValue(
+    `repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.015) 0px,
+      rgba(0, 0, 0, 0.015) 10px,
+      transparent 10px,
+      transparent 20px
+    )`,
+    `repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 10px,
+      transparent 10px,
+      transparent 20px
+    )`
+  );
+
+  const dotOverlay = useColorModeValue(
+    "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 0)",
+    "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)"
+  );
 
   const boxContent = (
-    <VStack 
-      spacing={1.5} 
-      align="center" 
-      justify="center" 
+    <VStack
+      spacing={1.5}
+      align="center"
+      justify="center"
       textAlign="center"
       position="relative"
       zIndex={1}
@@ -130,7 +153,7 @@ export default function InfoBox({
         noOfLines={2}
         lineHeight="short"
       >
-        {isLoading ? <Skeleton height="14px" width="60%" mx="auto" /> : value || '—'}
+        {isLoading ? <Skeleton height="14px" width="60%" mx="auto" /> : value || "—"}
       </Text>
     </VStack>
   );
@@ -147,45 +170,21 @@ export default function InfoBox({
       bg={currentVariant.bg}
       border={currentVariant.border}
       boxShadow={currentVariant.shadow}
-      cursor={onClick ? 'pointer' : 'default'}
+      cursor={onClick ? "pointer" : "default"}
       onClick={onClick}
       transition="all 0.2s ease"
       _focusWithin={{
-        outline: '2px solid',
+        outline: "2px solid",
         outlineColor: currentColors.icon,
       }}
       sx={{
         minW: 0,
-        backgroundImage: useColorModeValue(
-          `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 8px,
-            rgba(0, 0, 0, 0.02) 8px,
-            rgba(0, 0, 0, 0.02) 16px
-          )`,
-          `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 8px,
-            rgba(255, 255, 255, 0.015) 8px,
-            rgba(255, 255, 255, 0.015) 16px
-          )`
-        ),
-        backgroundSize: '20px 20px',
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: useColorModeValue(
-            'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0)',
-            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)'
-          ),
-          backgroundSize: '12px 12px',
-          pointerEvents: 'none',
-        },
+        position: "relative",
+        overflow: "hidden",
+        backgroundImage: `${texturePattern}, ${dotOverlay}`,
+        backgroundSize: "20px 20px, 12px 12px",
+        backgroundBlendMode: "overlay",
+        pointerEvents: "auto",
         ...sx,
       }}
     >
@@ -201,4 +200,3 @@ export default function InfoBox({
     box
   );
 }
-

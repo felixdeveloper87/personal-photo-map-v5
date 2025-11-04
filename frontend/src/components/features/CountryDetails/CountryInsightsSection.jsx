@@ -40,10 +40,10 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
   });
 
   // Color mode values for subtle design
-  const subtleBg = useColorModeValue('gray.50', 'gray.800');
   const subtleBorder = useColorModeValue('gray.200', 'gray.600');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
+  const bgColor = useColorModeValue('white', 'black');
   // Precompute button theme values so hook order stays stable even if section returns null
   const addPhotoBtnBg = useColorModeValue('blue.50', 'blue.900');
   const addPhotoBtnColor = useColorModeValue('blue.600', 'blue.200');
@@ -72,7 +72,7 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
   return (
     <Box mb={3}>
       <Card 
-        bg={subtleBg} 
+        bg ={bgColor}
         border="1px solid" 
         borderColor={subtleBorder} 
         shadow="sm" 

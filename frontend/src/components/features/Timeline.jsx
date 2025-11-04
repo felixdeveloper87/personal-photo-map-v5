@@ -2,6 +2,7 @@ import React, { useContext, lazy, Suspense, useEffect, useState, useMemo } from 
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
+  Flex,
   Text,
   Spinner,
   VStack,
@@ -19,6 +20,7 @@ import {
   Switch,
   FormControl,
   FormLabel,
+  useColorMode,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,8 +30,10 @@ import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
 import TimelineVideoModal from '../modals/TimelineVideoModal';
 import VideoGeneratorButton from './photos/VideoGeneratorButton';
-import CacheStatus from '../ui/CacheStatus';
+
 import { FaGlobe, FaCamera, FaHistory } from 'react-icons/fa';
+import darkThemeImage from '../../assets/darkTheme.jpg';
+import lightThemeImage from '../../assets/lightTheme.jpg';
 
 // Lazy loading of PhotoGallery
 const LazyPhotoGallery = lazy(() => import('./photos/PhotoGallery'));
@@ -70,6 +74,9 @@ const Timeline = ({ selectedYear }) => {
   const { isLoggedIn, fullname } = useContext(AuthContext);
   const [collapsedYears, setCollapsedYears] = useState({});
   const [viewByYear, setViewByYear] = useState(true); // Toggle state: true = by year, false = show all
+  const { colorMode } = useColorMode();
+
+  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
 
   // Extrair o primeiro nome do usuário
   const getFirstName = () => {
@@ -82,12 +89,13 @@ const Timeline = ({ selectedYear }) => {
 
   // Responsive values
   const fontSize = useBreakpointValue({ base: 'lg', md: 'xl', lg: '2xl' });
-  const padding = useBreakpointValue({ base: 1, md: 6, lg: 6 });
+  const padding = useBreakpointValue({ base: 1, md: 2, lg: 3 });
 
   // Color scheme
   const textColor = useColorModeValue('black.800', 'white');
   const accentColor = useColorModeValue('black.500', 'white.300');
   const cardBg = useColorModeValue('white', 'black');
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.92)', 'rgba(0, 0, 0, 0.75)');
   // Precompute theme values used in conditional branches
   const headerBorderColor = useColorModeValue('gray.200', 'gray.700');
   const headerDividerColor = useColorModeValue('gray.300', 'gray.600');
@@ -219,8 +227,23 @@ const Timeline = ({ selectedYear }) => {
   }
 
   return (
-    <Box minH="100vh" p={padding}>
-      <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }}>
+    <Box 
+      minH="100vh" 
+      p={padding}
+      bgImage={backgroundImage}
+      position="relative"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        bg: overlayBg,
+        zIndex: 0,
+      }}
+    >
+      <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }} position="relative" zIndex={1}>
         {/* Professional Header Section */}
         <Box
           bg={cardBg}
@@ -241,9 +264,14 @@ const Timeline = ({ selectedYear }) => {
             bgGradient: 'linear(to-r, teal.400, blue.500)',
           }}
         >
-          <VStack spacing={6} align="stretch">
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            align={{ base: 'stretch', md: 'center' }}
+            justify="space-between"
+            gap={{ base: 6, md: 4 }}
+          >
             {/* Title Section */}
-            <HStack spacing={3}>
+            <HStack spacing={3} flex={{ base: 'none', md: '0 0 auto' }}>
               <Icon as={FaHistory} color={accentColor} boxSize={{ base: 6, md: 8 }} />
               <VStack align="start" spacing={0}>
                 <Heading
@@ -261,16 +289,20 @@ const Timeline = ({ selectedYear }) => {
               </VStack>
             </HStack>
 
-            {/* Divider */}
-            <Divider borderColor={headerDividerColor} />
+            {/* Divider - Only visible on mobile */}
+            <Divider 
+              borderColor={headerDividerColor} 
+              display={{ base: 'block', md: 'none' }}
+            />
 
             {/* Statistics */}
             {sortedYears.length > 0 && (
               <HStack
                 spacing={{ base: 2, md: 6 }}
-                justify="space-around"
+                justify={{ base: 'space-around', md: 'flex-end' }}
                 flexWrap="wrap"
                 align="start"
+                flex={{ base: 'none', md: '0 0 auto' }}
               >
                 {/* Total Photos */}
                 <VStack spacing={1}>
@@ -342,17 +374,18 @@ const Timeline = ({ selectedYear }) => {
 
             {/* Empty State */}
             {sortedYears.length === 0 && (
-              <Text color="gray.500" fontSize="md" textAlign="center" py={4}>
+              <Text 
+                color="gray.500" 
+                fontSize="md" 
+                textAlign="center" 
+                py={4}
+                w="100%"
+              >
                 No photos found. Start capturing your journey!
               </Text>
             )}
-          </VStack>
+          </Flex>
         </Box>
-
-        {/* Cache Status */}
-        {/* <Box px={{ base: 2, sm: 3, md: 4 }}>
-          <CacheStatus />
-        </Box> */}
 
         {/* View Toggle - Above Photos */}
         {sortedYears.length > 0 && (
@@ -360,7 +393,7 @@ const Timeline = ({ selectedYear }) => {
             bg={cardBg}
             borderRadius="lg"
             boxShadow="sm"
-            p={4}
+            p={2}
             borderWidth="1px"
             borderColor={viewToggleBorderColor}
           >
@@ -405,7 +438,6 @@ const Timeline = ({ selectedYear }) => {
                     transition={{ duration: 0.3 }}
                   >
                     <Box
-                      bg={cardBg}
                       borderRadius="lg"
                       boxShadow="md"
                       p={4}

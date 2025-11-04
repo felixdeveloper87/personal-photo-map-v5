@@ -124,12 +124,10 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         mx="auto"
         bg="transparent"
         bgImage={backgroundImage}
-        bgSize="cover"
-        bgPosition="center"
-        bgRepeat="no-repeat"
         borderRadius="2xl"
         overflow="hidden"
         p={{ base: 4, md: 6 }}
+        backdropFilter="blur(12px)"
         _before={{
           content: '""',
           position: 'absolute',
@@ -137,9 +135,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          bg: overlayBg,
+          bg: useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(0, 0, 0, 0.65)'),
           zIndex: 0,
-          borderRadius: '2xl',
+          borderRadius: 'lg',
         }}
       >
         <Box position="relative" zIndex={1}>
@@ -188,16 +186,27 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   flexWrap="wrap"
                   px={2}
                 >
-                  <Text
-                    fontSize={{ base: "xl", sm: "2xl" }}
-                    fontWeight="bold"
-                    bgGradient={wikiHeadingGradient}
-                    bgClip="text"
-                    lineHeight="1.2"
-                    textAlign="center"
+                  <Box
+                    as="span"
+                    display="inline-block"
+                    filter={useColorModeValue(
+                      'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9))',
+                      'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 10px rgba(0, 0, 0, 0.7))'
+                    )}
                   >
-                    {countryName} is waiting for you
-                  </Text>
+                    <Text
+                      fontSize={{ base: "xl", sm: "2xl" }}
+                      fontWeight="bold"
+                      bgGradient={wikiHeadingGradient}
+                      bgClip="text"
+                      lineHeight="1.2"
+                      textAlign="center"
+                      position="relative"
+                      zIndex={1}
+                    >
+                      {countryName} is waiting for you
+                    </Text>
+                  </Box>
 
                   <MotionButton
                     size={ctaSize}

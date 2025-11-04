@@ -14,10 +14,7 @@ const fonts = {
 const styles = {
     global: (props) => ({
         body: {
-            bgGradient:
-                props.colorMode === 'light'
-                    ? 'linear(to-r, rgb(255, 255, 255),rgb(255, 255, 255))'
-                    : 'linear(to-r,rgb(5, 5, 5),rgb(6, 6, 6))',
+            bg: props.colorMode === 'light' ? 'white' : 'black',
             color: props.colorMode === 'light' ? 'gray.900' : 'gray.100',
             fontFamily: 'body',
         },
