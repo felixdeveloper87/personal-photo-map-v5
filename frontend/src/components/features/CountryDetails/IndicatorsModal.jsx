@@ -283,8 +283,6 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         borderRadius="xl"
         p={4}
         boxShadow="sm"
-        transition="all 0.2s"
-        _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
         sx={{
           backgroundImage: useColorModeValue(
             `repeating-linear-gradient(135deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`,
