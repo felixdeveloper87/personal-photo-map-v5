@@ -1,6 +1,6 @@
 // worldbank.js — versão inteligente com ranking dinâmico por ano real
 
-const RANKING_CACHE_KEY = 'worldbank_rankings_cache_v3'; // v3: filtra apenas países reais
+const RANKING_CACHE_KEY = 'worldbank_rankings_cache_v4'; // v4: filtra por nome e código
 const RANKING_CACHE_TTL_DAYS = 7;
 const memoryRankingCache = {};
 
@@ -28,6 +28,7 @@ const clearOldCaches = () => {
   try {
     if (typeof localStorage !== 'undefined') {
       // Remover versões antigas do cache
+      localStorage.removeItem('worldbank_rankings_cache_v3');
       localStorage.removeItem('worldbank_rankings_cache_v2');
       localStorage.removeItem('worldbank_rankings_cache_v1');
     }
@@ -80,6 +81,59 @@ const AGGREGATE_REGIONS = new Set([
   'XC', 'XD', 'XE', 'XF', 'XG', 'XH', 'XI', 'XJ', 'XL', 'XM', 'XN', 'XO', 'XP', 'XQ', 'XR', 'XS', 'XT', 'XU', 'XV', 'XW', 'XY', 'XZ', // Other regions
   'OE', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', // Other aggregates
 ]);
+
+// Padrões de nomes que indicam regiões agregadas (não países)
+const AGGREGATE_NAME_PATTERNS = [
+  /^world$/i,
+  /^oecd/i,
+  /post-demographic/i,
+  /demographic dividend/i,
+  /^ida/i,
+  /^ibrd/i,
+  /low.*income/i,
+  /middle.*income/i,
+  /high.*income/i,
+  /upper.*income/i,
+  /lower.*income/i,
+  /east asia/i,
+  /west asia/i,
+  /south asia/i,
+  /central asia/i,
+  /southeast asia/i,
+  /middle east/i,
+  /north africa/i,
+  /sub-saharan africa/i,
+  /europe.*central asia/i,
+  /europe.*asia/i,
+  /latin america/i,
+  /caribbean/i,
+  /pacific/i,
+  /european union/i,
+  /euro area/i,
+  /eurozone/i,
+  /north america/i,
+  /south america/i,
+  /\(excluding/i,
+  /\(ida/i,
+  /\(ibrd/i,
+  /countries\)$/i,
+  /^arab world$/i,
+  /^small island/i,
+  /^fragile/i,
+  /^heavily/i,
+  /^least developed/i,
+  /^other small/i,
+  /^pre-demographic/i,
+];
+
+// Verifica se um nome de país/região é uma região agregada
+const isAggregateByName = (name) => {
+  if (!name || typeof name !== 'string') return false;
+  const nameUpper = name.trim();
+  
+  // Verificar padrões conhecidos
+  return AGGREGATE_NAME_PATTERNS.some(pattern => pattern.test(nameUpper));
+};
 
 // Verifica se um código de país é um país real (não uma região agregada)
 const isRealCountry = (code) => {
@@ -176,6 +230,13 @@ const getRankingForYear = async (indicatorCode, isoCode, year) => {
     
     // FILTRAR APENAS PAÍSES REAIS (excluir regiões agregadas)
     const entries = allEntries.filter(entry => {
+      // Verificar pelo nome do país primeiro
+      const countryName = entry.country?.value || entry.countryid || '';
+      if (isAggregateByName(countryName)) {
+        return false;
+      }
+      
+      // Verificar pelos códigos ISO
       const codes = extractCountryCodes(entry);
       return codes.length > 0; // Apenas incluir se tiver pelo menos um código de país real
     });
@@ -316,6 +377,13 @@ export const fetchFullRanking = async (indicatorCode, year) => {
     
     // FILTRAR APENAS PAÍSES REAIS (excluir regiões agregadas)
     const entries = allEntries.filter(entry => {
+      // Verificar pelo nome do país primeiro
+      const countryName = entry.country?.value || entry.countryid || '';
+      if (isAggregateByName(countryName)) {
+        return false;
+      }
+      
+      // Verificar pelos códigos ISO
       const codes = extractCountryCodes(entry);
       return codes.length > 0;
     });
@@ -331,11 +399,22 @@ export const fetchFullRanking = async (indicatorCode, year) => {
     const rankingList = sorted.map((entry, index) => {
       const position = index + 1;
       const countryCodes = extractCountryCodes(entry);
-      const countryName = entry.country?.value || entry.countryid || countryCodes[0] || 'Unknown';
+      // Extrair nome do país de diferentes formas possíveis
+      let countryName = 'Unknown';
+      if (entry.country) {
+        if (typeof entry.country === 'object' && entry.country !== null) {
+          countryName = entry.country.value || entry.country.name || countryName;
+        } else if (typeof entry.country === 'string') {
+          countryName = entry.country;
+        }
+      }
+      if (countryName === 'Unknown' && entry.countryid) {
+        countryName = String(entry.countryid);
+      }
       
       return {
         position,
-        countryName,
+        countryName: countryName.trim(),
         countryCode: countryCodes[0] || '',
         value: entry.value,
         formattedValue: formatValueForIndicator(indicatorCode, entry.value),
