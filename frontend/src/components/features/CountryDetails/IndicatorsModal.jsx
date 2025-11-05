@@ -30,7 +30,6 @@ import {
   FaDollarSign, FaChartLine, FaBalanceScale, FaHandHoldingUsd,
   FaPercent, FaUsers, FaHeartbeat, FaWifi, FaCity, FaBook,
   FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaPoundSign,
-  FaList,
 } from 'react-icons/fa';
 import { fetchFullRanking } from '../../../data/worldBankService';
 
@@ -94,14 +93,36 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
 
   const withRank = (key) => indicatorsData?.rankings?.[key] || null;
 
-  const handleOpenRanking = async () => {
+  // Mapeamento de keys dos indicadores para códigos do World Bank
+  const indicatorCodeMap = {
+    'gdp': 'NY.GDP.MKTP.CD',
+    'gdpGrowth': 'NY.GDP.MKTP.KD.ZG',
+    'gdpPerCapitaCurrent': 'NY.GDP.PCAP.CD',
+    'debtToGDP': 'GC.DOD.TOTL.GD.ZS',
+    'inflationCPI': 'FP.CPI.TOTL.ZG',
+    'lifeExpectancy': 'SP.DYN.LE00.IN',
+    'internetUsers': 'IT.NET.USER.ZS',
+    'urbanPopulation': 'SP.URB.TOTL.IN.ZS',
+    'education': 'SE.ADT.LITR.ZS',
+    'netMigration': 'SM.POP.NETM',
+    'accessToEletricity': 'EG.ELC.ACCS.ZS',
+    'healthExpenses': 'SH.XPD.CHEX.GD.ZS',
+  };
+
+  const handleOpenRanking = async (indicatorKey, year) => {
     setIsRankingModalOpen(true);
     setLoadingRanking(true);
     setRankingData(null);
     
     try {
-      const year = indicatorsData?.gdp?.year || '2024';
-      const ranking = await fetchFullRanking('NY.GDP.MKTP.CD', year);
+      const indicatorCode = indicatorCodeMap[indicatorKey];
+      if (!indicatorCode) {
+        console.error('Indicator code not found for key:', indicatorKey);
+        setLoadingRanking(false);
+        return;
+      }
+      
+      const ranking = await fetchFullRanking(indicatorCode, year || '2024');
       setRankingData(ranking);
     } catch (error) {
       console.error('Error fetching ranking:', error);
@@ -251,7 +272,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   };
   const currentData = dataMap[activeTab];
 
-  const StatCard = ({ icon, label, value, color, rank, year }) => {
+  const StatCard = ({ icon, label, value, color, rank, year, indicatorKey }) => {
     const style = getRankStyle(rank);
 
     return (
@@ -296,7 +317,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                 <Tooltip
                   hasArrow
                   placement="top"
-                  label={`Based on ${rank.year || year || 'latest'} World Bank data`}
+                  label={`Clique para ver ranking completo - Baseado em dados de ${rank.year || year || 'latest'} do World Bank`}
                 >
                   <Badge
                     fontSize="xs"
@@ -308,6 +329,14 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                     gap="4px"
                     px={2}
                     py={0.5}
+                    cursor="pointer"
+                    onClick={() => handleOpenRanking(indicatorKey, rank.year || year)}
+                    _hover={{ 
+                      opacity: 0.8, 
+                      transform: 'scale(1.05)',
+                      boxShadow: 'sm'
+                    }}
+                    transition="all 0.2s"
                   >
                     {style.medal && <span style={{ lineHeight: 1 }}>{style.medal}</span>}
                     {`#${rank.rank} / ${rank.total}`}
@@ -367,26 +396,17 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
       <SimpleGrid columns={1} spacing={4}>
         {currentData.map((item, idx) => {
           const { key, icon, label, value, color, rank, year } = item;
-          const isGDP = key === 'gdp';
-          
           return (
-            <Box key={key || idx}>
-              {isGDP && rank && (
-                <Button
-                  size="sm"
-                  leftIcon={<Icon as={FaList} />}
-                  onClick={handleOpenRanking}
-                  mb={2}
-                  colorScheme="green"
-                  variant="outline"
-                  width="100%"
-                  fontSize="xs"
-                >
-                  Ver ranking completo de GDP Total
-                </Button>
-              )}
-              <StatCard icon={icon} label={label} value={value} color={color} rank={rank} year={year} />
-            </Box>
+            <StatCard 
+              key={key || idx} 
+              icon={icon} 
+              label={label} 
+              value={value} 
+              color={color} 
+              rank={rank} 
+              year={year}
+              indicatorKey={key}
+            />
           );
         })}
       </SimpleGrid>
@@ -410,7 +430,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         <ModalOverlay />
         <ModalContent bg={cardBg} maxH="80vh">
           <ModalHeader color={heading}>
-            Ranking Completo - GDP Total ({rankingData?.year || indicatorsData?.gdp?.year || 'N/A'})
+            Ranking Completo ({rankingData?.year || 'N/A'})
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
@@ -430,7 +450,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                       <Tr>
                         <Th>Posição</Th>
                         <Th>País</Th>
-                        <Th isNumeric>GDP Total</Th>
+                        <Th isNumeric>Valor</Th>
                       </Tr>
                     </Thead>
                     <Tbody>
