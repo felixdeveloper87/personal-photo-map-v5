@@ -54,11 +54,7 @@ export default function HeroHeader({
     ? moment().utcOffset(weatherData.timezone / 60).format('DD/MM/YYYY')
     : moment().format('DD/MM/YYYY')
 
-  const headerBg = useColorModeValue(
-    'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-    'linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(0, 0, 0) 100%)'
-  )
-
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.70)', 'rgba(0, 0, 0, 0.75)');
   const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
 
   // Linha principal (País • Capital • Hora • Data)
@@ -160,7 +156,7 @@ export default function HeroHeader({
             left: 0,
             right: 0,
             bottom: 0,
-            bg: useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(0, 0, 0, 0.65)'),
+            bg: overlayBg,
             zIndex: 0,
             borderRadius: 'lg',
           }}

@@ -144,7 +144,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   // Theme
   const { colorMode } = useColorMode();
   const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.90)', 'rgba(0, 0, 0, 0.90)');
 
   // Confirms
   const {
@@ -450,9 +450,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   return (
     <Box
       bgImage={backgroundImage}
-      bgSize="cover"
-      bgPosition="center"
-      bgRepeat="no-repeat"
       position="relative"
       _before={{
         content: '""',

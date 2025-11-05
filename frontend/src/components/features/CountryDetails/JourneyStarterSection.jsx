@@ -112,7 +112,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   const maxWidth = useBreakpointValue({ base: '100%', lg: '1600px', xl: '2200px', '2xl': '2600px' });
   
   // Overlay background for better text readability
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(0, 0, 0, 0.6)');
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.80)', 'rgba(0, 0, 0, 0.90)');
   const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
 
   return (
@@ -135,7 +135,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          bg: useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(0, 0, 0, 0.65)'),
+          bg: overlayBg,
           zIndex: 0,
           borderRadius: 'lg',
         }}

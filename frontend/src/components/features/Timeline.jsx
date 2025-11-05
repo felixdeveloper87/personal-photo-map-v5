@@ -76,6 +76,7 @@ const Timeline = ({ selectedYear }) => {
   const [viewByYear, setViewByYear] = useState(true); // Toggle state: true = by year, false = show all
   const { colorMode } = useColorMode();
 
+
   const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
 
   // Extrair o primeiro nome do usuário
@@ -95,11 +96,11 @@ const Timeline = ({ selectedYear }) => {
   const textColor = useColorModeValue('black.800', 'white');
   const accentColor = useColorModeValue('black.500', 'white.300');
   const cardBg = useColorModeValue('white', 'black');
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.92)', 'rgba(0, 0, 0, 0.75)');
+  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.90)', 'rgba(0, 0, 0, 0.90)');
   // Precompute theme values used in conditional branches
-  const headerBorderColor = useColorModeValue('gray.200', 'gray.700');
+  const headerBorderColor = useColorModeValue('gray.500', 'gray.300');
   const headerDividerColor = useColorModeValue('gray.300', 'gray.600');
-  const viewToggleBorderColor = useColorModeValue('gray.200', 'gray.700');
+  const viewToggleBorderColor = useColorModeValue('gray.200', 'gray.900');
 
 
   // Fetch photos with React Query
@@ -190,7 +191,8 @@ const Timeline = ({ selectedYear }) => {
             letterSpacing="tight"
             mb={4}
           >
-            {getFirstName()}'s Photo Timeline
+            {/* {getFirstName()}'s Photo Timeline */}
+            Timeline
           </Heading>
           <Text color={textColor} fontSize="lg" textAlign="center" mt={8}>
             Please log in to view your photo timeline and organize your travel memories.
@@ -243,26 +245,16 @@ const Timeline = ({ selectedYear }) => {
         zIndex: 0,
       }}
     >
-      <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }} position="relative" zIndex={1}>
+      <VStack spacing={6} align="stretch" px={{ base: 0, md: 0 }} position="relative" zIndex={0}>
         {/* Professional Header Section */}
         <Box
-          bg={cardBg}
           borderRadius="2xl"
           boxShadow="xl"
           p={{ base: 4, md: 8 }}
-          borderWidth="1px"
+          borderWidth="3px"
           borderColor={headerBorderColor}
           position="relative"
           overflow="hidden"
-          _before={{
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            bgGradient: 'linear(to-r, teal.400, blue.500)',
-          }}
         >
           <Flex
             direction={{ base: 'column', md: 'row' }}
@@ -281,9 +273,9 @@ const Timeline = ({ selectedYear }) => {
                   fontWeight="bold"
                   letterSpacing="tight"
                 >
-                  {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
+                  {selectedYear ? `Timeline ${selectedYear}` : `${getFirstName()}'s Timeline`}
                 </Heading>
-                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" fontWeight="medium">
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color= 'blue.500' fontWeight="medium">
                   Your journey through memories
                 </Text>
               </VStack>
