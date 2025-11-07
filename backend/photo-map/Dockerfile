@@ -24,7 +24,7 @@ RUN if [ "$BUILD_ENV" = "development" ]; then \
 RUN mvn clean package -DskipTests $MAVEN_OPTS
 
 # Runtime stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Create upload directory with proper permissions

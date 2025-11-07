@@ -134,12 +134,23 @@ export const AuthProvider = ({ children }) => {
     // Store the original fetch function
     const originalFetch = window.fetch;
     
+    // Lista de endpoints públicos que não devem acionar logout em caso de 401
+    const publicEndpoints = [
+      '/api/countries/',
+      '/api/auth/',
+      '/api/health',
+    ];
+    
     // Override fetch to intercept responses
     window.fetch = async (...args) => {
       const response = await originalFetch(...args);
       
-      // Check for authentication failures
-      if (response.status === 401 && isLoggedIn) {
+      // Verificar se é um endpoint público
+      const url = args[0]?.toString() || '';
+      const isPublicEndpoint = publicEndpoints.some(endpoint => url.includes(endpoint));
+      
+      // Check for authentication failures (apenas para endpoints privados)
+      if (response.status === 401 && isLoggedIn && !isPublicEndpoint) {
         console.warn('🔐 Global fetch interceptor: Authentication failed');
         
         // Clear invalid token

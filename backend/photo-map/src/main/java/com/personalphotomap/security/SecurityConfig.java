@@ -33,6 +33,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()  // login/registro públicos
                     .requestMatchers("/health").permitAll()                      // health público
                     .requestMatchers("/api/images/uploads/**").permitAll()       // imagens públicas
+                    .requestMatchers("/api/countries/**").permitAll()            // country info endpoints públicos
                     .requestMatchers("/favicon.ico").permitAll()                 // favicon público
                     .requestMatchers("/robots.txt").permitAll()                  // robots.txt público
                     .requestMatchers("/sitemap.xml").permitAll()                 // sitemap público

@@ -49,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/other-public-endpoint",
             "/health",
             "/api/images/uploads/**",
+            "/api/countries/**",  // Country info endpoints são públicos
             "/favicon.ico",
             "/robots.txt",
             "/sitemap.xml"

@@ -1,4 +1,5 @@
 // worldbank.js — versão inteligente com ranking dinâmico por ano real
+import { buildApiUrl } from '../utils/apiConfig';
 
 const RANKING_CACHE_KEY = 'worldbank_rankings_cache_v4'; // v4: filtra por nome e código
 const RANKING_CACHE_TTL_DAYS = 7;
@@ -443,6 +444,297 @@ const formatters = {
 export const fetchWorldBankIndicators = async (isoCode) => {
   if (!isoCode) return {};
 
+  // Primeiro tenta buscar do backend (que tem cache e rankings)
+  try {
+    const backendUrl = buildApiUrl(`/api/countries/${isoCode}/info`);
+    console.log(`🌐 [WorldBank] Tentando buscar indicadores do backend: ${backendUrl}`);
+    const fetchStartTime = performance.now();
+    const backendResponse = await fetch(backendUrl);
+    
+    if (backendResponse.ok) {
+      const backendData = await backendResponse.json();
+      const fetchDuration = (performance.now() - fetchStartTime).toFixed(0);
+      
+      // Se demorou mais de 3 segundos, provavelmente foi buscar dados novos (não cache)
+      // World Bank pode demorar mais porque busca muitos indicadores e calcula rankings
+      const isFromCache = fetchDuration < 3000;
+      
+      const initialIndicatorsCount = Object.keys(backendData).filter(k => 
+        ['gdp', 'gdpGrowth', 'lifeExpectancy', 'gniPerCapita', 'internetUsers'].includes(k)
+      ).length;
+      
+      console.log(`${isFromCache ? '✅' : '⏳'} [WorldBank] Dados obtidos do BACKEND ${isFromCache ? '(cache)' : '(buscando dados novos - pode demorar 10-30s)'}:`, {
+        countryId: isoCode,
+        indicatorsFound: initialIndicatorsCount,
+        hasRankings: !!(backendData.gdpRank || backendData.lifeExpectancyRank),
+        source: isFromCache ? 'backend-cache' : 'backend-fresh-fetch',
+        duration: `${fetchDuration}ms`
+      });
+      
+      if (!isFromCache) {
+        console.log(`⏳ [WorldBank] Aguarde... O backend está buscando dados do World Bank e calculando rankings. Isso pode levar 10-30 segundos na primeira vez.`);
+      }
+      
+      // Converter dados do backend para o formato esperado pelo frontend
+      const formatted = {};
+      
+      // Mapear dados econômicos
+      if (backendData.gdp != null) {
+        formatted.gdp = {
+          value: backendData.gdpFormatted || formatGDP(backendData.gdp),
+          raw: backendData.gdp,
+          year: backendData.gdpYear
+        };
+      }
+      
+      if (backendData.gdpGrowth != null) {
+        formatted.gdpGrowth = {
+          value: `${backendData.gdpGrowth.toFixed(1)}%`,
+          raw: backendData.gdpGrowth,
+          year: backendData.gdpGrowthYear
+        };
+      }
+      
+      if (backendData.gdpPerCapitaCurrent != null) {
+        formatted.gdpPerCapitaCurrent = {
+          value: backendData.gdpPerCapitaCurrentFormatted || formatGDP(backendData.gdpPerCapitaCurrent),
+          raw: backendData.gdpPerCapitaCurrent,
+          year: backendData.gdpPerCapitaCurrentYear
+        };
+      }
+      
+      if (backendData.debtToGDP != null) {
+        formatted.debtToGDP = {
+          value: `${backendData.debtToGDP.toFixed(1)}%`,
+          raw: backendData.debtToGDP,
+          year: backendData.debtToGDPYear
+        };
+      }
+      
+      if (backendData.inflationCPI != null) {
+        formatted.inflationCPI = {
+          value: `${backendData.inflationCPI.toFixed(1)}%`,
+          raw: backendData.inflationCPI,
+          year: backendData.inflationCPIYear
+        };
+      }
+      
+      if (backendData.gniPerCapita != null) {
+        formatted.gniPerCapita = {
+          value: backendData.gniPerCapitaFormatted || formatGDP(backendData.gniPerCapita),
+          raw: backendData.gniPerCapita,
+          year: backendData.gniPerCapitaYear
+        };
+      }
+      
+      if (backendData.gniPerCapitaPPP != null) {
+        formatted.gniPerCapitaPPP = {
+          value: backendData.gniPerCapitaPPPFormatted || formatGDP(backendData.gniPerCapitaPPP),
+          raw: backendData.gniPerCapitaPPP,
+          year: backendData.gniPerCapitaPPPYear
+        };
+      }
+      
+      // Mapear dados sociais
+      if (backendData.lifeExpectancy != null) {
+        formatted.lifeExpectancy = {
+          value: `${backendData.lifeExpectancy.toFixed(1)} years`,
+          raw: backendData.lifeExpectancy,
+          year: backendData.lifeExpectancyYear
+        };
+      }
+      
+      if (backendData.internetUsers != null) {
+        formatted.internetUsers = {
+          value: `${backendData.internetUsers.toFixed(1)}%`,
+          raw: backendData.internetUsers,
+          year: backendData.internetUsersYear
+        };
+      }
+      
+      if (backendData.urbanPopulation != null) {
+        formatted.urbanPopulation = {
+          value: `${backendData.urbanPopulation.toFixed(1)}%`,
+          raw: backendData.urbanPopulation,
+          year: backendData.urbanPopulationYear
+        };
+      }
+      
+      if (backendData.education != null) {
+        formatted.education = {
+          value: `${backendData.education.toFixed(1)}%`,
+          raw: backendData.education,
+          year: backendData.educationYear
+        };
+      }
+      
+      if (backendData.netMigration != null) {
+        formatted.netMigration = {
+          value: backendData.netMigrationFormatted || Number(backendData.netMigration).toLocaleString('en-US'),
+          raw: backendData.netMigration,
+          year: backendData.netMigrationYear
+        };
+      }
+      
+      if (backendData.unemployment != null) {
+        formatted.unemployment = {
+          value: `${backendData.unemployment.toFixed(1)}%`,
+          raw: backendData.unemployment,
+          year: backendData.unemploymentYear
+        };
+      }
+      
+      if (backendData.fertilityRate != null) {
+        formatted.fertilityRate = {
+          value: `${backendData.fertilityRate.toFixed(2)}%`,
+          raw: backendData.fertilityRate,
+          year: backendData.fertilityRateYear
+        };
+      }
+      
+      if (backendData.accessToEletricity != null) {
+        formatted.accessToEletricity = {
+          value: `${backendData.accessToEletricity.toFixed(1)}%`,
+          raw: backendData.accessToEletricity,
+          year: backendData.accessToEletricityYear
+        };
+      }
+      
+      if (backendData.healthExpenses != null) {
+        formatted.healthExpenses = {
+          value: `${backendData.healthExpenses.toFixed(1)}%`,
+          raw: backendData.healthExpenses,
+          year: backendData.healthExpensesYear
+        };
+      }
+      
+      // Mapear rankings
+      formatted.rankings = {};
+      
+      if (backendData.gdpRank != null) {
+        formatted.rankings.gdp = {
+          rank: backendData.gdpRank,
+          total: backendData.gdpTotalCountries,
+          year: backendData.gdpYear
+        };
+      }
+      
+      if (backendData.gdpGrowthRank != null) {
+        formatted.rankings.gdpGrowth = {
+          rank: backendData.gdpGrowthRank,
+          total: backendData.gdpGrowthTotalCountries,
+          year: backendData.gdpGrowthYear
+        };
+      }
+      
+      if (backendData.gdpPerCapitaCurrentRank != null) {
+        formatted.rankings.gdpPerCapitaCurrent = {
+          rank: backendData.gdpPerCapitaCurrentRank,
+          total: backendData.gdpPerCapitaCurrentTotalCountries,
+          year: backendData.gdpPerCapitaCurrentYear
+        };
+      }
+      
+      if (backendData.debtToGDPRank != null) {
+        formatted.rankings.debtToGDP = {
+          rank: backendData.debtToGDPRank,
+          total: backendData.debtToGDPTotalCountries,
+          year: backendData.debtToGDPYear
+        };
+      }
+      
+      if (backendData.inflationCPIRank != null) {
+        formatted.rankings.inflationCPI = {
+          rank: backendData.inflationCPIRank,
+          total: backendData.inflationCPITotalCountries,
+          year: backendData.inflationCPIYear
+        };
+      }
+      
+      if (backendData.lifeExpectancyRank != null) {
+        formatted.rankings.lifeExpectancy = {
+          rank: backendData.lifeExpectancyRank,
+          total: backendData.lifeExpectancyTotalCountries,
+          year: backendData.lifeExpectancyYear
+        };
+      }
+      
+      if (backendData.internetUsersRank != null) {
+        formatted.rankings.internetUsers = {
+          rank: backendData.internetUsersRank,
+          total: backendData.internetUsersTotalCountries,
+          year: backendData.internetUsersYear
+        };
+      }
+      
+      if (backendData.urbanPopulationRank != null) {
+        formatted.rankings.urbanPopulation = {
+          rank: backendData.urbanPopulationRank,
+          total: backendData.urbanPopulationTotalCountries,
+          year: backendData.urbanPopulationYear
+        };
+      }
+      
+      if (backendData.educationRank != null) {
+        formatted.rankings.education = {
+          rank: backendData.educationRank,
+          total: backendData.educationTotalCountries,
+          year: backendData.educationYear
+        };
+      }
+      
+      if (backendData.netMigrationRank != null) {
+        formatted.rankings.netMigration = {
+          rank: backendData.netMigrationRank,
+          total: backendData.netMigrationTotalCountries,
+          year: backendData.netMigrationYear
+        };
+      }
+      
+      if (backendData.fertilityRateRank != null) {
+        formatted.rankings.fertilityRate = {
+          rank: backendData.fertilityRateRank,
+          total: backendData.fertilityRateTotalCountries,
+          year: backendData.fertilityRateYear
+        };
+      }
+      
+      if (backendData.accessToEletricityRank != null) {
+        formatted.rankings.accessToEletricity = {
+          rank: backendData.accessToEletricityRank,
+          total: backendData.accessToEletricityTotalCountries,
+          year: backendData.accessToEletricityYear
+        };
+      }
+      
+      if (backendData.healthExpensesRank != null) {
+        formatted.rankings.healthExpenses = {
+          rank: backendData.healthExpensesRank,
+          total: backendData.healthExpensesTotalCountries,
+          year: backendData.healthExpensesYear
+        };
+      }
+      
+      const indicatorsCount = Object.keys(formatted).length;
+      const rankingsCount = Object.keys(formatted.rankings || {}).length;
+      // Reutilizar isFromCache já calculado acima
+      
+      console.log(`📊 [WorldBank] Dados formatados do backend:`, {
+        indicators: indicatorsCount,
+        rankings: rankingsCount,
+        source: isFromCache ? 'backend-cache' : 'backend-fresh-fetch',
+        note: isFromCache ? 'Dados do cache (rápido!)' : 'Dados recém-buscados (salvos no cache para próxima vez)'
+      });
+      return formatted;
+    } else {
+      console.warn(`⚠️ [WorldBank] Backend retornou status ${backendResponse.status}. Tentando World Bank API diretamente...`);
+    }
+  } catch (backendError) {
+    console.warn('⚠️ [WorldBank] Backend API failed. Trying World Bank API directly...', backendError);
+  }
+
+  // Fallback para World Bank API direta
+  console.log(`🌐 [WorldBank] Buscando indicadores diretamente da World Bank API para: ${isoCode}`);
   const indicators = {
     gdp: "NY.GDP.MKTP.CD",
     lifeExpectancy: "SP.DYN.LE00.IN",
@@ -535,5 +827,13 @@ export const fetchWorldBankIndicators = async (isoCode) => {
       continue;
     }
   }
+  
+  console.log(`✅ [WorldBank] Dados obtidos da WORLD BANK API (fallback):`, {
+    countryId: isoCode,
+    indicators: Object.keys(formatted).length,
+    rankings: Object.keys(formatted.rankings).length,
+    source: 'worldbank-api-direct'
+  });
+  
   return formatted;
 };
