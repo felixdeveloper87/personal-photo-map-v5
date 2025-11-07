@@ -137,8 +137,8 @@ public class UserService {
 
     /**
      * Upgrades the current authenticated user to premium status.
-     * Extracts the user from JWT token and updates the role.
-     * Also sends a real-time notification via WebSocket.
+     * Extracts the user from JWT token and updates the premium status.
+     * The frontend handles user notification via toast messages.
      *
      * @param token The JWT token from the Authorization header
      * @return A response map with confirmation message and premium status
@@ -146,30 +146,19 @@ public class UserService {
      * @throws IllegalArgumentException if user is not found
      */
     public Map<String, Object> upgradeCurrentUserToPremium(String token) {
-        System.out.println("🚀 upgradeCurrentUserToPremium called with token: " + (token != null ? token.substring(0, 20) + "..." : "null"));
-        
         if (token == null || !token.startsWith("Bearer ")) {
-            System.out.println("❌ Invalid token format");
             throw new SecurityException("Invalid token format");
         }
 
         String email = jwtUtil.extractUsername(token.substring(7));
-        System.out.println("👤 Extracted email: " + email);
-        
         AppUser user = userRepository.findByEmail(email);
-        System.out.println("👤 User found: " + (user != null ? "YES" : "NO"));
 
         if (user == null) {
-            System.out.println("❌ User not found for email: " + email);
             throw new IllegalArgumentException("User not found.");
         }
-
-        System.out.println("🔐 Current user role: " + user.getRole());
-        System.out.println("🔐 Current premium status: " + user.isPremium());
         
         // Check if user is already premium
         if (user.isPremium()) {
-            System.out.println("⚠️ User is already premium");
             Map<String, Object> response = new HashMap<>();
             response.put("premium", true);
             response.put("message", "User is already premium!");
@@ -179,7 +168,6 @@ public class UserService {
         // Upgrade user to premium
         user.setPremium(true);
         userRepository.save(user);
-        System.out.println("✅ User upgraded to premium successfully");
 
         Map<String, Object> response = new HashMap<>();
         response.put("premium", true);

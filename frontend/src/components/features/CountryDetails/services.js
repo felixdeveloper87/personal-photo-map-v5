@@ -175,7 +175,41 @@ export const fetchFactbookData = async (countryId) => {
   }
 };
 
-// Função para buscar dados da Wikipedia (simplificada, sem religião)
+// Função para buscar curiosidades geradas por IA do backend
+export const fetchCountryCuriosities = async (countryId) => {
+  try {
+    const backendUrl = buildApiUrl(`/api/countries/${countryId}/info`);
+    console.log(`🤖 [AI Curiosities] Checking backend for AI-generated text: ${backendUrl}`);
+    
+    const response = await fetch(backendUrl);
+    
+    if (!response.ok) {
+      console.warn(`⚠️ [AI Curiosities] Backend API error for ${countryId}: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    // Retornar curiosidades se existirem
+    if (data.curiosities && data.curiosities.trim().length > 0) {
+      console.log(`✅ [AI Curiosities] Found AI-generated text for ${countryId} (${data.curiosities.length} characters)`);
+      return {
+        summary: data.curiosities,
+        content_urls: null,
+        culture: 'Cultural heritage information available',
+        source: 'ai' // Flag para identificar origem
+      };
+    }
+    
+    console.log(`⚠️ [AI Curiosities] Not available yet for ${countryId}. The backend will generate it on next request (may take 5-10 seconds).`);
+    return null;
+  } catch (error) {
+    console.warn('❌ [AI Curiosities] Error fetching from backend:', error);
+    return null;
+  }
+};
+
+// Função para buscar dados da Wikipedia (fallback, caso curiosidades não estejam disponíveis)
 export const fetchWikipediaData = async (countryId) => {
   try {
     // Obter o nome do país para buscar na Wikipedia
@@ -185,7 +219,7 @@ export const fetchWikipediaData = async (countryId) => {
       return null;
     }
 
-    console.log(`Fetching Wikipedia data for: ${countryName}`);
+    console.log(`📚 [Wikipedia] Fetching fallback data for: ${countryName}`);
 
     // Buscar dados da Wikipedia usando a API pública
     const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName)}`;
@@ -205,7 +239,8 @@ export const fetchWikipediaData = async (countryId) => {
     return {
       summary,
       content_urls: contentUrls,
-      culture: 'Cultural heritage information available'
+      culture: 'Cultural heritage information available',
+      source: 'wikipedia' // Flag para identificar origem
     };
   } catch (error) {
     console.warn('Wikipedia API error:', error);

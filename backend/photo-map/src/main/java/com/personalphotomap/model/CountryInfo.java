@@ -137,6 +137,14 @@ public class CountryInfo {
     @Column(columnDefinition = "TEXT")
     private String rankingsJson; // JSON com todos os rankings
     
+    // ========== CURIOSIDADES GERADAS POR IA ==========
+    @Column(columnDefinition = "TEXT")
+    private String curiosities; // Texto gerado por IA sobre o país (gastronomia, esportes, cultura, etc.)
+    
+    @JsonIgnore
+    @Column
+    private LocalDateTime curiositiesLastUpdated; // Data da última geração
+    
     // ========== TIMESTAMPS ==========
     @JsonIgnore
     @Column(nullable = false)
@@ -813,6 +821,23 @@ public class CountryInfo {
     
     public void setSocialDataExpiresAt(LocalDateTime socialDataExpiresAt) {
         this.socialDataExpiresAt = socialDataExpiresAt;
+    }
+    
+    // Curiosities Getters and Setters
+    public String getCuriosities() {
+        return curiosities;
+    }
+    
+    public void setCuriosities(String curiosities) {
+        this.curiosities = curiosities;
+    }
+    
+    public LocalDateTime getCuriositiesLastUpdated() {
+        return curiositiesLastUpdated;
+    }
+    
+    public void setCuriositiesLastUpdated(LocalDateTime curiositiesLastUpdated) {
+        this.curiositiesLastUpdated = curiositiesLastUpdated;
     }
     
     /**

@@ -31,6 +31,7 @@ public class CountryInfoService {
     private final CountryInfoRepository repository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final CountryCuriositiesService curiositiesService;
     
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
@@ -139,10 +140,11 @@ public class CountryInfoService {
         "accessToEletricity", "healthExpenses", "netMigration"
     );
     
-    public CountryInfoService(CountryInfoRepository repository) {
+    public CountryInfoService(CountryInfoRepository repository, CountryCuriositiesService curiositiesService) {
         this.repository = repository;
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
+        this.curiositiesService = curiositiesService;
     }
     
     /**
@@ -166,7 +168,25 @@ public class CountryInfoService {
             
             // Verificar se ainda não expirou
             if (info.getExpiresAt() != null && info.getExpiresAt().isAfter(now)) {
-                logger.info("Returning cached data for: {}", upperCountryId);
+                // Se tem curiosidades, retorna do cache
+                if (info.getCuriosities() != null && !info.getCuriosities().isEmpty()) {
+                    logger.info("Returning cached data for: {} (with curiosities)", upperCountryId);
+                    return info;
+                }
+                
+                // Se não tem curiosidades, tenta gerar mesmo com cache válido
+                logger.info("Cache valid but no curiosities found for: {}, attempting to generate...", upperCountryId);
+                try {
+                    String curiosities = curiositiesService.generateCuriosities(info);
+                    if (curiosities != null && !curiosities.trim().isEmpty()) {
+                        info.setCuriosities(curiosities);
+                        info.setCuriositiesLastUpdated(LocalDateTime.now());
+                        repository.save(info);
+                        logger.info("✅ Curiosities generated and saved for cached country: {}", upperCountryId);
+                    }
+                } catch (Exception e) {
+                    logger.warn("Failed to generate curiosities for cached country {}: {}", upperCountryId, e.getMessage());
+                }
                 return info;
             }
             
@@ -209,6 +229,36 @@ public class CountryInfoService {
         } catch (Exception e) {
             logger.error("Error saving country info to database for {}: {}", upperCountryId, e.getMessage(), e);
             // Mesmo se falhar ao salvar, retornar os dados (pode ser problema temporário do banco)
+        }
+        
+        // 5. Gerar curiosidades se não existir (armazenamento permanente)
+        if (countryInfo.getCuriosities() == null || countryInfo.getCuriosities().isEmpty()) {
+            logger.info("🤖 [Curiosities] Starting generation for: {}", upperCountryId);
+            long startTime = System.currentTimeMillis();
+            try {
+                String curiosities = curiositiesService.generateCuriosities(countryInfo);
+                long duration = System.currentTimeMillis() - startTime;
+                
+                if (curiosities != null && !curiosities.trim().isEmpty()) {
+                    countryInfo.setCuriosities(curiosities);
+                    countryInfo.setCuriositiesLastUpdated(LocalDateTime.now());
+                    // Salvar novamente com as curiosidades
+                    repository.save(countryInfo);
+                    logger.info("✅ [Curiosities] Generated and saved for: {} (took {}ms, {} chars)", 
+                        upperCountryId, duration, curiosities.length());
+                } else {
+                    logger.warn("⚠️ [Curiosities] Generation returned null/empty for: {} (took {}ms). Check API key configuration.", 
+                        upperCountryId, duration);
+                }
+            } catch (Exception e) {
+                long duration = System.currentTimeMillis() - startTime;
+                logger.error("❌ [Curiosities] Failed to generate for {} (took {}ms): {}", 
+                    upperCountryId, duration, e.getMessage(), e);
+                // Continua mesmo se falhar - não é crítico, pode tentar novamente depois
+            }
+        } else {
+            logger.debug("✅ [Curiosities] Already exist for: {} ({} chars)", 
+                upperCountryId, countryInfo.getCuriosities().length());
         }
         
         return countryInfo;

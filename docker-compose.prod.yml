@@ -2,6 +2,7 @@ services:
   # Comandos úteis:
   #   docker compose -f docker-compose.prod.yml up
   #   docker compose -f docker-compose.prod.yml up -d
+  #   docker compose -f docker-compose.prod.yml build backend
   #   docker compose -f docker-compose.prod.yml down
   #   docker compose -f docker-compose.prod.yml logs -f
 
@@ -53,6 +54,9 @@ services:
       
       # JWT
       - JWT_SECRET=${JWT_SECRET}
+      
+      # OpenAI API (for generating country curiosities)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       
       # Cloudinary configuration (external image processing)
       - CLOUDINARY_ENABLED=${CLOUDINARY_ENABLED:-true}
