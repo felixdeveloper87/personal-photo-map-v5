@@ -36,6 +36,8 @@ services:
       context: ./backend/photo-map
       dockerfile: Dockerfile
     container_name: photomap-backend-prod
+    env_file:
+      - env.prod
     ports:
       - "8092:8080"
     environment:
