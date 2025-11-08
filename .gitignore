@@ -14,3 +14,7 @@ target/
 !*.example
 .DS_Store
 Thumbs.db
+
+# Environment files (except examples)
+env*
+!env.example
