@@ -478,9 +478,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
                 <Box
                   p={4}
-                  borderRadius="xl"
-                  border="2px solid"
-                  borderColor={wikiBoxBorderColor}
                   mx="auto"
                   bg={cardBg}
                   boxShadow={infoCardShadow}
@@ -492,7 +489,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '3px',
+                    height: '2px',
                     bgGradient: 'linear(to-r, blue.400, purple.500, pink.500)',
                   }}
                 >
