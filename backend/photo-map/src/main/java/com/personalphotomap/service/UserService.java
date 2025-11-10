@@ -77,6 +77,8 @@ public class UserService {
     /**
      * Registers a new user in the system.
      * Checks for email uniqueness and encrypts the password before saving.
+     * If the email is admin@photomap.co.uk, the user is created with ADMIN role.
+     * Otherwise, the user is created with ROLE_USER (default).
      *
      * @param registerRequest DTO containing user registration data
      * @return A success or conflict message
@@ -91,10 +93,40 @@ public class UserService {
         newUser.setEmail(registerRequest.getEmail());
         newUser.setCountry(registerRequest.getCountry());
         newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // converts it to hash Bycrpt
-        newUser.setRole("ROLE_USER"); // Default role
+        
+        // Only admin@photomap.co.uk can be registered as admin
+        if ("admin@photomap.co.uk".equalsIgnoreCase(registerRequest.getEmail())) {
+            newUser.setRole("ROLE_ADMIN");
+        } else {
+            newUser.setRole("ROLE_USER"); // Default role
+        }
 
         userRepository.save(newUser);
         return "User registered successfully.";
+    }
+
+    /**
+     * Creates a new user with a specific role.
+     * Used by admin endpoints to create users with custom roles (e.g., ADMIN).
+     *
+     * @param registerRequest DTO containing user registration data
+     * @param role The role to assign to the user (e.g., "ROLE_ADMIN", "ROLE_USER")
+     * @return A success or conflict message
+     */
+    public String createUserWithRole(RegisterRequestDTO registerRequest, String role) {
+        if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
+            return "Email is already in use.";
+        }
+
+        AppUser newUser = new AppUser();
+        newUser.setFullname(registerRequest.getFullname());
+        newUser.setEmail(registerRequest.getEmail());
+        newUser.setCountry(registerRequest.getCountry());
+        newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        newUser.setRole(role != null ? role : "ROLE_USER");
+
+        userRepository.save(newUser);
+        return "User created successfully with role: " + role;
     }
 
     /**
@@ -120,6 +152,7 @@ public class UserService {
         response.put("fullname", user.getFullname());
         response.put("email", user.getEmail());
         response.put("premium", String.valueOf(user.isPremium()));
+        response.put("role", user.getRole() != null ? user.getRole() : "ROLE_USER");
 
         return response;
     }

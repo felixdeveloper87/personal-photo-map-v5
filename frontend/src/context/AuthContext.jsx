@@ -49,6 +49,11 @@ export const AuthProvider = ({ children }) => {
   });
 
   /**
+   * Stores the user's role from localStorage, or defaults to empty string if not found.
+   */
+  const [role, setRole] = useState(localStorage.getItem('role') || '');
+
+  /**
    * Validates the stored token by making a test API call
    * @returns {Promise<boolean>} true if token is valid, false otherwise
    */
@@ -70,9 +75,13 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
-        // Sync premium status from backend
+        // Sync premium status and role from backend
         if (data.premium !== undefined) {
           updatePremiumStatus(data.premium);
+        }
+        if (data.role) {
+          localStorage.setItem('role', data.role);
+          setRole(data.role);
         }
         return true;
       } else if (response.status === 401) {
@@ -100,12 +109,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('fullname');
     localStorage.removeItem('email');
+    localStorage.removeItem('role');
     // localStorage.setItem('premium', "false"); // Uncomment if needed
 
     // Reset the local state to reflect that the user is no longer logged in
     setIsLoggedIn(false);
     setFullname('');
     setEmail('');
+    setRole('');
     // setIsPremium(false); // Uncomment if you want to reset premium status on logout
 
     // Dispatch a storage event to notify other components or tabs
@@ -205,6 +216,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('fullname', fullname);
     localStorage.setItem('email', email);
     localStorage.setItem('premium', isPremiumUser ? "true" : "false");
+    if (data.role) {
+      localStorage.setItem('role', data.role);
+      setRole(data.role);
+    }
 
     // Update state to reflect authenticated status
     setIsLoggedIn(true);
@@ -479,7 +494,9 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn, 
         isPremium, 
         fullname, 
-        email, 
+        email,
+        role,
+        isAdmin: role === 'ROLE_ADMIN' || role === 'ADMIN',
         login, 
         logout, 
         updatePremiumStatus,

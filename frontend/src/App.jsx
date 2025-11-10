@@ -11,9 +11,11 @@ import About from './pages/About';
 import Contact from "./pages/Contact";
 import TimelinePage from './pages/TimelinePage';
 import MapPage from './pages/MapPage';
+import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
 import { CountriesProvider } from './context/CountriesContext';
 import { usePhotoUploadListener } from './hooks/usePhotoUploadListener';
+import AdminRoute from './components/ui/AdminRoute';
 
 /**
  * App Component
@@ -74,6 +76,11 @@ function App() {
                 <ProtectedRoute>
                   <TimelinePage />
                 </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
               } />
               <Route path="*" element={<NotFound />} /> {/* 404 Page */}
             </Routes>

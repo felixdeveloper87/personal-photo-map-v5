@@ -73,7 +73,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error(await response.text() || 'Login failed');
+      if (!response.ok) {
+        // Try to get error message as text first (backend returns plain text on error)
+        const errorText = await response.text();
+        throw new Error(errorText || 'Login failed');
+      }
 
       const data = await response.json();
       login(data);
