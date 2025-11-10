@@ -17,7 +17,7 @@ import {
   Select,
   useToast,
 } from '@chakra-ui/react';
-import { FaRocket, FaWikipediaW } from 'react-icons/fa';
+import { FaRocket } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { fetchCountryCuriosities, fetchWikipediaData } from './services';
