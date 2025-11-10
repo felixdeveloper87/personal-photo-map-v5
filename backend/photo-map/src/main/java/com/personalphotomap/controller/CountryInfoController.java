@@ -30,19 +30,25 @@ public class CountryInfoController {
     /**
      * Gets complete country information including basic info, economic and social data.
      * Uses cache when available, fetches from external APIs if cache is expired or missing.
+     * Note: Translation is now handled in the frontend. This endpoint always returns English text.
      * 
      * @param countryId ISO2 country code (e.g., "US", "BR")
-     * @return ResponseEntity with CountryInfo object
+     * @param lang Language parameter (ignored - kept for backward compatibility, translation done in frontend)
+     * @return ResponseEntity with CountryInfo object (curiosities always in English)
      */
     @GetMapping("/{countryId}/info")
-    public ResponseEntity<?> getCountryInfo(@PathVariable String countryId) {
+    public ResponseEntity<?> getCountryInfo(
+            @PathVariable String countryId,
+            @RequestParam(required = false, defaultValue = "en") String lang) {
         try {
             if (countryId == null || countryId.length() != 2) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid country ID. Must be a 2-character ISO2 code."));
             }
             
-            CountryInfo info = countryInfoService.getCountryInfo(countryId);
+            // Language parameter is ignored - translation is done in frontend
+            // Always return English text
+            CountryInfo info = countryInfoService.getCountryInfo(countryId, "en");
             
             if (info == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

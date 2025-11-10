@@ -14,6 +14,8 @@ import {
   AlertIcon,
   VStack,
   HStack,
+  Select,
+  useToast,
 } from '@chakra-ui/react';
 import { FaRocket, FaWikipediaW } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -27,11 +29,13 @@ const MotionButton = motion.create(Button);
 
 const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
 
   // States
   const [wikipediaData, setWikipediaData] = useState(null);
   const [isLoadingWikipedia, setIsLoadingWikipedia] = useState(false);
   const [wikipediaError, setWikipediaError] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const countryName = getName(countryId?.toUpperCase(), 'en') || countryId?.toUpperCase() || 'this country';
 
@@ -46,10 +50,22 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
       setWikipediaError(null);
 
       try {
-        // Primeiro tenta buscar curiosidades geradas por IA do backend
-        let data = await fetchCountryCuriosities(countryId);
+        // Callback para quando o limite de tradução for excedido
+        const handleLimitExceeded = () => {
+          toast({
+            title: 'Limite de tradução excedido',
+            description: 'O limite diário de 10.000 caracteres foi atingido. O texto será exibido em inglês. Tente novamente amanhã.',
+            status: 'warning',
+            duration: 8000,
+            isClosable: true,
+            position: 'top',
+          });
+        };
+
+        // Primeiro tenta buscar curiosidades geradas por IA do backend (sempre em inglês)
+        let data = await fetchCountryCuriosities(countryId, selectedLanguage, handleLimitExceeded);
         
-        // Se não encontrar, usa Wikipedia como fallback
+        // Se não encontrar, usa Wikipedia como fallback (apenas em inglês)
         if (!data || !data.summary) {
           console.log('⚠️ [Summary] AI curiosities not available yet, using Wikipedia as temporary fallback...');
           console.log('💡 [Tip] The backend will generate AI text on the next request. This may take 5-10 seconds.');
@@ -58,7 +74,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         
         // Log para debug
         if (data?.source === 'ai') {
-          console.log('✅ [Summary] Using AI-generated curiosities (OpenAI GPT)');
+          console.log(`✅ [Summary] Using AI-generated curiosities (OpenAI GPT, lang: ${selectedLanguage})`);
         } else if (data?.source === 'wikipedia') {
           console.log('📚 [Summary] Using Wikipedia summary (temporary fallback - AI will generate on next request)');
         }
@@ -72,7 +88,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
       }
     };
     loadCountryInfo();
-  }, [countryId]);
+  }, [countryId, selectedLanguage, toast]);
 
   // Accessibility: open with keyboard
   const handleKeyOpen = useCallback(
@@ -142,7 +158,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         bgImage={backgroundImage}
         borderRadius="2xl"
         overflow="hidden"
-        p={{ base: 4, md: 6 }}
         backdropFilter="blur(12px)"
         _before={{
           content: '""',
@@ -179,7 +194,8 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
           <Box mb={8} maxW={maxWidth}>
             <Box
               borderRadius="2xl"
-              p={5}
+              py={5}
+              px={1}
               border="1px solid"
               borderColor={borderColor}
               boxShadow={wikiSummaryCardShadow}
@@ -256,30 +272,23 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   display="flex"
                   alignItems="center"
                   mb={3}
-                  p={4}
+                  p={1}
                   bg={cardBg}
                   borderRadius="xl"
-                  border="2px solid"
+                  border="1px solid"
                   borderColor={wikiBoxBorderColor}
                   flexDirection="column"
                 >
-                  <HStack spacing={3} align="center" w="100%" mb={3}>
-                    <Box
-                      p={2}
-                      bg={wikiSmallIconBg}
-                      borderRadius="lg"
-                      flexShrink={0}
-                    >
-                      <Icon as={FaWikipediaW} color="blue.500" boxSize={5} />
-                    </Box>
-                    <HStack spacing={3} align="center" flex={1}>
+                  <HStack spacing={3} align="center" w="100%" mb={3} flexWrap="wrap">
+                    <HStack spacing={3} align="center" flex={1} minW="100px">
                       <Text
+                        p={2}
                         fontSize="xl"
                         fontWeight="black"
                         bgGradient={wikiHeadingGradient}
                         bgClip="text"
                       >
-                        Summary
+                        Guide
                       </Text>
                       <Text
                         fontSize="xs"
@@ -291,14 +300,46 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                           : '• Knowledge from Wikipedia'}
                       </Text>
                     </HStack>
+                    <Select
+                      value={selectedLanguage}
+                      onChange={(e) => setSelectedLanguage(e.target.value)}
+                      size="sm"
+                      maxW="150px"
+                      bg={cardBg}
+                      borderColor={borderColor}
+                      _hover={{ borderColor: accentColor }}
+                      _focus={{ borderColor: accentColor, boxShadow: `0 0 0 1px ${accentColor}` }}
+                      fontSize="sm"
+                    >
+                      <option value="en">English</option>
+                      <option value="pt">Português</option>
+                      <option value="es">Español</option>
+                      <option value="fr">Français</option>
+                      <option value="de">Deutsch</option>
+                      <option value="it">Italiano</option>
+                      <option value="ru">Русский</option>
+                      <option value="zh">中文</option>
+                      <option value="ja">日本語</option>
+                      <option value="ko">한국어</option>
+                      <option value="ar">العربية</option>
+                    </Select>
                   </HStack>
 
                   <Box fontSize="md" color={textColor} lineHeight="1.8" px={1}>
                     {wikipediaData.summary.split('\n').map((line, index) => {
                       const trimmedLine = line.trim();
                       
-                      // Detecta títulos de seção (Top 5 Tourist Attractions: ou Top 5 Experiences:)
-                      if (trimmedLine.endsWith(':') && (trimmedLine.includes('Top 5') || trimmedLine.includes('Attractions') || trimmedLine.includes('Experiences'))) {
+                      // Detecta títulos de seção (funciona em múltiplos idiomas)
+                      // Procura por linhas que terminam com ':' e contêm palavras-chave relacionadas a atrações/experiências
+                      const isSectionTitle = trimmedLine.endsWith(':') && (
+                        /top\s*\d+/i.test(trimmedLine) || // "Top 5", "Top 10", etc.
+                        /(attractions?|atrações?|atracciones?|attractions?|attrazioni?)/i.test(trimmedLine) || // Attractions em vários idiomas
+                        /(experiences?|experiências?|experiencias?|expériences?|erlebnisse?)/i.test(trimmedLine) || // Experiences em vários idiomas
+                        /(tourist|turista|turístico|turiste|touriste)/i.test(trimmedLine) || // Tourist em vários idiomas
+                        /(destinations?|destinos?|destinations?|destinazioni?)/i.test(trimmedLine) // Destinations em vários idiomas
+                      );
+                      
+                      if (isSectionTitle) {
                         return (
                           <Text
                             key={index}
@@ -320,7 +361,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                           <Text
                             key={index}
                             as="div"
-                            ml={4}
+                            ml={1}
                             mb={1.5}
                             fontSize="md"
                             color={textColor}

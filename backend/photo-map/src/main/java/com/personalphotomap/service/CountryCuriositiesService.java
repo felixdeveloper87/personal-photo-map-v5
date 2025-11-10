@@ -39,11 +39,10 @@ public class CountryCuriositiesService {
     }
 
     /**
-     * Gera curiosidades sobre o país usando OpenAI GPT.
-     * O texto é gerado uma vez e armazenado permanentemente no banco.
+     * Gera curiosidades sobre o país usando OpenAI GPT (sempre em inglês).
      * 
      * @param countryInfo Informações do país
-     * @return Texto com curiosidades sobre o país ou null se falhar
+     * @return Texto com curiosidades sobre o país em inglês ou null se falhar
      */
     public String generateCuriosities(CountryInfo countryInfo) {
         if (openaiApiKey == null || openaiApiKey.isEmpty()) {
@@ -52,14 +51,14 @@ public class CountryCuriositiesService {
             return null;
         }
         
-        logger.info("🤖 [OpenAI] API key found, starting generation for: {}", countryInfo.getCountryId());
+        logger.info("🤖 [OpenAI] API key found, starting generation for: {} (English)", countryInfo.getCountryId());
 
         try {
             String prompt = buildPrompt(countryInfo);
             String curiosities = callOpenAIAPI(prompt, countryInfo.getCountryId());
 
             if (curiosities != null && !curiosities.trim().isEmpty()) {
-                logger.info("✅ Curiosities generated successfully for: {}", countryInfo.getCountryId());
+                logger.info("✅ Curiosities generated successfully for: {} (English)", countryInfo.getCountryId());
                 return curiosities.trim();
             }
 
@@ -72,18 +71,20 @@ public class CountryCuriositiesService {
             return null;
         }
     }
+    
 
     /**
-     * Constrói o prompt para a IA baseado nas informações do país.
+     * Constrói o prompt para a IA baseado nas informações do país (sempre em inglês).
      */
     private String buildPrompt(CountryInfo info) {
         String countryName = info.getNativeName() != null ? info.getNativeName() : info.getCountryId();
         String capital = info.getCapital() != null ? info.getCapital() : "";
         String language = info.getOfficialLanguage() != null ? info.getOfficialLanguage() : "";
         String currency = info.getCurrencyName() != null ? info.getCurrencyName() : "";
-
+        
         return String.format(
                 "Write an inspiring and captivating promotional text about %s that encourages travelers to visit and explore this amazing destination. " +
+                        "Write the ENTIRE text in English. " +
                         "The text should be around 200–250 words, enthusiastic, and written to attract tourists.\n\n" +
                         "Basic country information (for reference):\n" +
                         "- Name: %s\n" +
@@ -121,9 +122,10 @@ public class CountryCuriositiesService {
                         "- Make the reader feel they MUST visit this country",
                 countryName, countryName, capital, language, currency);
     }
+    
 
     /**
-     * Chama a API da OpenAI para gerar o texto.
+     * Chama a API da OpenAI para gerar o texto (sempre em inglês).
      */
     @SuppressWarnings("unchecked")
     private String callOpenAIAPI(String prompt, String countryId) {
@@ -139,6 +141,7 @@ public class CountryCuriositiesService {
                 "You excel at creating captivating opening sentences that spark curiosity and excitement. " +
                 "You know the main tourist attractions, landmarks, and must-visit places in countries around the world. " +
                 "Your texts are written to attract tourists and sell destinations in an authentic and inspiring way. " +
+                "CRITICAL: You MUST write the ENTIRE response in English, including all section titles, descriptions, and text. " +
                 "The text should be around 200–250 words, written in an enthusiastic and inviting tone. " +
                 "Always start with an exciting introduction that makes readers want to discover the country immediately. " +
                 "CRITICAL FORMATTING: You MUST structure your response with clear visual separation: " +
@@ -205,4 +208,5 @@ public class CountryCuriositiesService {
             return null;
         }
     }
+    
 }

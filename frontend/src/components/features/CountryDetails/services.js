@@ -175,11 +175,218 @@ export const fetchFactbookData = async (countryId) => {
   }
 };
 
-// Função para buscar curiosidades geradas por IA do backend
-export const fetchCountryCuriosities = async (countryId) => {
+// Cache de traduções no frontend (evita chamadas repetidas)
+const translationCache = new Map();
+
+// Função para traduzir texto usando API gratuita (MyMemory Translation)
+const translateText = async (text, targetLang, onLimitExceeded) => {
+  if (!text || targetLang === 'en') {
+    return text;
+  }
+
+  // Verificar cache
+  const cacheKey = `${text.substring(0, 50)}_${targetLang}`;
+  if (translationCache.has(cacheKey)) {
+    console.log(`📦 [Translation] Using cached translation for: ${targetLang}`);
+    return translationCache.get(cacheKey);
+  }
+
   try {
-    const backendUrl = buildApiUrl(`/api/countries/${countryId}/info`);
-    console.log(`🤖 [AI Curiosities] Checking backend for AI-generated text: ${backendUrl}`);
+    console.log(`🌐 [Translation] Translating to ${targetLang}...`);
+    console.log(`📏 [Translation] Text length: ${text.length} characters`);
+    
+    // MyMemory tem limite de 500 caracteres por requisição (após encoding da URL)
+    // Usar 400 caracteres para ter margem de segurança com o encoding
+    const MAX_CHARS_PER_REQUEST = 400;
+    
+    // Sempre dividir em chunks se o texto for maior que o limite
+    if (text.length > MAX_CHARS_PER_REQUEST) {
+      console.log(`📝 [Translation] Text too long (${text.length} chars), splitting into chunks (max ${MAX_CHARS_PER_REQUEST} chars per chunk)...`);
+      
+      // Dividir o texto em chunks menores
+      const chunks = [];
+      let startIndex = 0;
+      
+      while (startIndex < text.length) {
+        let endIndex = Math.min(startIndex + MAX_CHARS_PER_REQUEST, text.length);
+        
+        // Se não for o último chunk, tentar quebrar em um ponto natural (quebra de linha ou espaço)
+        if (endIndex < text.length) {
+          // Procurar pela última quebra de linha no chunk
+          const lastNewline = text.lastIndexOf('\n', endIndex);
+          if (lastNewline > startIndex + 100) { // Só usar se não for muito perto do início
+            endIndex = lastNewline + 1;
+          } else {
+            // Se não encontrar quebra de linha, procurar pelo último espaço
+            const lastSpace = text.lastIndexOf(' ', endIndex);
+            if (lastSpace > startIndex + 100) { // Só usar se não for muito perto do início
+              endIndex = lastSpace + 1;
+            }
+          }
+        }
+        
+        const chunk = text.substring(startIndex, endIndex).trim();
+        if (chunk.length > 0) {
+          // Validar tamanho do chunk antes de adicionar
+          if (chunk.length > MAX_CHARS_PER_REQUEST) {
+            console.warn(`⚠️ [Translation] Chunk ${chunks.length + 1} is too large (${chunk.length} chars), forcing split at ${MAX_CHARS_PER_REQUEST}`);
+            // Forçar divisão exata
+            chunks.push(chunk.substring(0, MAX_CHARS_PER_REQUEST));
+            startIndex = startIndex + MAX_CHARS_PER_REQUEST;
+            continue;
+          }
+          chunks.push(chunk);
+          console.log(`📦 [Translation] Chunk ${chunks.length}: ${chunk.length} chars`);
+        }
+        
+        startIndex = endIndex;
+      }
+      
+      console.log(`📦 [Translation] Split into ${chunks.length} chunks (total: ${text.length} chars)`);
+      
+      // Validar todos os chunks antes de traduzir
+      for (let i = 0; i < chunks.length; i++) {
+        if (chunks[i].length > MAX_CHARS_PER_REQUEST) {
+          console.error(`❌ [Translation] Chunk ${i + 1} is too large: ${chunks[i].length} chars (max: ${MAX_CHARS_PER_REQUEST})`);
+          return text; // Retornar texto original se algum chunk for muito grande
+        }
+      }
+      
+      // Traduzir cada chunk sequencialmente
+      const translatedChunks = [];
+      for (let i = 0; i < chunks.length; i++) {
+        console.log(`🔄 [Translation] Translating chunk ${i + 1}/${chunks.length} (${chunks[i].length} chars)...`);
+        const translatedChunk = await translateSingleChunk(chunks[i], targetLang, onLimitExceeded);
+        if (translatedChunk === null) {
+          // Se falhar, retornar texto original
+          console.warn(`⚠️ [Translation] Chunk ${i + 1} translation failed, returning original text`);
+          return text;
+        }
+        translatedChunks.push(translatedChunk);
+        // Pequeno delay entre requisições para evitar rate limiting
+        if (i < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
+      const translated = translatedChunks.join('\n\n');
+      translationCache.set(cacheKey, translated);
+      console.log(`✅ [Translation] Translation completed for: ${targetLang} (${chunks.length} chunks, ${translated.length} chars)`);
+      return translated;
+    } else {
+      // Texto pequeno, traduzir diretamente
+      console.log(`📝 [Translation] Text is small enough (${text.length} chars), translating directly...`);
+      const translated = await translateSingleChunk(text, targetLang, onLimitExceeded);
+      if (translated !== null) {
+        translationCache.set(cacheKey, translated);
+        console.log(`✅ [Translation] Translation completed for: ${targetLang}`);
+        return translated;
+      }
+      return text;
+    }
+  } catch (error) {
+    console.warn(`❌ [Translation] Error translating to ${targetLang}:`, error);
+    return text; // Retorna texto original em caso de erro
+  }
+};
+
+// Função auxiliar para traduzir um único chunk
+const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
+  try {
+    // Validar tamanho do chunk antes de enviar (considerando encoding da URL)
+    if (text.length > 400) {
+      console.error(`❌ [Translation] Chunk too large: ${text.length} chars (max: 400). This should not happen!`);
+      return null;
+    }
+    
+    // Usar MyMemory Translation API (gratuita, com limite de 10000 caracteres/dia)
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+    console.log(`🌐 [Translation] Sending chunk to API: ${text.length} chars`);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      if (response.status === 429) {
+        console.warn(`⚠️ [Translation] Daily limit exceeded (HTTP 429)`);
+        if (onLimitExceeded) {
+          onLimitExceeded();
+        }
+        return null;
+      }
+      throw new Error(`Translation API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`📥 [Translation] API response status: ${data.responseStatus}`, data);
+    
+    // Verificar se o limite de caracteres por requisição foi excedido (403)
+    if (data.responseStatus === 403 || (data.responseDetails && data.responseDetails.includes('QUERY LENGTH LIMIT EXCEEDED'))) {
+      console.error(`❌ [Translation] Query length limit exceeded (max 500 chars per request). Chunk size: ${text.length} chars`);
+      console.error(`❌ [Translation] Response details:`, data.responseDetails);
+      // Retornar null para indicar falha, mas não chamar onLimitExceeded (isso é para limite diário)
+      return null;
+    }
+    
+    // Verificar se o limite diário foi excedido
+    const isLimitExceeded = 
+      data.responseStatus === 429 || 
+      (data.responseData && data.responseData.translatedText && 
+       (data.responseData.translatedText.includes('MYMEMORY WARNING') ||
+        data.responseData.translatedText.includes('DAILY QUERY LIMIT EXCEEDED') ||
+        data.responseData.translatedText.includes('QUERY LIMIT EXCEEDED')));
+    
+    if (isLimitExceeded) {
+      console.warn(`⚠️ [Translation] Daily limit exceeded (10,000 characters/day)`);
+      if (onLimitExceeded) {
+        onLimitExceeded();
+      }
+      return null;
+    }
+    
+    // Verificar resposta da API
+    if (data.responseStatus === 200 && data.responseData) {
+      const translated = data.responseData.translatedText;
+      
+      if (!translated) {
+        console.warn(`⚠️ [Translation] No translated text in response:`, data);
+        return null;
+      }
+      
+      // Verificar se a tradução é válida (não é apenas o texto original ou uma mensagem de erro)
+      if (translated.trim().length > 0 && 
+          !translated.includes('MYMEMORY WARNING') &&
+          !translated.includes('DAILY QUERY LIMIT EXCEEDED') &&
+          !translated.includes('QUERY LIMIT EXCEEDED')) {
+        console.log(`✅ [Translation] Chunk translated successfully (${translated.length} chars)`);
+        return translated;
+      } else {
+        console.warn(`⚠️ [Translation] Invalid translation response (contains warning):`, translated.substring(0, 100));
+        return null;
+      }
+    } else {
+      console.warn(`⚠️ [Translation] Translation failed. Response status: ${data.responseStatus}`, data);
+      return null;
+    }
+  } catch (error) {
+    // Verificar se é erro de limite
+    if (error.message && error.message.includes('429')) {
+      console.warn(`⚠️ [Translation] Daily limit exceeded`);
+      if (onLimitExceeded) {
+        onLimitExceeded();
+      }
+    }
+    console.warn(`❌ [Translation] Error translating chunk:`, error);
+    return null;
+  }
+};
+
+// Função para buscar curiosidades geradas por IA do backend
+// VERSION: 3.0 - Frontend translation support
+export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExceeded = null) => {
+  try {
+    // Sempre buscar em inglês do backend
+    const endpoint = `/api/countries/${countryId}/info`;
+    const backendUrl = buildApiUrl(endpoint);
+    console.log(`🤖 [AI Curiosities] Fetching English text from backend: ${backendUrl}`);
     
     const response = await fetch(backendUrl);
     
@@ -192,9 +399,18 @@ export const fetchCountryCuriosities = async (countryId) => {
     
     // Retornar curiosidades se existirem
     if (data.curiosities && data.curiosities.trim().length > 0) {
-      console.log(`✅ [AI Curiosities] Found AI-generated text for ${countryId} (${data.curiosities.length} characters)`);
+      let finalText = data.curiosities;
+      
+      // Se o idioma solicitado não for inglês, traduzir no frontend
+      if (lang && lang !== 'en') {
+        console.log(`🌐 [Translation] Translating text to ${lang} in frontend...`);
+        finalText = await translateText(data.curiosities, lang, onLimitExceeded);
+      }
+      
+      console.log(`✅ [AI Curiosities] Text ready for ${countryId} (lang: ${lang || 'en'}, ${finalText.length} characters)`);
+      
       return {
-        summary: data.curiosities,
+        summary: finalText,
         content_urls: null,
         culture: 'Cultural heritage information available',
         source: 'ai' // Flag para identificar origem

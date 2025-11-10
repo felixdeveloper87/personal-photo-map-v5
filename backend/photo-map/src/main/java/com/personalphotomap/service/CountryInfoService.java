@@ -162,6 +162,18 @@ public class CountryInfoService {
      */
     @Cacheable(value = "countryInfo", key = "#countryId", unless = "#result == null")
     public CountryInfo getCountryInfo(String countryId) {
+        return getCountryInfo(countryId, "en");
+    }
+    
+    /**
+     * Gets country information (always returns English text - translation is done in frontend).
+     * Uses cache when available, fetches fresh data from external APIs if cache is expired or missing.
+     * 
+     * @param countryId ISO2 country code (e.g., "US", "BR")
+     * @param lang Language parameter (ignored - translation is done in frontend)
+     * @return CountryInfo object with all available data (curiosities always in English)
+     */
+    public CountryInfo getCountryInfo(String countryId, String lang) {
         String upperCountryId = countryId.toUpperCase();
         logger.info("Fetching country info for: {}", upperCountryId);
         
@@ -174,25 +186,24 @@ public class CountryInfoService {
             
             // Verificar se ainda não expirou
             if (info.getExpiresAt() != null && info.getExpiresAt().isAfter(now)) {
-                // Se tem curiosidades, retorna do cache
-                if (info.getCuriosities() != null && !info.getCuriosities().isEmpty()) {
-                    logger.info("Returning cached data for: {} (with curiosities)", upperCountryId);
-                    return info;
+                // Se não tem curiosidades, tenta gerar em inglês
+                if (info.getCuriosities() == null || info.getCuriosities().isEmpty()) {
+                    logger.info("Cache valid but no curiosities found for: {}, attempting to generate in English...", upperCountryId);
+                    try {
+                        String curiosities = curiositiesService.generateCuriosities(info);
+                        if (curiosities != null && !curiosities.trim().isEmpty()) {
+                            info.setCuriosities(curiosities);
+                            info.setCuriositiesLastUpdated(LocalDateTime.now());
+                            repository.save(info);
+                            logger.info("✅ Curiosities generated and saved for cached country: {} (English)", upperCountryId);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Failed to generate curiosities for cached country {}: {}", upperCountryId, e.getMessage());
+                    }
                 }
                 
-                // Se não tem curiosidades, tenta gerar mesmo com cache válido
-                logger.info("Cache valid but no curiosities found for: {}, attempting to generate...", upperCountryId);
-                try {
-                    String curiosities = curiositiesService.generateCuriosities(info);
-                    if (curiosities != null && !curiosities.trim().isEmpty()) {
-                        info.setCuriosities(curiosities);
-                        info.setCuriositiesLastUpdated(LocalDateTime.now());
-                        repository.save(info);
-                        logger.info("✅ Curiosities generated and saved for cached country: {}", upperCountryId);
-                    }
-                } catch (Exception e) {
-                    logger.warn("Failed to generate curiosities for cached country {}: {}", upperCountryId, e.getMessage());
-                }
+                // Retorna o texto em inglês (tradução agora é feita no frontend)
+                logger.info("Returning cached data for: {} (with curiosities)", upperCountryId);
                 return info;
             }
             
@@ -237,9 +248,9 @@ public class CountryInfoService {
             // Mesmo se falhar ao salvar, retornar os dados (pode ser problema temporário do banco)
         }
         
-        // 5. Gerar curiosidades se não existir (armazenamento permanente)
+        // 5. Gerar curiosidades em inglês (sempre)
         if (countryInfo.getCuriosities() == null || countryInfo.getCuriosities().isEmpty()) {
-            logger.info("🤖 [Curiosities] Starting generation for: {}", upperCountryId);
+            logger.info("🤖 [Curiosities] Starting generation for: {} (English)", upperCountryId);
             long startTime = System.currentTimeMillis();
             try {
                 String curiosities = curiositiesService.generateCuriosities(countryInfo);
@@ -248,9 +259,8 @@ public class CountryInfoService {
                 if (curiosities != null && !curiosities.trim().isEmpty()) {
                     countryInfo.setCuriosities(curiosities);
                     countryInfo.setCuriositiesLastUpdated(LocalDateTime.now());
-                    // Salvar novamente com as curiosidades
                     repository.save(countryInfo);
-                    logger.info("✅ [Curiosities] Generated and saved for: {} (took {}ms, {} chars)", 
+                    logger.info("✅ [Curiosities] Generated for: {} (English, took {}ms, {} chars)", 
                         upperCountryId, duration, curiosities.length());
                 } else {
                     logger.warn("⚠️ [Curiosities] Generation returned null/empty for: {} (took {}ms). Check API key configuration.", 
@@ -262,11 +272,9 @@ public class CountryInfoService {
                     upperCountryId, duration, e.getMessage(), e);
                 // Continua mesmo se falhar - não é crítico, pode tentar novamente depois
             }
-        } else {
-            logger.debug("✅ [Curiosities] Already exist for: {} ({} chars)", 
-                upperCountryId, countryInfo.getCuriosities().length());
         }
         
+        // Retorna o texto em inglês (tradução agora é feita no frontend)
         return countryInfo;
     }
     
