@@ -329,6 +329,25 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     {wikipediaData.summary.split('\n').map((line, index) => {
                       const trimmedLine = line.trim();
                       
+                      // Detecta títulos em markdown (**texto** ou **texto:**)
+                      const boldMatch = trimmedLine.match(/^\*\*(.+?)\*\*:?\s*$/);
+                      if (boldMatch) {
+                        const titleText = boldMatch[1];
+                        return (
+                          <Text
+                            key={index}
+                            as="h3"
+                            fontSize="xl"
+                            fontWeight="bold"
+                            color={accentColor}
+                            mt={index > 0 ? 6 : 0}
+                            mb={3}
+                          >
+                            {titleText}
+                          </Text>
+                        );
+                      }
+                      
                       // Detecta títulos de seção (funciona em múltiplos idiomas)
                       // Procura por linhas que terminam com ':' e contêm palavras-chave relacionadas a atrações/experiências
                       const isSectionTitle = trimmedLine.endsWith(':') && (
@@ -336,7 +355,8 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                         /(attractions?|atrações?|atracciones?|attractions?|attrazioni?)/i.test(trimmedLine) || // Attractions em vários idiomas
                         /(experiences?|experiências?|experiencias?|expériences?|erlebnisse?)/i.test(trimmedLine) || // Experiences em vários idiomas
                         /(tourist|turista|turístico|turiste|touriste)/i.test(trimmedLine) || // Tourist em vários idiomas
-                        /(destinations?|destinos?|destinations?|destinazioni?)/i.test(trimmedLine) // Destinations em vários idiomas
+                        /(destinations?|destinos?|destinations?|destinazioni?)/i.test(trimmedLine) || // Destinations em vários idiomas
+                        /(opening|closing|paragraph|parágrafo|párrafo)/i.test(trimmedLine) // Opening/Closing paragraph
                       );
                       
                       if (isSectionTitle) {
@@ -344,11 +364,11 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                           <Text
                             key={index}
                             as="h3"
-                            fontSize="lg"
+                            fontSize="xl"
                             fontWeight="bold"
                             color={accentColor}
-                            mt={index > 0 ? 4 : 0}
-                            mb={2}
+                            mt={index > 0 ? 6 : 0}
+                            mb={3}
                           >
                             {trimmedLine}
                           </Text>
@@ -361,10 +381,11 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                           <Text
                             key={index}
                             as="div"
-                            ml={1}
-                            mb={1.5}
+                            ml={6}
+                            mb={2.5}
                             fontSize="md"
                             color={textColor}
+                            lineHeight="1.8"
                           >
                             {trimmedLine}
                           </Text>
@@ -373,20 +394,21 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                       
                       // Linha em branco
                       if (trimmedLine === '') {
-                        return <Box key={index} h={2} />;
+                        return <Box key={index} h={4} />;
                       }
                       
                       // Texto normal (parágrafos)
                       return (
                         <Text
                           key={index}
-                          as="span"
+                          as="p"
                           display="block"
-                          mb={2}
+                          mb={3}
                           textAlign="justify"
                           color={textColor}
+                          lineHeight="1.9"
                         >
-                          {line}
+                          {trimmedLine}
                         </Text>
                       );
                     })}
