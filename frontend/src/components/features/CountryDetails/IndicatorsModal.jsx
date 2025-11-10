@@ -29,9 +29,10 @@ import {
 import {
   FaDollarSign, FaChartLine, FaBalanceScale, FaHandHoldingUsd,
   FaPercent, FaUsers, FaHeartbeat, FaWifi, FaCity, FaBook,
-  FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaPoundSign,
+  FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaPoundSign, FaAward,
 } from 'react-icons/fa';
 import { fetchFullRanking } from '../../../data/worldBankService';
+import { buildApiUrl } from '../../../utils/apiConfig';
 
 
 export default function IndicatorsModal({ indicatorsData, weatherData, exchangeRate, countryInfo }) {
@@ -81,6 +82,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   const withRank = (key) => indicatorsData?.rankings?.[key] || null;
 
   // Mapeamento de keys dos indicadores para códigos do World Bank
+  // Nota: HDI não está disponível no World Bank, então não tem código aqui
   const indicatorCodeMap = {
     'gdp': 'NY.GDP.MKTP.CD',
     'gdpGrowth': 'NY.GDP.MKTP.KD.ZG',
@@ -94,6 +96,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
     'netMigration': 'SM.POP.NETM',
     'accessToEletricity': 'EG.ELC.ACCS.ZS',
     'healthExpenses': 'SH.XPD.CHEX.GD.ZS',
+    // 'hdi': null, // HDI não está disponível no World Bank API
   };
 
   const handleOpenRanking = async (indicatorKey, year) => {
@@ -102,6 +105,21 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
     setRankingData(null);
 
     try {
+      // Tratamento especial para HDI - buscar do backend
+      if (indicatorKey === 'hdi') {
+        const backendUrl = buildApiUrl('/api/countries/hdi/ranking');
+        const response = await fetch(backendUrl);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch HDI ranking: ${response.status}`);
+        }
+        
+        const ranking = await response.json();
+        setRankingData(ranking);
+        return;
+      }
+
+      // Para outros indicadores, usar World Bank API
       const indicatorCode = indicatorCodeMap[indicatorKey];
       if (!indicatorCode) {
         console.error('Indicator code not found for key:', indicatorKey);
@@ -177,6 +195,19 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   ];
 
   const socialData = [
+    {
+      icon: FaAward,
+      label: 'Human Development Index (HDI)',
+      key: 'hdi',
+      value: indicatorsData?.hdi?.value 
+        ? typeof indicatorsData.hdi.value === 'number' 
+          ? indicatorsData.hdi.value.toFixed(3) 
+          : indicatorsData.hdi.value
+        : 'N/A',
+      year: indicatorsData?.hdi?.year,
+      color: 'teal',
+      rank: withRank('hdi'),
+    },
     {
       icon: FaHeartbeat,
       label: 'Life Expectancy',
@@ -395,7 +426,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         <HStack spacing={1.5}>
           <Icon as={FaGlobe} color="blue.400" boxSize={3.5} />
           <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            Source: World Bank, OpenWeatherMap, Wikipedia
+            Source: {activeTab === 'social' && indicatorsData?.hdi ? 'UNDP, ' : ''}World Bank, OpenWeatherMap, Wikipedia
           </Text>
         </HStack>
         <Text fontSize="xs" color="gray.500">
@@ -433,7 +464,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                     </Thead>
                     <Tbody>
                       {rankingData.ranking.slice(0, 50).map((item) => (
-                        <Tr key={item.position}>
+                        <Tr key={item.position || item.countryCode || Math.random()}>
                           <Td>
                             <HStack spacing={2}>
                               {item.position === 1 && <span>🥇</span>}

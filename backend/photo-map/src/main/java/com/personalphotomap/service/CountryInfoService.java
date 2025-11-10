@@ -44,6 +44,132 @@ public class CountryInfoService {
     private static final int SOCIAL_DATA_CACHE_HOURS = 24 * 7; // 7 dias
     private static final int COORDINATES_CACHE_HOURS = 24 * 365; // 1 ano (coordenadas nunca mudam)
     
+    // Mapeamento de HDI por país (ISO2) - dados do UNDP Human Development Report 2021/2022
+    // Valores são de 0.0 a 1.0 - Lista completa de todos os países com dados disponíveis
+    private static final Map<String, Double> HDI_DATA = new HashMap<>();
+    
+    static {
+        // Inicializar o mapa com todos os países e seus valores de HDI
+        // Dados baseados no UNDP Human Development Report 2021/2022
+        
+        // Países com HDI muito alto (>= 0.800)
+        HDI_DATA.put("CH", 0.962); HDI_DATA.put("NO", 0.961); HDI_DATA.put("IS", 0.959); HDI_DATA.put("HK", 0.952);
+        HDI_DATA.put("DK", 0.948); HDI_DATA.put("SE", 0.947); HDI_DATA.put("IE", 0.945); HDI_DATA.put("DE", 0.942);
+        HDI_DATA.put("AU", 0.951); HDI_DATA.put("NL", 0.941); HDI_DATA.put("FI", 0.940); HDI_DATA.put("SG", 0.939);
+        HDI_DATA.put("BE", 0.937); HDI_DATA.put("NZ", 0.937); HDI_DATA.put("CA", 0.936); HDI_DATA.put("LI", 0.935);
+        HDI_DATA.put("LU", 0.930); HDI_DATA.put("GB", 0.929); HDI_DATA.put("JP", 0.925); HDI_DATA.put("KR", 0.925);
+        HDI_DATA.put("US", 0.921); HDI_DATA.put("IL", 0.919); HDI_DATA.put("MT", 0.918); HDI_DATA.put("EE", 0.890);
+        HDI_DATA.put("ES", 0.905); HDI_DATA.put("FR", 0.903); HDI_DATA.put("CY", 0.896); HDI_DATA.put("IT", 0.895);
+        HDI_DATA.put("SI", 0.918); HDI_DATA.put("CZ", 0.889); HDI_DATA.put("GR", 0.887); HDI_DATA.put("PL", 0.876);
+        HDI_DATA.put("LT", 0.875); HDI_DATA.put("PT", 0.866); HDI_DATA.put("SK", 0.848); HDI_DATA.put("HR", 0.858);
+        HDI_DATA.put("HU", 0.846); HDI_DATA.put("RU", 0.822); HDI_DATA.put("RO", 0.821); HDI_DATA.put("BG", 0.816);
+        HDI_DATA.put("TR", 0.838); HDI_DATA.put("AE", 0.911); HDI_DATA.put("SA", 0.875); HDI_DATA.put("QA", 0.855);
+        HDI_DATA.put("BH", 0.875); HDI_DATA.put("KW", 0.831); HDI_DATA.put("OM", 0.816); HDI_DATA.put("KZ", 0.811);
+        HDI_DATA.put("BY", 0.808); HDI_DATA.put("UY", 0.809); HDI_DATA.put("CR", 0.809); HDI_DATA.put("PA", 0.805);
+        HDI_DATA.put("MY", 0.803); HDI_DATA.put("TH", 0.800); HDI_DATA.put("AT", 0.916); HDI_DATA.put("LV", 0.863);
+        HDI_DATA.put("MC", 0.855); HDI_DATA.put("AD", 0.858); HDI_DATA.put("SM", 0.853); HDI_DATA.put("VA", 0.850);
+        HDI_DATA.put("TW", 0.926); HDI_DATA.put("MO", 0.922); HDI_DATA.put("BS", 0.812); HDI_DATA.put("TT", 0.810);
+        HDI_DATA.put("BN", 0.829); HDI_DATA.put("ME", 0.832); HDI_DATA.put("RS", 0.802); HDI_DATA.put("GE", 0.802);
+        HDI_DATA.put("MU", 0.802); HDI_DATA.put("PR", 0.845); HDI_DATA.put("AG", 0.788); HDI_DATA.put("BB", 0.790);
+        HDI_DATA.put("GD", 0.795); HDI_DATA.put("AL", 0.796); HDI_DATA.put("NC", 0.900); HDI_DATA.put("PF", 0.861);
+        HDI_DATA.put("FK", 0.874); HDI_DATA.put("IM", 0.849); HDI_DATA.put("JE", 0.850); HDI_DATA.put("GG", 0.850);
+        
+        // Países com HDI alto (0.700 - 0.799)
+        HDI_DATA.put("BR", 0.754); HDI_DATA.put("MX", 0.758); HDI_DATA.put("AR", 0.842); HDI_DATA.put("CL", 0.855);
+        HDI_DATA.put("CO", 0.752); HDI_DATA.put("PE", 0.762); HDI_DATA.put("VE", 0.691); HDI_DATA.put("EC", 0.740);
+        HDI_DATA.put("CN", 0.788); HDI_DATA.put("ID", 0.713); HDI_DATA.put("VN", 0.703); HDI_DATA.put("PH", 0.699);
+        HDI_DATA.put("ZA", 0.713); HDI_DATA.put("EG", 0.731); HDI_DATA.put("DZ", 0.745); HDI_DATA.put("UA", 0.773);
+        HDI_DATA.put("BA", 0.780); HDI_DATA.put("MK", 0.770); HDI_DATA.put("AM", 0.759); HDI_DATA.put("AZ", 0.745);
+        HDI_DATA.put("LB", 0.706); HDI_DATA.put("JO", 0.720); HDI_DATA.put("IR", 0.774); HDI_DATA.put("IQ", 0.686);
+        HDI_DATA.put("MA", 0.683); HDI_DATA.put("TN", 0.731); HDI_DATA.put("LY", 0.718); HDI_DATA.put("BO", 0.692);
+        HDI_DATA.put("PY", 0.717); HDI_DATA.put("GT", 0.627); HDI_DATA.put("HN", 0.621); HDI_DATA.put("NI", 0.667);
+        HDI_DATA.put("SV", 0.675); HDI_DATA.put("DO", 0.767); HDI_DATA.put("JM", 0.709); HDI_DATA.put("CU", 0.764);
+        HDI_DATA.put("GY", 0.714); HDI_DATA.put("SR", 0.730); HDI_DATA.put("FJ", 0.730); HDI_DATA.put("WS", 0.707);
+        HDI_DATA.put("TO", 0.745); HDI_DATA.put("VU", 0.607); HDI_DATA.put("PG", 0.558); HDI_DATA.put("SB", 0.567);
+        HDI_DATA.put("KI", 0.630); HDI_DATA.put("TV", 0.641); HDI_DATA.put("NR", 0.667); HDI_DATA.put("MH", 0.639);
+        HDI_DATA.put("FM", 0.628); HDI_DATA.put("PW", 0.767); HDI_DATA.put("BN", 0.829); HDI_DATA.put("MN", 0.739);
+        HDI_DATA.put("LA", 0.607); HDI_DATA.put("KH", 0.593); HDI_DATA.put("MM", 0.585); HDI_DATA.put("LK", 0.782);
+        HDI_DATA.put("BD", 0.661); HDI_DATA.put("BT", 0.666); HDI_DATA.put("NP", 0.602); HDI_DATA.put("MV", 0.747);
+        HDI_DATA.put("AF", 0.478); HDI_DATA.put("PK", 0.540); HDI_DATA.put("TJ", 0.685); HDI_DATA.put("UZ", 0.727);
+        HDI_DATA.put("TM", 0.745); HDI_DATA.put("KG", 0.692); HDI_DATA.put("MD", 0.767); HDI_DATA.put("XK", 0.762);
+        HDI_DATA.put("BW", 0.693); HDI_DATA.put("NA", 0.615); HDI_DATA.put("ZW", 0.593); HDI_DATA.put("ZM", 0.565);
+        HDI_DATA.put("MW", 0.512); HDI_DATA.put("MZ", 0.446); HDI_DATA.put("MG", 0.501); HDI_DATA.put("SC", 0.785);
+        HDI_DATA.put("KM", 0.558); HDI_DATA.put("DJ", 0.509); HDI_DATA.put("ET", 0.498); HDI_DATA.put("ER", 0.492);
+        HDI_DATA.put("SD", 0.516); HDI_DATA.put("SS", 0.385); HDI_DATA.put("UG", 0.525); HDI_DATA.put("RW", 0.534);
+        HDI_DATA.put("BI", 0.426); HDI_DATA.put("TZ", 0.549); HDI_DATA.put("KE", 0.575); HDI_DATA.put("SO", 0.361);
+        HDI_DATA.put("GH", 0.632); HDI_DATA.put("TG", 0.539); HDI_DATA.put("BJ", 0.525); HDI_DATA.put("BF", 0.449);
+        HDI_DATA.put("ML", 0.410); HDI_DATA.put("NE", 0.400); HDI_DATA.put("NG", 0.535); HDI_DATA.put("TD", 0.394);
+        HDI_DATA.put("CF", 0.387); HDI_DATA.put("CM", 0.587); HDI_DATA.put("GQ", 0.596); HDI_DATA.put("GA", 0.706);
+        HDI_DATA.put("CG", 0.571); HDI_DATA.put("CD", 0.479); HDI_DATA.put("AO", 0.586); HDI_DATA.put("ST", 0.618);
+        HDI_DATA.put("GW", 0.483); HDI_DATA.put("GN", 0.465); HDI_DATA.put("SL", 0.477); HDI_DATA.put("LR", 0.481);
+        HDI_DATA.put("CI", 0.550); HDI_DATA.put("SN", 0.511); HDI_DATA.put("GM", 0.500); HDI_DATA.put("MR", 0.556);
+        HDI_DATA.put("YE", 0.455); HDI_DATA.put("SY", 0.577); HDI_DATA.put("PS", 0.715); HDI_DATA.put("BZ", 0.683);
+        HDI_DATA.put("LC", 0.715); HDI_DATA.put("VC", 0.738); HDI_DATA.put("DM", 0.742); HDI_DATA.put("KN", 0.777);
+        HDI_DATA.put("GF", 0.850); HDI_DATA.put("HT", 0.535); HDI_DATA.put("TL", 0.607); HDI_DATA.put("KP", 0.733);
+        HDI_DATA.put("IN", 0.633);
+    }
+    
+    // Ano dos dados de HDI (geralmente atualizado anualmente pelo UNDP)
+    private static final String HDI_YEAR = "2022";
+    
+    // Mapeamento de códigos ISO2 para nomes de países em inglês
+    private static final Map<String, String> COUNTRY_NAMES_EN = new HashMap<>();
+    
+    static {
+        COUNTRY_NAMES_EN.put("CH", "Switzerland"); COUNTRY_NAMES_EN.put("NO", "Norway"); COUNTRY_NAMES_EN.put("IS", "Iceland"); COUNTRY_NAMES_EN.put("HK", "Hong Kong");
+        COUNTRY_NAMES_EN.put("DK", "Denmark"); COUNTRY_NAMES_EN.put("SE", "Sweden"); COUNTRY_NAMES_EN.put("IE", "Ireland"); COUNTRY_NAMES_EN.put("DE", "Germany");
+        COUNTRY_NAMES_EN.put("AU", "Australia"); COUNTRY_NAMES_EN.put("NL", "Netherlands"); COUNTRY_NAMES_EN.put("FI", "Finland"); COUNTRY_NAMES_EN.put("SG", "Singapore");
+        COUNTRY_NAMES_EN.put("BE", "Belgium"); COUNTRY_NAMES_EN.put("NZ", "New Zealand"); COUNTRY_NAMES_EN.put("CA", "Canada"); COUNTRY_NAMES_EN.put("LI", "Liechtenstein");
+        COUNTRY_NAMES_EN.put("LU", "Luxembourg"); COUNTRY_NAMES_EN.put("GB", "United Kingdom"); COUNTRY_NAMES_EN.put("JP", "Japan"); COUNTRY_NAMES_EN.put("KR", "South Korea");
+        COUNTRY_NAMES_EN.put("US", "United States"); COUNTRY_NAMES_EN.put("IL", "Israel"); COUNTRY_NAMES_EN.put("MT", "Malta"); COUNTRY_NAMES_EN.put("EE", "Estonia");
+        COUNTRY_NAMES_EN.put("ES", "Spain"); COUNTRY_NAMES_EN.put("FR", "France"); COUNTRY_NAMES_EN.put("CY", "Cyprus"); COUNTRY_NAMES_EN.put("IT", "Italy");
+        COUNTRY_NAMES_EN.put("SI", "Slovenia"); COUNTRY_NAMES_EN.put("CZ", "Czech Republic"); COUNTRY_NAMES_EN.put("GR", "Greece"); COUNTRY_NAMES_EN.put("PL", "Poland");
+        COUNTRY_NAMES_EN.put("LT", "Lithuania"); COUNTRY_NAMES_EN.put("PT", "Portugal"); COUNTRY_NAMES_EN.put("SK", "Slovakia"); COUNTRY_NAMES_EN.put("HR", "Croatia");
+        COUNTRY_NAMES_EN.put("HU", "Hungary"); COUNTRY_NAMES_EN.put("RU", "Russia"); COUNTRY_NAMES_EN.put("RO", "Romania"); COUNTRY_NAMES_EN.put("BG", "Bulgaria");
+        COUNTRY_NAMES_EN.put("TR", "Turkey"); COUNTRY_NAMES_EN.put("AE", "United Arab Emirates"); COUNTRY_NAMES_EN.put("SA", "Saudi Arabia"); COUNTRY_NAMES_EN.put("QA", "Qatar");
+        COUNTRY_NAMES_EN.put("BH", "Bahrain"); COUNTRY_NAMES_EN.put("KW", "Kuwait"); COUNTRY_NAMES_EN.put("OM", "Oman"); COUNTRY_NAMES_EN.put("KZ", "Kazakhstan");
+        COUNTRY_NAMES_EN.put("BY", "Belarus"); COUNTRY_NAMES_EN.put("UY", "Uruguay"); COUNTRY_NAMES_EN.put("CR", "Costa Rica"); COUNTRY_NAMES_EN.put("PA", "Panama");
+        COUNTRY_NAMES_EN.put("MY", "Malaysia"); COUNTRY_NAMES_EN.put("TH", "Thailand"); COUNTRY_NAMES_EN.put("AT", "Austria"); COUNTRY_NAMES_EN.put("LV", "Latvia");
+        COUNTRY_NAMES_EN.put("MC", "Monaco"); COUNTRY_NAMES_EN.put("AD", "Andorra"); COUNTRY_NAMES_EN.put("SM", "San Marino"); COUNTRY_NAMES_EN.put("VA", "Vatican City");
+        COUNTRY_NAMES_EN.put("TW", "Taiwan"); COUNTRY_NAMES_EN.put("MO", "Macao"); COUNTRY_NAMES_EN.put("BS", "Bahamas"); COUNTRY_NAMES_EN.put("TT", "Trinidad and Tobago");
+        COUNTRY_NAMES_EN.put("BN", "Brunei"); COUNTRY_NAMES_EN.put("ME", "Montenegro"); COUNTRY_NAMES_EN.put("RS", "Serbia"); COUNTRY_NAMES_EN.put("GE", "Georgia");
+        COUNTRY_NAMES_EN.put("MU", "Mauritius"); COUNTRY_NAMES_EN.put("PR", "Puerto Rico"); COUNTRY_NAMES_EN.put("AG", "Antigua and Barbuda"); COUNTRY_NAMES_EN.put("BB", "Barbados");
+        COUNTRY_NAMES_EN.put("GD", "Grenada"); COUNTRY_NAMES_EN.put("AL", "Albania"); COUNTRY_NAMES_EN.put("NC", "New Caledonia"); COUNTRY_NAMES_EN.put("PF", "French Polynesia");
+        COUNTRY_NAMES_EN.put("FK", "Falkland Islands"); COUNTRY_NAMES_EN.put("IM", "Isle of Man"); COUNTRY_NAMES_EN.put("JE", "Jersey"); COUNTRY_NAMES_EN.put("GG", "Guernsey");
+        COUNTRY_NAMES_EN.put("BR", "Brazil"); COUNTRY_NAMES_EN.put("MX", "Mexico"); COUNTRY_NAMES_EN.put("AR", "Argentina"); COUNTRY_NAMES_EN.put("CL", "Chile");
+        COUNTRY_NAMES_EN.put("CO", "Colombia"); COUNTRY_NAMES_EN.put("PE", "Peru"); COUNTRY_NAMES_EN.put("VE", "Venezuela"); COUNTRY_NAMES_EN.put("EC", "Ecuador");
+        COUNTRY_NAMES_EN.put("CN", "China"); COUNTRY_NAMES_EN.put("ID", "Indonesia"); COUNTRY_NAMES_EN.put("VN", "Vietnam"); COUNTRY_NAMES_EN.put("PH", "Philippines");
+        COUNTRY_NAMES_EN.put("ZA", "South Africa"); COUNTRY_NAMES_EN.put("EG", "Egypt"); COUNTRY_NAMES_EN.put("DZ", "Algeria"); COUNTRY_NAMES_EN.put("UA", "Ukraine");
+        COUNTRY_NAMES_EN.put("BA", "Bosnia and Herzegovina"); COUNTRY_NAMES_EN.put("MK", "North Macedonia"); COUNTRY_NAMES_EN.put("AM", "Armenia"); COUNTRY_NAMES_EN.put("AZ", "Azerbaijan");
+        COUNTRY_NAMES_EN.put("LB", "Lebanon"); COUNTRY_NAMES_EN.put("JO", "Jordan"); COUNTRY_NAMES_EN.put("IR", "Iran"); COUNTRY_NAMES_EN.put("IQ", "Iraq");
+        COUNTRY_NAMES_EN.put("MA", "Morocco"); COUNTRY_NAMES_EN.put("TN", "Tunisia"); COUNTRY_NAMES_EN.put("LY", "Libya"); COUNTRY_NAMES_EN.put("BO", "Bolivia");
+        COUNTRY_NAMES_EN.put("PY", "Paraguay"); COUNTRY_NAMES_EN.put("GT", "Guatemala"); COUNTRY_NAMES_EN.put("HN", "Honduras"); COUNTRY_NAMES_EN.put("NI", "Nicaragua");
+        COUNTRY_NAMES_EN.put("SV", "El Salvador"); COUNTRY_NAMES_EN.put("DO", "Dominican Republic"); COUNTRY_NAMES_EN.put("JM", "Jamaica"); COUNTRY_NAMES_EN.put("CU", "Cuba");
+        COUNTRY_NAMES_EN.put("GY", "Guyana"); COUNTRY_NAMES_EN.put("SR", "Suriname"); COUNTRY_NAMES_EN.put("FJ", "Fiji"); COUNTRY_NAMES_EN.put("WS", "Samoa");
+        COUNTRY_NAMES_EN.put("TO", "Tonga"); COUNTRY_NAMES_EN.put("VU", "Vanuatu"); COUNTRY_NAMES_EN.put("PG", "Papua New Guinea"); COUNTRY_NAMES_EN.put("SB", "Solomon Islands");
+        COUNTRY_NAMES_EN.put("KI", "Kiribati"); COUNTRY_NAMES_EN.put("TV", "Tuvalu"); COUNTRY_NAMES_EN.put("NR", "Nauru"); COUNTRY_NAMES_EN.put("MH", "Marshall Islands");
+        COUNTRY_NAMES_EN.put("FM", "Micronesia"); COUNTRY_NAMES_EN.put("PW", "Palau"); COUNTRY_NAMES_EN.put("MN", "Mongolia"); COUNTRY_NAMES_EN.put("LA", "Laos");
+        COUNTRY_NAMES_EN.put("KH", "Cambodia"); COUNTRY_NAMES_EN.put("MM", "Myanmar"); COUNTRY_NAMES_EN.put("LK", "Sri Lanka"); COUNTRY_NAMES_EN.put("BD", "Bangladesh");
+        COUNTRY_NAMES_EN.put("BT", "Bhutan"); COUNTRY_NAMES_EN.put("NP", "Nepal"); COUNTRY_NAMES_EN.put("MV", "Maldives"); COUNTRY_NAMES_EN.put("AF", "Afghanistan");
+        COUNTRY_NAMES_EN.put("PK", "Pakistan"); COUNTRY_NAMES_EN.put("TJ", "Tajikistan"); COUNTRY_NAMES_EN.put("UZ", "Uzbekistan"); COUNTRY_NAMES_EN.put("TM", "Turkmenistan");
+        COUNTRY_NAMES_EN.put("KG", "Kyrgyzstan"); COUNTRY_NAMES_EN.put("MD", "Moldova"); COUNTRY_NAMES_EN.put("XK", "Kosovo"); COUNTRY_NAMES_EN.put("BW", "Botswana");
+        COUNTRY_NAMES_EN.put("NA", "Namibia"); COUNTRY_NAMES_EN.put("ZW", "Zimbabwe"); COUNTRY_NAMES_EN.put("ZM", "Zambia"); COUNTRY_NAMES_EN.put("MW", "Malawi");
+        COUNTRY_NAMES_EN.put("MZ", "Mozambique"); COUNTRY_NAMES_EN.put("MG", "Madagascar"); COUNTRY_NAMES_EN.put("SC", "Seychelles"); COUNTRY_NAMES_EN.put("KM", "Comoros");
+        COUNTRY_NAMES_EN.put("DJ", "Djibouti"); COUNTRY_NAMES_EN.put("ET", "Ethiopia"); COUNTRY_NAMES_EN.put("ER", "Eritrea"); COUNTRY_NAMES_EN.put("SD", "Sudan");
+        COUNTRY_NAMES_EN.put("SS", "South Sudan"); COUNTRY_NAMES_EN.put("UG", "Uganda"); COUNTRY_NAMES_EN.put("RW", "Rwanda"); COUNTRY_NAMES_EN.put("BI", "Burundi");
+        COUNTRY_NAMES_EN.put("TZ", "Tanzania"); COUNTRY_NAMES_EN.put("KE", "Kenya"); COUNTRY_NAMES_EN.put("SO", "Somalia"); COUNTRY_NAMES_EN.put("GH", "Ghana");
+        COUNTRY_NAMES_EN.put("TG", "Togo"); COUNTRY_NAMES_EN.put("BJ", "Benin"); COUNTRY_NAMES_EN.put("BF", "Burkina Faso"); COUNTRY_NAMES_EN.put("ML", "Mali");
+        COUNTRY_NAMES_EN.put("NE", "Niger"); COUNTRY_NAMES_EN.put("NG", "Nigeria"); COUNTRY_NAMES_EN.put("TD", "Chad"); COUNTRY_NAMES_EN.put("CF", "Central African Republic");
+        COUNTRY_NAMES_EN.put("CM", "Cameroon"); COUNTRY_NAMES_EN.put("GQ", "Equatorial Guinea"); COUNTRY_NAMES_EN.put("GA", "Gabon"); COUNTRY_NAMES_EN.put("CG", "Congo");
+        COUNTRY_NAMES_EN.put("CD", "DR Congo"); COUNTRY_NAMES_EN.put("AO", "Angola"); COUNTRY_NAMES_EN.put("ST", "São Tomé and Príncipe"); COUNTRY_NAMES_EN.put("GW", "Guinea-Bissau");
+        COUNTRY_NAMES_EN.put("GN", "Guinea"); COUNTRY_NAMES_EN.put("SL", "Sierra Leone"); COUNTRY_NAMES_EN.put("LR", "Liberia"); COUNTRY_NAMES_EN.put("CI", "Ivory Coast");
+        COUNTRY_NAMES_EN.put("SN", "Senegal"); COUNTRY_NAMES_EN.put("GM", "Gambia"); COUNTRY_NAMES_EN.put("MR", "Mauritania"); COUNTRY_NAMES_EN.put("YE", "Yemen");
+        COUNTRY_NAMES_EN.put("SY", "Syria"); COUNTRY_NAMES_EN.put("PS", "Palestine"); COUNTRY_NAMES_EN.put("BZ", "Belize"); COUNTRY_NAMES_EN.put("LC", "Saint Lucia");
+        COUNTRY_NAMES_EN.put("VC", "Saint Vincent and the Grenadines"); COUNTRY_NAMES_EN.put("DM", "Dominica"); COUNTRY_NAMES_EN.put("KN", "Saint Kitts and Nevis");
+        COUNTRY_NAMES_EN.put("GF", "French Guiana"); COUNTRY_NAMES_EN.put("HT", "Haiti"); COUNTRY_NAMES_EN.put("TL", "East Timor"); COUNTRY_NAMES_EN.put("KP", "North Korea");
+        COUNTRY_NAMES_EN.put("IN", "India");
+    }
+    
     // Mapeamento ISO2 -> ISO3 para World Bank API
     private static final Map<String, String> ISO2_TO_ISO3 = Map.ofEntries(
         Map.entry("US", "USA"), Map.entry("GB", "GBR"), Map.entry("CA", "CAN"), Map.entry("BR", "BRA"),
@@ -455,6 +581,86 @@ public class CountryInfoService {
         }
         
         logger.info("Completed fetching World Bank data for {}: {} indicators processed", countryId, processedIndicators);
+        
+        // Buscar dados de HDI separadamente (não está no World Bank)
+        fetchHDIData(countryId, info);
+    }
+    
+    /**
+     * Fetches HDI (Human Development Index) data for a country.
+     * Uses static HDI data from UNDP Human Development Report.
+     * 
+     * @param countryId ISO2 country code
+     * @param info CountryInfo object to populate
+     */
+    private void fetchHDIData(String countryId, CountryInfo info) {
+        try {
+            logger.info("Fetching HDI data for: {}", countryId);
+            fetchHDIFromAlternativeSource(countryId, info);
+        } catch (Exception e) {
+            logger.debug("Error fetching HDI data for {}: {}", countryId, e.getMessage());
+        }
+    }
+    
+    /**
+     * Fetches HDI data from an alternative source.
+     * Uses static HDI data from UNDP Human Development Report.
+     * 
+     * @param countryId ISO2 country code
+     * @param info CountryInfo object to populate
+     */
+    private void fetchHDIFromAlternativeSource(String countryId, CountryInfo info) {
+        try {
+            String upperCountryId = countryId.toUpperCase();
+            
+            // Buscar HDI do mapeamento estático
+            Double hdiValue = HDI_DATA.get(upperCountryId);
+            
+            if (hdiValue != null) {
+                info.setHdi(hdiValue);
+                info.setHdiYear(HDI_YEAR);
+                logger.info("HDI data found for {}: {} (year: {})", upperCountryId, hdiValue, HDI_YEAR);
+                
+                // Calcular ranking de HDI
+                calculateHDIRanking(upperCountryId, hdiValue, info);
+            } else {
+                logger.debug("HDI data not available for: {}", upperCountryId);
+            }
+            
+        } catch (Exception e) {
+            logger.debug("Error fetching HDI from alternative source for {}: {}", countryId, e.getMessage());
+        }
+    }
+    
+    /**
+     * Calculates HDI ranking for a country.
+     * 
+     * @param countryId ISO2 country code
+     * @param hdiValue HDI value for the country
+     * @param info CountryInfo object to update
+     */
+    private void calculateHDIRanking(String countryId, Double hdiValue, CountryInfo info) {
+        try {
+            // Ordenar todos os países por HDI (maior = melhor)
+            List<Map.Entry<String, Double>> sortedHDI = HDI_DATA.entrySet().stream()
+                .sorted((a, b) -> Double.compare(b.getValue(), a.getValue())) // Ordenar do maior para o menor
+                .toList();
+            
+            // Encontrar a posição do país
+            int rank = 1;
+            for (Map.Entry<String, Double> entry : sortedHDI) {
+                if (entry.getKey().equals(countryId)) {
+                    info.setHdiRank(rank);
+                    info.setHdiTotalCountries(sortedHDI.size());
+                    logger.debug("HDI ranking calculated for {}: #{} / {}", countryId, rank, sortedHDI.size());
+                    return;
+                }
+                rank++;
+            }
+            
+        } catch (Exception e) {
+            logger.debug("Error calculating HDI ranking for {}: {}", countryId, e.getMessage());
+        }
     }
     
     /**
@@ -991,6 +1197,62 @@ public class CountryInfoService {
             cacheManager.getCache("countryInfo").clear();
             logger.info("All Caffeine cache cleared");
         }
+    }
+    
+    /**
+     * Gets the complete HDI ranking for all countries.
+     * Uses static HDI data from UNDP Human Development Report.
+     * 
+     * @return Map containing ranking list, year, and total count
+     */
+    public Map<String, Object> getHDIRanking() {
+        List<Map<String, Object>> rankingList = new ArrayList<>();
+        
+        // Ordenar todos os países por HDI (maior = melhor)
+        List<Map.Entry<String, Double>> sortedHDI = HDI_DATA.entrySet().stream()
+            .sorted((a, b) -> Double.compare(b.getValue(), a.getValue())) // Ordenar do maior para o menor
+            .toList();
+        
+        // Criar lista de ranking
+        int position = 1;
+        for (Map.Entry<String, Double> entry : sortedHDI) {
+            String countryId = entry.getKey();
+            Double hdiValue = entry.getValue();
+            
+            // Buscar nome do país: primeiro do mapeamento estático, depois do banco, por último usar código
+            String countryName = COUNTRY_NAMES_EN.getOrDefault(countryId, countryId);
+            
+            // Se não encontrou no mapeamento estático, tentar buscar do banco
+            if (countryName.equals(countryId)) {
+                Optional<CountryInfo> countryInfo = repository.findByCountryId(countryId);
+                if (countryInfo.isPresent()) {
+                    CountryInfo info = countryInfo.get();
+                    // Preferir nativeName, mas se não tiver, usar o código mesmo
+                    if (info.getNativeName() != null && !info.getNativeName().isEmpty()) {
+                        countryName = info.getNativeName();
+                    }
+                }
+            }
+            
+            Map<String, Object> rankEntry = new HashMap<>();
+            rankEntry.put("position", position);
+            rankEntry.put("countryCode", countryId);
+            rankEntry.put("countryName", countryName);
+            rankEntry.put("value", hdiValue);
+            rankEntry.put("formattedValue", String.format("%.3f", hdiValue));
+            
+            rankingList.add(rankEntry);
+            position++;
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("indicatorCode", "HDI");
+        result.put("year", HDI_YEAR);
+        result.put("total", rankingList.size());
+        result.put("ranking", rankingList);
+        
+        logger.info("HDI ranking generated: {} countries", rankingList.size());
+        return result;
     }
     
     /**

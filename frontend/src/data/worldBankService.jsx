@@ -715,6 +715,22 @@ export const fetchWorldBankIndicators = async (isoCode) => {
         };
       }
       
+      // Mapear dados de HDI
+      if (backendData.hdi != null) {
+        formatted.hdi = {
+          value: backendData.hdi, // Valor numérico (0.0 a 1.0)
+          year: backendData.hdiYear
+        };
+      }
+      
+      if (backendData.hdiRank != null) {
+        formatted.rankings.hdi = {
+          rank: backendData.hdiRank,
+          total: backendData.hdiTotalCountries,
+          year: backendData.hdiYear
+        };
+      }
+      
       const indicatorsCount = Object.keys(formatted).length;
       const rankingsCount = Object.keys(formatted.rankings || {}).length;
       // Reutilizar isFromCache já calculado acima

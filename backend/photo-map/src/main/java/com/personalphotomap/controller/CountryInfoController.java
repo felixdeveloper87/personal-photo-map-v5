@@ -210,4 +210,22 @@ public class CountryInfoController {
                 .body(Map.of("error", "Failed to get cache info: " + e.getMessage()));
         }
     }
+    
+    /**
+     * Gets the complete HDI (Human Development Index) ranking for all countries.
+     * Returns ranking based on static HDI data from UNDP Human Development Report.
+     * 
+     * @return ResponseEntity with HDI ranking data
+     */
+    @GetMapping("/hdi/ranking")
+    public ResponseEntity<?> getHDIRanking() {
+        try {
+            Map<String, Object> ranking = countryInfoService.getHDIRanking();
+            return ResponseEntity.ok(ranking);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to get HDI ranking: " + e.getMessage()));
+        }
+    }
 }

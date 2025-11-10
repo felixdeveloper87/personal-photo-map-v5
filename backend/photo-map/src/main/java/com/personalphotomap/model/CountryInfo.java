@@ -114,6 +114,12 @@ public class CountryInfo {
     private Integer fertilityRateRank;
     private Integer fertilityRateTotalCountries;
     
+    // Human Development Index (HDI)
+    private Double hdi; // Valor do HDI (0.0 a 1.0)
+    private String hdiYear;
+    private Integer hdiRank;
+    private Integer hdiTotalCountries;
+    
     // ========== INFRAESTRUTURA ==========
     // Electricity Access (%)
     private Double accessToEletricity; // Percentual
@@ -690,6 +696,39 @@ public class CountryInfo {
     
     public void setFertilityRateTotalCountries(Integer fertilityRateTotalCountries) {
         this.fertilityRateTotalCountries = fertilityRateTotalCountries;
+    }
+    
+    // HDI Getters and Setters
+    public Double getHdi() {
+        return hdi;
+    }
+    
+    public void setHdi(Double hdi) {
+        this.hdi = hdi;
+    }
+    
+    public String getHdiYear() {
+        return hdiYear;
+    }
+    
+    public void setHdiYear(String hdiYear) {
+        this.hdiYear = hdiYear;
+    }
+    
+    public Integer getHdiRank() {
+        return hdiRank;
+    }
+    
+    public void setHdiRank(Integer hdiRank) {
+        this.hdiRank = hdiRank;
+    }
+    
+    public Integer getHdiTotalCountries() {
+        return hdiTotalCountries;
+    }
+    
+    public void setHdiTotalCountries(Integer hdiTotalCountries) {
+        this.hdiTotalCountries = hdiTotalCountries;
     }
     
     // Infrastructure Getters and Setters
