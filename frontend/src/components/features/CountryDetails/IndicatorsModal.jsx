@@ -33,19 +33,6 @@ import {
 } from 'react-icons/fa';
 import { fetchFullRanking } from '../../../data/worldBankService';
 
-/**
- * indicatorsData esperado (exemplos):
- * {
- *   gdpPerCapitaCurrent: { value: "$45,800", year: "2022" },
- *   lifeExpectancy: { value: "82.1 years", year: "2022" },
- *   inflationCPI: { value: "4.3%", year: "2022" },
- *   rankings: {
- *     gdpPerCapitaCurrent: { rank: 27, total: 196, year: "2022" },
- *     lifeExpectancy: { rank: 18, total: 196, year: "2022" },
- *     inflationCPI: { rank: 102, total: 196, year: "2022" }
- *   }
- * }
- */
 
 export default function IndicatorsModal({ indicatorsData, weatherData, exchangeRate, countryInfo }) {
   const [activeTab, setActiveTab] = useState('economic');
@@ -53,17 +40,17 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   const [rankingData, setRankingData] = useState(null);
   const [loadingRanking, setLoadingRanking] = useState(false);
 
-  const bg = useColorModeValue('gray.50', '#0e1015');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const border = useColorModeValue('gray.200', 'gray.700');
+  const bg = useColorModeValue('gray.50', 'black');
+  const cardBg = useColorModeValue('white', 'black');
+  const border = useColorModeValue('gray.800', 'gray.200');
   const text = useColorModeValue('gray.700', 'gray.300');
   const heading = useColorModeValue('gray.900', 'white');
 
   const tabs = [
-    { id: 'economic', label: 'Economy', icon: FaDollarSign, color: 'green' },
-    { id: 'social', label: 'Society', icon: FaUsers, color: 'blue' },
-    { id: 'infrastructure', label: 'Infrastructure', icon: FaBolt, color: 'teal' },
-    { id: 'weather', label: 'Weather', icon: FaSun, color: 'orange' },
+    { id: 'economic', icon: FaDollarSign, color: 'green' },
+    { id: 'social', icon: FaUsers, color: 'blue' },
+    { id: 'infrastructure', icon: FaBolt, color: 'teal' },
+    { id: 'weather', icon: FaSun, color: 'orange' },
   ];
 
   // Helpers visuais para ranking
@@ -113,7 +100,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
     setIsRankingModalOpen(true);
     setLoadingRanking(true);
     setRankingData(null);
-    
+
     try {
       const indicatorCode = indicatorCodeMap[indicatorKey];
       if (!indicatorCode) {
@@ -121,7 +108,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         setLoadingRanking(false);
         return;
       }
-      
+
       const ranking = await fetchFullRanking(indicatorCode, year || '2024');
       setRankingData(ranking);
     } catch (error) {
@@ -281,33 +268,29 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         border="1px solid"
         borderColor={border}
         borderRadius="xl"
-        p={4}
+        p={1.5}
         boxShadow="sm"
-        sx={{
-          backgroundImage: useColorModeValue(
-            `repeating-linear-gradient(135deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`,
-            `repeating-linear-gradient(135deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 20px)`
-          ),
-        }}
       >
-        <HStack spacing={3} align="center">
+        <HStack spacing={2} align="center">
           <Box
-            p={2.5}
+            p={2}
             borderRadius="md"
             bg={`${color}.100`}
-            border="1px solid"
+            border="3px solid"
             borderColor={`${color}.200`}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
           >
-            <Icon as={icon} color={`${color}.500`} boxSize={5} />
+            <Icon as={icon} color={`${color}.500`} boxSize={4} />
           </Box>
 
           <VStack align="start" spacing={0}>
-            <Text fontSize="xs" color="gray.500" fontWeight="medium">
-              {label}
-            </Text>
-
             <HStack spacing={2} align="center">
-              <Text fontSize="lg" fontWeight="bold" color={heading}>
+              <Text fontSize="xs" color="gray.500" fontWeight="medium">
+                {label}
+              </Text>
+              <Text fontSize="sm" fontWeight="bold" color={heading}>
                 {value}
               </Text>
 
@@ -324,20 +307,17 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                     borderRadius="md"
                     display="inline-flex"
                     alignItems="center"
-                    gap="4px"
-                    px={2}
-                    py={0.5}
                     cursor="pointer"
                     onClick={() => handleOpenRanking(indicatorKey, rank.year || year)}
-                    _hover={{ 
-                      opacity: 0.8, 
+                    _hover={{
+                      opacity: 0.8,
                       transform: 'scale(1.05)',
                       boxShadow: 'sm'
                     }}
                     transition="all 0.2s"
                   >
                     {style.medal && <span style={{ lineHeight: 1 }}>{style.medal}</span>}
-                    {`#${rank.rank} / ${rank.total}`}
+                    {`# ${rank.rank} / ${rank.total}`}
                   </Badge>
                 </Tooltip>
               )}
@@ -355,7 +335,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   };
 
   return (
-    <Box p={4} bg={bg} borderRadius="xl">
+    <Box bg={bg} borderRadius="xl">
       {/* Header */}
       <VStack spacing={1} mb={4}>
         <Heading size="sm" color={heading}>National Indicators Overview</Heading>
@@ -395,13 +375,13 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         {currentData.map((item, idx) => {
           const { key, icon, label, value, color, rank, year } = item;
           return (
-            <StatCard 
-              key={key || idx} 
-              icon={icon} 
-              label={label} 
-              value={value} 
-              color={color} 
-              rank={rank} 
+            <StatCard
+              key={key || idx}
+              icon={icon}
+              label={label}
+              value={value}
+              color={color}
+              rank={rank}
               year={year}
               indicatorKey={key}
             />
