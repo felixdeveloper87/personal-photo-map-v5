@@ -187,4 +187,21 @@ public class CountryInfoController {
                 .body(Map.of("error", "Failed to clear Caffeine cache: " + e.getMessage()));
         }
     }
+    
+    /**
+     * Gets information about the Caffeine cache including statistics and list of cached countries.
+     * 
+     * @return ResponseEntity with cache information
+     */
+    @GetMapping("/cache/caffeine/info")
+    public ResponseEntity<?> getCaffeineCacheInfo() {
+        try {
+            Map<String, Object> cacheInfo = countryInfoService.getCaffeineCacheInfo();
+            return ResponseEntity.ok(cacheInfo);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to get cache info: " + e.getMessage()));
+        }
+    }
 }

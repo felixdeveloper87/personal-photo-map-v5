@@ -6,8 +6,11 @@ import com.personalphotomap.repository.CountryInfoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCache;
+import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -980,6 +983,70 @@ public class CountryInfoService {
             cacheManager.getCache("countryInfo").clear();
             logger.info("All Caffeine cache cleared");
         }
+    }
+    
+    /**
+     * Gets cache statistics and list of countries in Caffeine cache.
+     * 
+     * @return Map with cache statistics and list of cached country IDs
+     */
+    public Map<String, Object> getCaffeineCacheInfo() {
+        Map<String, Object> info = new HashMap<>();
+        
+        if (cacheManager == null) {
+            info.put("error", "Cache manager not available");
+            return info;
+        }
+        
+        Cache cache = cacheManager.getCache("countryInfo");
+        if (cache == null) {
+            info.put("error", "Cache 'countryInfo' not found");
+            return info;
+        }
+        
+        // Get native Caffeine cache for statistics
+        if (cache instanceof CaffeineCache) {
+            CaffeineCache caffeineCache = (CaffeineCache) cache;
+            com.github.benmanes.caffeine.cache.Cache<Object, Object> nativeCache = caffeineCache.getNativeCache();
+            
+            // Get statistics
+            CacheStats stats = nativeCache.stats();
+            info.put("stats", Map.of(
+                "hitCount", stats.hitCount(),
+                "missCount", stats.missCount(),
+                "loadCount", stats.loadCount(),
+                "evictionCount", stats.evictionCount(),
+                "hitRate", stats.hitRate(),
+                "missRate", stats.missRate(),
+                "averageLoadPenalty", stats.averageLoadPenalty()
+            ));
+            
+            // Get estimated size
+            long estimatedSize = nativeCache.estimatedSize();
+            info.put("estimatedSize", estimatedSize);
+            
+            // Try to get list of keys (countries in cache)
+            // Note: Caffeine doesn't expose keys directly, but we can try to get them
+            List<String> cachedCountries = new ArrayList<>();
+            try {
+                // Get all keys from the cache
+                nativeCache.asMap().keySet().forEach(key -> {
+                    if (key instanceof String) {
+                        cachedCountries.add((String) key);
+                    }
+                });
+                info.put("cachedCountries", cachedCountries);
+                info.put("cachedCountriesCount", cachedCountries.size());
+            } catch (Exception e) {
+                logger.warn("Could not retrieve cache keys: {}", e.getMessage());
+                info.put("cachedCountries", Collections.emptyList());
+                info.put("cachedCountriesCount", 0);
+            }
+        } else {
+            info.put("error", "Cache is not a CaffeineCache instance");
+        }
+        
+        return info;
     }
     
     /**
