@@ -116,11 +116,11 @@ export const MapButton = ({ onClick, hideText, ...props }) => (
   <ModernMaterialButton icon={FaGlobe} text="Map" tone="blue" onClick={onClick} hideText={hideText} {...props} />
 );
 
-export const LoginButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaSignInAlt} text="" tone="blue" variant="tonal" onClick={onClick} />
+export const LoginButton = ({ onClick, size = "sm", ...props }) => (
+  <ModernMaterialButton icon={FaSignInAlt} text="" tone="blue" variant="tonal" onClick={onClick} size={size} {...props} />
 );
 
-export const RegisterButton = ({ onClick }) => (
-  <ModernMaterialButton icon={FaUserPlus} text="" tone="green" onClick={onClick} />
+export const RegisterButton = ({ onClick, size = "sm", ...props }) => (
+  <ModernMaterialButton icon={FaUserPlus} text="" tone="green" onClick={onClick} size={size} {...props} />
 );
 
