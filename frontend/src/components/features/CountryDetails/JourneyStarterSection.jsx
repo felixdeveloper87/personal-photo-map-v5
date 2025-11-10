@@ -367,28 +367,89 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                             fontSize="xl"
                             fontWeight="bold"
                             color={accentColor}
-                            mt={index > 0 ? 6 : 0}
-                            mb={3}
+                            mt={index > 0 ? 2 : 0}
+                            mb={1}
                           >
                             {trimmedLine}
                           </Text>
                         );
                       }
                       
+                      // Detecta bullet points (-, •, *, ou - seguido de espaço)
+                      const bulletMatch = trimmedLine.match(/^[-•*]\s+(.+)$/);
+                      if (bulletMatch) {
+                        const bulletText = bulletMatch[1];
+                        return (
+                          <HStack
+                            key={index}
+                            align="flex-start"
+                            spacing={4}
+                            mb={3}
+                            pl={1}
+                          >
+                            <Box
+                              w="8px"
+                              h="8px"
+                              borderRadius="full"
+                              bgGradient={useColorModeValue(
+                                'linear(to-br, blue.500, purple.500)',
+                                'linear(to-br, blue.400, purple.400)'
+                              )}
+                              mt={2.5}
+                              flexShrink={0}
+                              boxShadow={useColorModeValue(
+                                '0 2px 4px rgba(59, 130, 246, 0.3)',
+                                '0 2px 6px rgba(96, 165, 250, 0.4)'
+                              )}
+                            />
+                            <Text
+                              fontSize="md"
+                              color={textColor}
+                              lineHeight="1.8"
+                              flex={1}
+                              fontWeight="medium"
+                            >
+                              {bulletText}
+                            </Text>
+                          </HStack>
+                        );
+                      }
+                      
                       // Detecta itens numerados (1), 2), etc.)
                       if (/^\d+\)/.test(trimmedLine)) {
                         return (
-                          <Text
+                          <HStack
                             key={index}
-                            as="div"
-                            ml={6}
-                            mb={2.5}
-                            fontSize="md"
-                            color={textColor}
-                            lineHeight="1.8"
+                            align="flex-start"
+                            spacing={4}
+                            mb={3}
+                            pl={1}
                           >
-                            {trimmedLine}
-                          </Text>
+                            <Box
+                              w="8px"
+                              h="8px"
+                              borderRadius="full"
+                              bgGradient={useColorModeValue(
+                                'linear(to-br, blue.500, purple.500)',
+                                'linear(to-br, blue.400, purple.400)'
+                              )}
+                              mt={2.5}
+                              flexShrink={0}
+                              boxShadow={useColorModeValue(
+                                '0 2px 4px rgba(59, 130, 246, 0.3)',
+                                '0 2px 6px rgba(96, 165, 250, 0.4)'
+                              )}
+                            />
+                            <Text
+                              fontSize="md"
+                              color={textColor}
+                              lineHeight="1.8"
+                              flex={1}
+                              fontWeight="medium"
+                            >
+                              {trimmedLine.replace(/^\d+\)\s*/, '')}
+                            </Text>
+                          </HStack>
                         );
                       }
                       
