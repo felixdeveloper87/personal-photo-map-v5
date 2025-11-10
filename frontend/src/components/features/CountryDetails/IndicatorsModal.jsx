@@ -30,6 +30,7 @@ import {
   FaDollarSign, FaChartLine, FaBalanceScale, FaHandHoldingUsd,
   FaPercent, FaUsers, FaHeartbeat, FaWifi, FaCity, FaBook,
   FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaPoundSign, FaAward,
+  FaPrayingHands, FaUserFriends,
 } from 'react-icons/fa';
 import { fetchFullRanking } from '../../../data/worldBankService';
 import { buildApiUrl } from '../../../utils/apiConfig';
@@ -40,6 +41,9 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false);
   const [rankingData, setRankingData] = useState(null);
   const [loadingRanking, setLoadingRanking] = useState(false);
+  const [isDistributionModalOpen, setIsDistributionModalOpen] = useState(false);
+  const [distributionData, setDistributionData] = useState(null);
+  const [distributionTitle, setDistributionTitle] = useState('');
 
   const bg = useColorModeValue('gray.50', 'black');
   const cardBg = useColorModeValue('white', 'black');
@@ -253,6 +257,28 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
       color: 'indigo',
       rank: withRank('netMigration'),
     },
+    {
+      icon: FaPrayingHands,
+      label: 'Religion',
+      key: 'religion',
+      value: indicatorsData?.religion?.data ? 'View Distribution' : 'N/A',
+      year: indicatorsData?.religion?.year,
+      color: 'purple',
+      rank: null,
+      isDistribution: true,
+      distributionData: indicatorsData?.religion?.data,
+    },
+    {
+      icon: FaUserFriends,
+      label: 'Ethnic Groups',
+      key: 'ethnicGroups',
+      value: indicatorsData?.ethnicGroups?.data ? 'View Distribution' : 'N/A',
+      year: indicatorsData?.ethnicGroups?.year,
+      color: 'orange',
+      rank: null,
+      isDistribution: true,
+      distributionData: indicatorsData?.ethnicGroups?.data,
+    },
   ];
 
   const infrastructureData = [
@@ -290,7 +316,13 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
   };
   const currentData = dataMap[activeTab];
 
-  const StatCard = ({ icon, label, value, color, rank, year, indicatorKey }) => {
+  const handleOpenDistribution = (title, data) => {
+    setDistributionTitle(title);
+    setDistributionData(data);
+    setIsDistributionModalOpen(true);
+  };
+
+  const StatCard = ({ icon, label, value, color, rank, year, indicatorKey, isDistribution, distributionData }) => {
     const style = getRankStyle(rank);
 
     return (
@@ -301,6 +333,14 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         borderRadius="xl"
         p={1.5}
         boxShadow="sm"
+        cursor={isDistribution && distributionData ? 'pointer' : 'default'}
+        onClick={isDistribution && distributionData ? () => handleOpenDistribution(label, distributionData) : undefined}
+        _hover={isDistribution && distributionData ? {
+          transform: 'translateY(-2px)',
+          boxShadow: 'md',
+          borderColor: `${color}.300`
+        } : {}}
+        transition="all 0.2s"
       >
         <HStack spacing={2} align="center">
           <Box
@@ -339,7 +379,10 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
                     display="inline-flex"
                     alignItems="center"
                     cursor="pointer"
-                    onClick={() => handleOpenRanking(indicatorKey, rank.year || year)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenRanking(indicatorKey, rank.year || year);
+                    }}
                     _hover={{
                       opacity: 0.8,
                       transform: 'scale(1.05)',
@@ -357,6 +400,11 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
             {year && (
               <Text fontSize="10px" color="gray.500">
                 {`Year: ${year}`}
+              </Text>
+            )}
+            {isDistribution && distributionData && (
+              <Text fontSize="10px" color={`${color}.500`} fontStyle="italic">
+                Click to view distribution
               </Text>
             )}
           </VStack>
@@ -404,7 +452,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
       {/* Grid (mobile-first) */}
       <SimpleGrid columns={1} spacing={4}>
         {currentData.map((item, idx) => {
-          const { key, icon, label, value, color, rank, year } = item;
+          const { key, icon, label, value, color, rank, year, isDistribution, distributionData } = item;
           return (
             <StatCard
               key={key || idx}
@@ -415,6 +463,8 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
               rank={rank}
               year={year}
               indicatorKey={key}
+              isDistribution={isDistribution}
+              distributionData={distributionData}
             />
           );
         })}
@@ -426,7 +476,9 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
         <HStack spacing={1.5}>
           <Icon as={FaGlobe} color="blue.400" boxSize={3.5} />
           <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            Source: {activeTab === 'social' && indicatorsData?.hdi ? 'UNDP, ' : ''}World Bank, OpenWeatherMap, Wikipedia
+            Source: {activeTab === 'social' && (indicatorsData?.hdi || indicatorsData?.religion || indicatorsData?.ethnicGroups) 
+              ? `${indicatorsData?.hdi ? 'UNDP, ' : ''}${(indicatorsData?.religion || indicatorsData?.ethnicGroups) ? 'CIA World Factbook, ' : ''}` 
+              : ''}World Bank, OpenWeatherMap, Wikipedia
           </Text>
         </HStack>
         <Text fontSize="xs" color="gray.500">
@@ -500,6 +552,54 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
               <Box textAlign="center" py={8}>
                 <Text color={text}>Erro ao carregar ranking. Tente novamente.</Text>
               </Box>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal de Distribuição (Religião/Grupos Étnicos) */}
+      <Modal isOpen={isDistributionModalOpen} onClose={() => setIsDistributionModalOpen(false)} size="lg" scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent bg={cardBg} maxH="80vh">
+          <ModalHeader color={heading}>
+            {distributionTitle} Distribution
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {distributionData ? (
+              <VStack spacing={4} align="stretch">
+                {Object.entries(distributionData)
+                  .sort((a, b) => b[1] - a[1]) // Ordenar por percentual (maior primeiro)
+                  .map(([name, percentage]) => (
+                    <Box key={name}>
+                      <HStack justify="space-between" mb={1}>
+                        <Text fontSize="sm" fontWeight="medium" color={heading}>
+                          {name}
+                        </Text>
+                        <Text fontSize="sm" fontWeight="bold" color={heading}>
+                          {typeof percentage === 'number' ? percentage.toFixed(1) : percentage}%
+                        </Text>
+                      </HStack>
+                      <Box
+                        w="100%"
+                        h="24px"
+                        bg={useColorModeValue('gray.200', 'gray.700')}
+                        borderRadius="md"
+                        overflow="hidden"
+                      >
+                        <Box
+                          h="100%"
+                          bg={`${distributionTitle === 'Religion' ? 'purple' : 'orange'}.500`}
+                          width={`${percentage}%`}
+                          transition="width 0.5s ease"
+                          borderRadius="md"
+                        />
+                      </Box>
+                    </Box>
+                  ))}
+              </VStack>
+            ) : (
+              <Text color={text}>No data available</Text>
             )}
           </ModalBody>
         </ModalContent>

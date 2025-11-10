@@ -731,6 +731,34 @@ export const fetchWorldBankIndicators = async (isoCode) => {
         };
       }
       
+      // Mapear dados de religião
+      if (backendData.religion != null) {
+        try {
+          formatted.religion = {
+            data: typeof backendData.religion === 'string' 
+              ? JSON.parse(backendData.religion) 
+              : backendData.religion,
+            year: backendData.religionYear
+          };
+        } catch (e) {
+          console.error('Error parsing religion data:', e);
+        }
+      }
+      
+      // Mapear dados de grupos étnicos
+      if (backendData.ethnicGroups != null) {
+        try {
+          formatted.ethnicGroups = {
+            data: typeof backendData.ethnicGroups === 'string' 
+              ? JSON.parse(backendData.ethnicGroups) 
+              : backendData.ethnicGroups,
+            year: backendData.ethnicGroupsYear
+          };
+        } catch (e) {
+          console.error('Error parsing ethnic groups data:', e);
+        }
+      }
+      
       const indicatorsCount = Object.keys(formatted).length;
       const rankingsCount = Object.keys(formatted.rankings || {}).length;
       // Reutilizar isFromCache já calculado acima

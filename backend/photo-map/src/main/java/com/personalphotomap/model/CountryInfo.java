@@ -120,6 +120,16 @@ public class CountryInfo {
     private Integer hdiRank;
     private Integer hdiTotalCountries;
     
+    // Religion (JSON format: {"Christian": 65.0, "Muslim": 25.0, "Other": 10.0})
+    @Column(columnDefinition = "TEXT")
+    private String religion; // Distribuição religiosa em formato JSON
+    private String religionYear;
+    
+    // Ethnic Groups (JSON format: {"White": 60.0, "Black": 15.0, "Asian": 10.0, "Mixed": 15.0})
+    @Column(columnDefinition = "TEXT")
+    private String ethnicGroups; // Distribuição étnica em formato JSON
+    private String ethnicGroupsYear;
+    
     // ========== INFRAESTRUTURA ==========
     // Electricity Access (%)
     private Double accessToEletricity; // Percentual
@@ -729,6 +739,40 @@ public class CountryInfo {
     
     public void setHdiTotalCountries(Integer hdiTotalCountries) {
         this.hdiTotalCountries = hdiTotalCountries;
+    }
+    
+    // Religion Getters and Setters
+    public String getReligion() {
+        return religion;
+    }
+    
+    public void setReligion(String religion) {
+        this.religion = religion;
+    }
+    
+    public String getReligionYear() {
+        return religionYear;
+    }
+    
+    public void setReligionYear(String religionYear) {
+        this.religionYear = religionYear;
+    }
+    
+    // Ethnic Groups Getters and Setters
+    public String getEthnicGroups() {
+        return ethnicGroups;
+    }
+    
+    public void setEthnicGroups(String ethnicGroups) {
+        this.ethnicGroups = ethnicGroups;
+    }
+    
+    public String getEthnicGroupsYear() {
+        return ethnicGroupsYear;
+    }
+    
+    public void setEthnicGroupsYear(String ethnicGroupsYear) {
+        this.ethnicGroupsYear = ethnicGroupsYear;
     }
     
     // Infrastructure Getters and Setters

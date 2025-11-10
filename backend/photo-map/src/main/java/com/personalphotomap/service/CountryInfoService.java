@@ -112,6 +112,119 @@ public class CountryInfoService {
     // Ano dos dados de HDI (geralmente atualizado anualmente pelo UNDP)
     private static final String HDI_YEAR = "2022";
     
+    // Ano dos dados de religião e grupos étnicos (CIA World Factbook)
+    private static final String DEMOGRAPHICS_YEAR = "2023";
+    
+    // Mapeamento de religião por país (JSON format)
+    // Dados baseados no CIA World Factbook e censos nacionais
+    private static final Map<String, String> RELIGION_DATA = new HashMap<>();
+    
+    static {
+        // Formato: JSON string com distribuição religiosa em percentuais
+        RELIGION_DATA.put("US", "{\"Protestant\": 46.5, \"Catholic\": 20.8, \"Mormon\": 1.6, \"Other Christian\": 0.9, \"Jewish\": 1.9, \"Muslim\": 0.9, \"Buddhist\": 0.7, \"Hindu\": 0.7, \"Other\": 1.8, \"None\": 24.2}");
+        RELIGION_DATA.put("BR", "{\"Catholic\": 64.6, \"Protestant\": 22.2, \"Spiritist\": 2.2, \"Other\": 3.2, \"None\": 8.0}");
+        RELIGION_DATA.put("MX", "{\"Catholic\": 77.7, \"Protestant\": 11.2, \"Other\": 2.9, \"None\": 8.1}");
+        RELIGION_DATA.put("AR", "{\"Catholic\": 62.9, \"Protestant\": 15.3, \"Jewish\": 1.0, \"Other\": 2.3, \"None\": 18.9}");
+        RELIGION_DATA.put("GB", "{\"Christian\": 59.5, \"Muslim\": 4.4, \"Hindu\": 1.3, \"Sikh\": 0.7, \"Jewish\": 0.5, \"Buddhist\": 0.5, \"Other\": 0.4, \"None\": 32.7}");
+        RELIGION_DATA.put("FR", "{\"Catholic\": 47.4, \"Protestant\": 2.3, \"Muslim\": 4.9, \"Jewish\": 0.7, \"Buddhist\": 0.5, \"Other\": 0.5, \"None\": 43.7}");
+        RELIGION_DATA.put("DE", "{\"Catholic\": 26.7, \"Protestant\": 24.3, \"Muslim\": 3.7, \"Other\": 1.1, \"None\": 44.2}");
+        RELIGION_DATA.put("IT", "{\"Catholic\": 74.4, \"Protestant\": 3.6, \"Muslim\": 3.7, \"Other\": 1.5, \"None\": 16.8}");
+        RELIGION_DATA.put("ES", "{\"Catholic\": 58.2, \"Atheist\": 16.8, \"Agnostic\": 10.8, \"Other\": 2.7, \"None\": 11.5}");
+        RELIGION_DATA.put("PT", "{\"Catholic\": 80.2, \"Protestant\": 2.1, \"Other\": 0.9, \"None\": 16.8}");
+        RELIGION_DATA.put("CA", "{\"Catholic\": 38.7, \"Protestant\": 29.2, \"Other Christian\": 6.3, \"Muslim\": 3.2, \"Hindu\": 1.5, \"Sikh\": 1.4, \"Buddhist\": 1.1, \"Jewish\": 1.0, \"Other\": 0.6, \"None\": 16.0}");
+        RELIGION_DATA.put("AU", "{\"Catholic\": 22.6, \"Anglican\": 13.3, \"Other Christian\": 16.3, \"Muslim\": 2.6, \"Buddhist\": 2.4, \"Hindu\": 1.9, \"Sikh\": 0.5, \"Jewish\": 0.4, \"Other\": 0.8, \"None\": 38.9}");
+        RELIGION_DATA.put("IN", "{\"Hindu\": 79.8, \"Muslim\": 14.2, \"Christian\": 2.3, \"Sikh\": 1.7, \"Buddhist\": 0.7, \"Jain\": 0.4, \"Other\": 0.9}");
+        RELIGION_DATA.put("CN", "{\"Buddhist\": 18.2, \"Christian\": 5.1, \"Muslim\": 1.8, \"Folk religion\": 21.9, \"Hindu\": 0.1, \"Jewish\": 0.1, \"Other\": 0.7, \"None\": 52.1}");
+        RELIGION_DATA.put("JP", "{\"Shinto\": 70.4, \"Buddhist\": 69.8, \"Christian\": 1.5, \"Other\": 6.9, \"None\": 7.0}");
+        RELIGION_DATA.put("KR", "{\"Protestant\": 19.7, \"Buddhist\": 15.5, \"Catholic\": 7.9, \"Other\": 0.9, \"None\": 56.1}");
+        RELIGION_DATA.put("RU", "{\"Russian Orthodox\": 15.2, \"Muslim\": 10.0, \"Other Christian\": 2.0, \"Buddhist\": 0.5, \"Jewish\": 0.1, \"Other\": 0.2, \"None\": 72.0}");
+        RELIGION_DATA.put("TR", "{\"Muslim\": 99.8, \"Other\": 0.2}");
+        RELIGION_DATA.put("SA", "{\"Muslim\": 99.0, \"Other\": 1.0}");
+        RELIGION_DATA.put("EG", "{\"Muslim\": 90.0, \"Christian\": 10.0}");
+        RELIGION_DATA.put("IR", "{\"Muslim\": 99.4, \"Other\": 0.6}");
+        RELIGION_DATA.put("PK", "{\"Muslim\": 96.4, \"Hindu\": 1.9, \"Christian\": 1.6, \"Other\": 0.1}");
+        RELIGION_DATA.put("ID", "{\"Muslim\": 87.2, \"Protestant\": 7.0, \"Catholic\": 2.9, \"Hindu\": 1.7, \"Buddhist\": 0.7, \"Other\": 0.5}");
+        RELIGION_DATA.put("PH", "{\"Catholic\": 78.8, \"Muslim\": 6.4, \"Protestant\": 2.8, \"Other Christian\": 4.5, \"Other\": 1.8, \"None\": 5.7}");
+        RELIGION_DATA.put("TH", "{\"Buddhist\": 92.5, \"Muslim\": 5.4, \"Christian\": 1.2, \"Other\": 0.9}");
+        RELIGION_DATA.put("VN", "{\"Buddhist\": 14.9, \"Catholic\": 7.4, \"Cao Dai\": 1.1, \"Hoa Hao\": 1.5, \"Protestant\": 0.9, \"Muslim\": 0.1, \"None\": 73.7}");
+        RELIGION_DATA.put("ZA", "{\"Protestant\": 36.6, \"Catholic\": 7.1, \"Anglican\": 6.8, \"Other Christian\": 36.0, \"Muslim\": 1.5, \"Hindu\": 1.2, \"Other\": 2.3, \"None\": 8.5}");
+        RELIGION_DATA.put("NG", "{\"Muslim\": 53.5, \"Protestant\": 35.3, \"Catholic\": 10.6, \"Other\": 0.6}");
+        RELIGION_DATA.put("KE", "{\"Protestant\": 47.4, \"Catholic\": 23.3, \"Muslim\": 11.2, \"Other Christian\": 11.8, \"Other\": 1.7, \"None\": 4.6}");
+        RELIGION_DATA.put("IL", "{\"Jewish\": 73.5, \"Muslim\": 18.1, \"Christian\": 1.9, \"Druze\": 1.6, \"Other\": 4.9}");
+        RELIGION_DATA.put("GR", "{\"Greek Orthodox\": 81.0, \"Muslim\": 1.3, \"Other\": 0.7, \"None\": 17.0}");
+        RELIGION_DATA.put("PL", "{\"Catholic\": 85.8, \"Orthodox\": 1.3, \"Protestant\": 0.4, \"Other\": 0.4, \"None\": 12.1}");
+        RELIGION_DATA.put("NL", "{\"Catholic\": 20.1, \"Protestant\": 14.8, \"Muslim\": 5.0, \"Other\": 5.9, \"None\": 54.2}");
+        RELIGION_DATA.put("BE", "{\"Catholic\": 57.1, \"Protestant\": 2.3, \"Muslim\": 6.8, \"Other\": 2.8, \"None\": 31.0}");
+        RELIGION_DATA.put("CH", "{\"Catholic\": 35.2, \"Protestant\": 23.8, \"Muslim\": 5.4, \"Other\": 5.7, \"None\": 29.9}");
+        RELIGION_DATA.put("SE", "{\"Lutheran\": 57.6, \"Other Christian\": 8.6, \"Muslim\": 5.0, \"Other\": 1.2, \"None\": 27.6}");
+        RELIGION_DATA.put("NO", "{\"Lutheran\": 68.7, \"Other Christian\": 7.9, \"Muslim\": 3.2, \"Other\": 1.0, \"None\": 19.2}");
+        RELIGION_DATA.put("DK", "{\"Lutheran\": 74.7, \"Muslim\": 5.5, \"Other\": 4.0, \"None\": 15.8}");
+        RELIGION_DATA.put("FI", "{\"Lutheran\": 67.8, \"Orthodox\": 1.1, \"Other Christian\": 1.1, \"Other\": 1.7, \"None\": 28.3}");
+        RELIGION_DATA.put("IE", "{\"Catholic\": 78.3, \"Anglican\": 2.6, \"Other Christian\": 1.3, \"Muslim\": 1.3, \"Other\": 1.5, \"None\": 15.0}");
+        RELIGION_DATA.put("NZ", "{\"Anglican\": 10.8, \"Catholic\": 12.6, \"Presbyterian\": 7.8, \"Other Christian\": 15.0, \"Hindu\": 2.1, \"Buddhist\": 1.3, \"Muslim\": 1.3, \"Other\": 1.6, \"None\": 47.5}");
+        RELIGION_DATA.put("CL", "{\"Catholic\": 66.7, \"Protestant\": 16.4, \"Other\": 2.2, \"None\": 14.7}");
+        RELIGION_DATA.put("CO", "{\"Catholic\": 79.0, \"Protestant\": 13.0, \"Other\": 1.0, \"None\": 7.0}");
+        RELIGION_DATA.put("PE", "{\"Catholic\": 76.0, \"Protestant\": 14.1, \"Other\": 4.8, \"None\": 5.1}");
+        RELIGION_DATA.put("EC", "{\"Catholic\": 68.8, \"Protestant\": 15.4, \"Other\": 1.3, \"None\": 14.5}");
+        RELIGION_DATA.put("UY", "{\"Catholic\": 41.5, \"Protestant\": 11.1, \"Other\": 1.2, \"None\": 46.2}");
+        RELIGION_DATA.put("VE", "{\"Catholic\": 71.0, \"Protestant\": 17.0, \"Other\": 3.0, \"None\": 9.0}");
+    }
+    
+    // Mapeamento de grupos étnicos por país (JSON format)
+    // Dados baseados no CIA World Factbook e censos nacionais
+    private static final Map<String, String> ETHNIC_GROUPS_DATA = new HashMap<>();
+    
+    static {
+        // Formato: JSON string com distribuição étnica em percentuais
+        ETHNIC_GROUPS_DATA.put("US", "{\"White\": 61.6, \"Hispanic\": 18.7, \"Black\": 12.4, \"Asian\": 6.0, \"Native American\": 1.1, \"Pacific Islander\": 0.2}");
+        ETHNIC_GROUPS_DATA.put("BR", "{\"White\": 47.7, \"Mixed\": 43.1, \"Black\": 7.6, \"Asian\": 1.1, \"Indigenous\": 0.4, \"Other\": 0.1}");
+        ETHNIC_GROUPS_DATA.put("MX", "{\"Mestizo\": 62.0, \"Amerindian\": 21.0, \"White\": 10.0, \"Other\": 7.0}");
+        ETHNIC_GROUPS_DATA.put("AR", "{\"White\": 97.0, \"Mestizo\": 2.0, \"Amerindian\": 0.5, \"Other\": 0.5}");
+        ETHNIC_GROUPS_DATA.put("GB", "{\"White\": 87.2, \"Asian\": 6.2, \"Black\": 3.0, \"Mixed\": 2.0, \"Other\": 1.6}");
+        ETHNIC_GROUPS_DATA.put("FR", "{\"White\": 85.0, \"North African\": 10.0, \"Black\": 3.0, \"Asian\": 2.0}");
+        ETHNIC_GROUPS_DATA.put("DE", "{\"German\": 86.3, \"Turkish\": 1.8, \"Polish\": 1.0, \"Syrian\": 1.0, \"Other\": 9.9}");
+        ETHNIC_GROUPS_DATA.put("IT", "{\"Italian\": 91.5, \"Romanian\": 1.8, \"North African\": 1.1, \"Albanian\": 0.8, \"Other\": 4.8}");
+        ETHNIC_GROUPS_DATA.put("ES", "{\"Spanish\": 84.8, \"Moroccan\": 1.7, \"Romanian\": 1.2, \"Other\": 12.3}");
+        ETHNIC_GROUPS_DATA.put("PT", "{\"Portuguese\": 95.0, \"African\": 2.0, \"Other European\": 1.0, \"Other\": 2.0}");
+        ETHNIC_GROUPS_DATA.put("CA", "{\"White\": 72.9, \"Asian\": 17.7, \"Indigenous\": 4.9, \"Black\": 3.1, \"Latin American\": 1.3, \"Other\": 0.1}");
+        ETHNIC_GROUPS_DATA.put("AU", "{\"White\": 76.0, \"Asian\": 17.0, \"Aboriginal\": 3.2, \"Other\": 3.8}");
+        ETHNIC_GROUPS_DATA.put("IN", "{\"Indo-Aryan\": 72.0, \"Dravidian\": 25.0, \"Mongoloid\": 3.0}");
+        ETHNIC_GROUPS_DATA.put("CN", "{\"Han\": 91.6, \"Zhuang\": 1.3, \"Hui\": 0.8, \"Manchu\": 0.8, \"Uyghur\": 0.8, \"Miao\": 0.7, \"Yi\": 0.7, \"Tujia\": 0.5, \"Tibetan\": 0.5, \"Mongol\": 0.4, \"Other\": 2.5}");
+        ETHNIC_GROUPS_DATA.put("JP", "{\"Japanese\": 97.9, \"Chinese\": 0.6, \"Korean\": 0.4, \"Other\": 1.1}");
+        ETHNIC_GROUPS_DATA.put("KR", "{\"Korean\": 95.1, \"Chinese\": 0.6, \"Other\": 4.3}");
+        ETHNIC_GROUPS_DATA.put("RU", "{\"Russian\": 77.7, \"Tatar\": 3.7, \"Ukrainian\": 1.4, \"Bashkir\": 1.1, \"Chuvash\": 1.0, \"Chechen\": 1.0, \"Armenian\": 0.9, \"Other\": 13.2}");
+        ETHNIC_GROUPS_DATA.put("TR", "{\"Turkish\": 70.0, \"Kurdish\": 19.0, \"Other\": 11.0}");
+        ETHNIC_GROUPS_DATA.put("SA", "{\"Arab\": 90.0, \"Afro-Asian\": 10.0}");
+        ETHNIC_GROUPS_DATA.put("EG", "{\"Egyptian\": 99.6, \"Other\": 0.4}");
+        ETHNIC_GROUPS_DATA.put("IR", "{\"Persian\": 61.0, \"Azerbaijani\": 16.0, \"Kurd\": 10.0, \"Lur\": 6.0, \"Arab\": 2.0, \"Baloch\": 2.0, \"Turkmen\": 2.0, \"Other\": 1.0}");
+        ETHNIC_GROUPS_DATA.put("PK", "{\"Punjabi\": 44.7, \"Pashtun\": 15.4, \"Sindhi\": 14.1, \"Saraiki\": 8.4, \"Muhajir\": 7.6, \"Baloch\": 3.6, \"Other\": 6.2}");
+        ETHNIC_GROUPS_DATA.put("ID", "{\"Javanese\": 40.1, \"Sundanese\": 15.5, \"Malay\": 3.7, \"Batak\": 3.6, \"Madurese\": 3.0, \"Betawi\": 2.9, \"Minangkabau\": 2.7, \"Buginese\": 2.7, \"Bantenese\": 2.0, \"Banjarese\": 1.7, \"Other\": 22.1}");
+        ETHNIC_GROUPS_DATA.put("PH", "{\"Tagalog\": 24.4, \"Cebuano\": 9.9, \"Ilocano\": 8.8, \"Bisaya\": 7.8, \"Hiligaynon\": 7.7, \"Bikol\": 3.8, \"Waray\": 3.4, \"Other\": 34.2}");
+        ETHNIC_GROUPS_DATA.put("TH", "{\"Thai\": 97.5, \"Burmese\": 1.3, \"Other\": 1.2}");
+        ETHNIC_GROUPS_DATA.put("VN", "{\"Kinh\": 85.3, \"Tay\": 1.9, \"Thai\": 1.8, \"Muong\": 1.5, \"Khmer\": 1.5, \"Mong\": 1.2, \"Nung\": 1.1, \"Other\": 5.7}");
+        ETHNIC_GROUPS_DATA.put("ZA", "{\"Black African\": 80.7, \"Colored\": 8.8, \"White\": 7.9, \"Indian/Asian\": 2.6}");
+        ETHNIC_GROUPS_DATA.put("NG", "{\"Hausa\": 30.0, \"Yoruba\": 15.5, \"Igbo\": 15.2, \"Fulani\": 6.0, \"Tiv\": 2.4, \"Kanuri\": 2.4, \"Ibibio\": 1.8, \"Other\": 26.7}");
+        ETHNIC_GROUPS_DATA.put("KE", "{\"Kikuyu\": 17.1, \"Luhya\": 14.3, \"Kalenjin\": 13.4, \"Luo\": 10.7, \"Kamba\": 10.1, \"Somali\": 6.2, \"Kisii\": 5.7, \"Mijikenda\": 5.1, \"Meru\": 4.3, \"Turkana\": 2.5, \"Other\": 10.6}");
+        ETHNIC_GROUPS_DATA.put("IL", "{\"Jewish\": 73.5, \"Arab\": 21.0, \"Other\": 5.5}");
+        ETHNIC_GROUPS_DATA.put("GR", "{\"Greek\": 91.6, \"Albanian\": 4.4, \"Other\": 4.0}");
+        ETHNIC_GROUPS_DATA.put("PL", "{\"Polish\": 96.9, \"Silesian\": 1.1, \"German\": 0.2, \"Ukrainian\": 0.1, \"Other\": 1.7}");
+        ETHNIC_GROUPS_DATA.put("NL", "{\"Dutch\": 75.4, \"Turkish\": 2.4, \"Moroccan\": 2.4, \"Surinamese\": 2.1, \"Indonesian\": 2.0, \"Other\": 15.7}");
+        ETHNIC_GROUPS_DATA.put("BE", "{\"Belgian\": 75.0, \"Italian\": 4.1, \"Moroccan\": 3.7, \"French\": 2.4, \"Turkish\": 2.0, \"Dutch\": 2.0, \"Other\": 10.8}");
+        ETHNIC_GROUPS_DATA.put("CH", "{\"Swiss\": 69.3, \"German\": 4.2, \"Italian\": 3.2, \"Portuguese\": 2.6, \"French\": 2.0, \"Kosovar\": 1.1, \"Other\": 17.6}");
+        ETHNIC_GROUPS_DATA.put("SE", "{\"Swedish\": 80.3, \"Syrian\": 1.9, \"Finnish\": 1.4, \"Iraqi\": 1.4, \"Polish\": 1.2, \"Other\": 13.8}");
+        ETHNIC_GROUPS_DATA.put("NO", "{\"Norwegian\": 83.2, \"Polish\": 1.1, \"Lithuanian\": 0.6, \"Somali\": 0.6, \"Other\": 14.5}");
+        ETHNIC_GROUPS_DATA.put("DK", "{\"Danish\": 86.1, \"Turkish\": 1.1, \"Polish\": 0.8, \"Syrian\": 0.6, \"German\": 0.5, \"Other\": 10.9}");
+        ETHNIC_GROUPS_DATA.put("FI", "{\"Finnish\": 87.3, \"Swedish\": 5.2, \"Russian\": 1.4, \"Estonian\": 0.9, \"Other\": 5.2}");
+        ETHNIC_GROUPS_DATA.put("IE", "{\"Irish\": 82.2, \"Polish\": 2.7, \"Other White\": 9.5, \"Asian\": 2.1, \"Black\": 1.4, \"Other\": 2.1}");
+        ETHNIC_GROUPS_DATA.put("NZ", "{\"European\": 70.2, \"Maori\": 16.5, \"Asian\": 15.1, \"Pacific Islander\": 8.1, \"Middle Eastern/Latin American/African\": 1.5, \"Other\": 1.2}");
+        ETHNIC_GROUPS_DATA.put("CL", "{\"White and Mestizo\": 88.9, \"Mapuche\": 9.1, \"Aymara\": 0.7, \"Other\": 1.3}");
+        ETHNIC_GROUPS_DATA.put("CO", "{\"Mestizo\": 49.0, \"White\": 37.0, \"Afro-Colombian\": 10.6, \"Indigenous\": 3.4}");
+        ETHNIC_GROUPS_DATA.put("PE", "{\"Mestizo\": 60.2, \"Quechua\": 22.3, \"White\": 5.9, \"Aymara\": 2.4, \"Afro-Peruvian\": 3.6, \"Other\": 5.6}");
+        ETHNIC_GROUPS_DATA.put("EC", "{\"Mestizo\": 71.9, \"Montubio\": 7.4, \"Afro-Ecuadorian\": 7.2, \"Indigenous\": 7.0, \"White\": 6.1, \"Other\": 0.4}");
+        ETHNIC_GROUPS_DATA.put("UY", "{\"White\": 87.7, \"Mestizo\": 4.6, \"Black\": 4.6, \"Amerindian\": 2.4, \"Other\": 0.7}");
+        ETHNIC_GROUPS_DATA.put("VE", "{\"Mestizo\": 51.6, \"White\": 43.6, \"Black\": 3.6, \"Indigenous\": 1.2}");
+    }
+    
     // Mapeamento de códigos ISO2 para nomes de países em inglês
     private static final Map<String, String> COUNTRY_NAMES_EN = new HashMap<>();
     
@@ -451,6 +564,14 @@ public class CountryInfoService {
             // Continuar mesmo se World Bank falhar - pelo menos temos dados básicos
         }
         
+        // Buscar dados demográficos (religião e grupos étnicos)
+        try {
+            fetchDemographicsData(countryId, info);
+        } catch (Exception e) {
+            logger.debug("Error fetching demographics data for {}: {}", countryId, e.getMessage());
+            // Não é crítico, continuar
+        }
+        
         long totalDuration = System.currentTimeMillis() - startTime;
         logger.info("✅ Completed data fetch for {}: took {}ms ({}s)", countryId, totalDuration, totalDuration / 1000.0);
         
@@ -660,6 +781,37 @@ public class CountryInfoService {
             
         } catch (Exception e) {
             logger.debug("Error calculating HDI ranking for {}: {}", countryId, e.getMessage());
+        }
+    }
+    
+    /**
+     * Fetches demographics data (religion and ethnic groups) from static data.
+     * 
+     * @param countryId ISO2 country code
+     * @param info CountryInfo object to update
+     */
+    private void fetchDemographicsData(String countryId, CountryInfo info) {
+        String upperCountryId = countryId.toUpperCase();
+        
+        try {
+            // Buscar dados de religião
+            String religionJson = RELIGION_DATA.get(upperCountryId);
+            if (religionJson != null) {
+                info.setReligion(religionJson);
+                info.setReligionYear(DEMOGRAPHICS_YEAR);
+                logger.debug("Religion data found for {}: {}", upperCountryId, religionJson);
+            }
+            
+            // Buscar dados de grupos étnicos
+            String ethnicGroupsJson = ETHNIC_GROUPS_DATA.get(upperCountryId);
+            if (ethnicGroupsJson != null) {
+                info.setEthnicGroups(ethnicGroupsJson);
+                info.setEthnicGroupsYear(DEMOGRAPHICS_YEAR);
+                logger.debug("Ethnic groups data found for {}: {}", upperCountryId, ethnicGroupsJson);
+            }
+            
+        } catch (Exception e) {
+            logger.debug("Error fetching demographics data for {}: {}", countryId, e.getMessage());
         }
     }
     
