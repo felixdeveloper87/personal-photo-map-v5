@@ -5,6 +5,7 @@ import com.personalphotomap.model.CountryInfo;
 import com.personalphotomap.repository.CountryInfoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,6 +33,7 @@ public class CountryInfoService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final CountryCuriositiesService curiositiesService;
+    private final CacheManager cacheManager;
     
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
@@ -140,11 +142,12 @@ public class CountryInfoService {
         "accessToEletricity", "healthExpenses", "netMigration"
     );
     
-    public CountryInfoService(CountryInfoRepository repository, CountryCuriositiesService curiositiesService) {
+    public CountryInfoService(CountryInfoRepository repository, CountryCuriositiesService curiositiesService, CacheManager cacheManager) {
         this.repository = repository;
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
         this.curiositiesService = curiositiesService;
+        this.cacheManager = cacheManager;
     }
     
     /**
@@ -922,6 +925,76 @@ public class CountryInfoService {
     public void evictCache(String countryId) {
         repository.deleteById(countryId.toUpperCase());
         logger.info("Cache evicted for: {}", countryId.toUpperCase());
+    }
+    
+    /**
+     * Clears only the curiosities for a specific country, keeping other cached data.
+     * Forces regeneration of curiosities on next request.
+     * 
+     * @param countryId ISO2 country code
+     */
+    public void clearCuriosities(String countryId) {
+        String upperCountryId = countryId.toUpperCase();
+        Optional<CountryInfo> info = repository.findByCountryId(upperCountryId);
+        
+        if (info.isPresent()) {
+            CountryInfo countryInfo = info.get();
+            countryInfo.setCuriosities(null);
+            countryInfo.setCuriositiesLastUpdated(null);
+            repository.save(countryInfo);
+            
+            // Also evict from Caffeine cache
+            evictCaffeineCache(upperCountryId);
+            
+            logger.info("Curiosities cleared for: {}", upperCountryId);
+        } else {
+            logger.warn("Country not found for clearing curiosities: {}", upperCountryId);
+        }
+    }
+    
+    /**
+     * Clears curiosities for all countries in the database.
+     */
+    public void clearAllCuriosities() {
+        List<CountryInfo> allCountries = repository.findAll();
+        int count = 0;
+        
+        for (CountryInfo info : allCountries) {
+            if (info.getCuriosities() != null) {
+                info.setCuriosities(null);
+                info.setCuriositiesLastUpdated(null);
+                repository.save(info);
+                evictCaffeineCache(info.getCountryId());
+                count++;
+            }
+        }
+        
+        logger.info("Curiosities cleared for {} countries", count);
+    }
+    
+    /**
+     * Clears all Caffeine cache (in-memory cache).
+     */
+    public void clearAllCaffeineCache() {
+        if (cacheManager != null) {
+            cacheManager.getCache("countryInfo").clear();
+            logger.info("All Caffeine cache cleared");
+        }
+    }
+    
+    /**
+     * Evicts a specific country from Caffeine cache.
+     * 
+     * @param countryId ISO2 country code
+     */
+    private void evictCaffeineCache(String countryId) {
+        if (cacheManager != null) {
+            var cache = cacheManager.getCache("countryInfo");
+            if (cache != null) {
+                cache.evict(countryId);
+                logger.debug("Caffeine cache evicted for: {}", countryId);
+            }
+        }
     }
     
     /**

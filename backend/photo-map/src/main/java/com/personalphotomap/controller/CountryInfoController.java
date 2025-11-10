@@ -116,4 +116,75 @@ public class CountryInfoController {
                 .body(Map.of("error", "Failed to evict cache: " + e.getMessage()));
         }
     }
+    
+    /**
+     * Clears only the curiosities for a specific country.
+     * This will force regeneration of curiosities with the new prompt format on next request.
+     * Other cached data (basic info, economic data, etc.) is preserved.
+     * 
+     * @param countryId ISO2 country code
+     * @return ResponseEntity with success message
+     */
+    @DeleteMapping("/{countryId}/curiosities")
+    public ResponseEntity<?> clearCuriosities(@PathVariable String countryId) {
+        try {
+            if (countryId == null || countryId.length() != 2) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid country ID. Must be a 2-character ISO2 code."));
+            }
+            
+            countryInfoService.clearCuriosities(countryId);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Curiosities cleared successfully for country: " + countryId + ". They will be regenerated on next request.",
+                "countryId", countryId
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to clear curiosities: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Clears curiosities for all countries.
+     * This will force regeneration of all curiosities with the new prompt format.
+     * 
+     * @return ResponseEntity with success message
+     */
+    @DeleteMapping("/curiosities/all")
+    public ResponseEntity<?> clearAllCuriosities() {
+        try {
+            countryInfoService.clearAllCuriosities();
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "All curiosities cleared successfully. They will be regenerated on next request for each country."
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to clear all curiosities: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Clears all Caffeine in-memory cache.
+     * This does not delete data from the database, only clears the in-memory cache.
+     * 
+     * @return ResponseEntity with success message
+     */
+    @DeleteMapping("/cache/caffeine/all")
+    public ResponseEntity<?> clearAllCaffeineCache() {
+        try {
+            countryInfoService.clearAllCaffeineCache();
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "All Caffeine cache cleared successfully."
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to clear Caffeine cache: " + e.getMessage()));
+        }
+    }
 }

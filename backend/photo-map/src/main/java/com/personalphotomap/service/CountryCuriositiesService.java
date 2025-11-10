@@ -83,27 +83,42 @@ public class CountryCuriositiesService {
         String currency = info.getCurrencyName() != null ? info.getCurrencyName() : "";
 
         return String.format(
-                "Write an engaging and modern encyclopedia-style summary about %s. " +
-                        "The text should be around 200–250 words, informative, curious, and enjoyable to read.\n\n" +
+                "Write an inspiring and captivating promotional text about %s that encourages travelers to visit and explore this amazing destination. " +
+                        "The text should be around 200–250 words, enthusiastic, and written to attract tourists.\n\n" +
                         "Basic country information (for reference):\n" +
                         "- Name: %s\n" +
                         "- Capital: %s\n" +
                         "- Official language: %s\n" +
                         "- Currency: %s\n\n" +
-                        "IMPORTANT: The text must naturally include and highlight:\n" +
-                        "1. **Gastronomy** – traditional dishes, signature ingredients, and culinary traditions\n" +
-                        "2. **Sports** – popular sports, athletic traditions, and major sporting events\n" +
-                        "3. **Lifestyle** – customs, habits, and the everyday way of life\n" +
-                        "4. **Culture** – festivals, music, art, and cultural expressions\n" +
-                        "5. **Curiosities** – interesting or unique facts about the country\n" +
-                        "6. **Geography and nature** – notable landscapes and natural features\n\n" +
-                        "Guidelines:\n" +
+                        "CRITICAL FORMATTING REQUIREMENTS - YOU MUST FOLLOW THIS EXACT STRUCTURE:\n\n" +
+                        "1. **Opening paragraph** (2-3 sentences) – Start with an exciting and enthusiastic introduction that sparks curiosity and makes the reader want to discover this country immediately.\n\n" +
+                        "2. **Top 5 Tourist Attractions section** – You MUST include a clear section title followed by a blank line, then list exactly 5 items, each on its own separate line:\n" +
+                        "   Format:\n" +
+                        "   Top 5 Tourist Attractions:\n" +
+                        "   \n" +
+                        "   1) [Attraction Name] - [Brief description]\n" +
+                        "   2) [Attraction Name] - [Brief description]\n" +
+                        "   3) [Attraction Name] - [Brief description]\n" +
+                        "   4) [Attraction Name] - [Brief description]\n" +
+                        "   5) [Attraction Name] - [Brief description]\n\n" +
+                        "3. **Top 5 Experiences section** – You MUST include a clear section title followed by a blank line, then list exactly 5 items, each on its own separate line:\n" +
+                        "   Format:\n" +
+                        "   Top 5 Experiences:\n" +
+                        "   \n" +
+                        "   1) [Experience Name] - [Brief description]\n" +
+                        "   2) [Experience Name] - [Brief description]\n" +
+                        "   3) [Experience Name] - [Brief description]\n" +
+                        "   4) [Experience Name] - [Brief description]\n" +
+                        "   5) [Experience Name] - [Brief description]\n\n" +
+                        "4. **Closing paragraph** (2-3 sentences) – End with information about gastronomy, natural beauty, lifestyle, and atmosphere that makes the reader feel they MUST visit this country.\n\n" +
+                        "FORMATTING RULES:\n" +
+                        "- Each numbered item MUST be on its own separate line\n" +
+                        "- Use exactly this format: 1), 2), 3), 4), 5) with closing parenthesis\n" +
+                        "- Include blank lines between sections for visual separation\n" +
+                        "- Section titles must be clearly visible: \"Top 5 Tourist Attractions:\" and \"Top 5 Experiences:\"\n" +
                         "- Use general knowledge about the country, not just the provided data\n" +
-                        "- Write in a natural, narrative way, as if it were a modern encyclopedia entry\n" +
-                        "- Do NOT list numbers, statistics, or rankings\n" +
-                        "- Emphasize cultural, gastronomic, sporting, and lifestyle aspects\n" +
-                        "- Keep the tone informative, curious, and engaging\n" +
-                        "- Make the reader feel as if they are traveling through the country while reading.",
+                        "- Write in an enthusiastic, promotional tone that sells the destination\n" +
+                        "- Make the reader feel they MUST visit this country",
                 countryName, countryName, capital, language, currency);
     }
 
@@ -119,13 +134,19 @@ public class CountryCuriositiesService {
             Map<String, Object> systemMessage = new HashMap<>();
             systemMessage.put("role", "system");
             systemMessage.put("content", 
-                "You are a professional writer specialized in creating engaging, modern encyclopedia-style summaries about countries. " +
-                "You have deep knowledge of world cultures, gastronomy, sports, lifestyle, traditions, and curiosities. " +
-                "Your goal is to write informative, curious, and captivating texts that read like a modern encyclopedia entry — " +
-                "smooth, natural, and enjoyable to read. " +
-                "Use your general knowledge about the country to describe its cuisine, popular sports, daily lifestyle, culture, music, art, festivals, curiosities, and notable geography. " +
-                "The text should be around 200–250 words, written in a narrative and friendly tone, without listing numbers or statistics. " +
-                "Focus on awakening the reader's curiosity and making them feel as if they are traveling through the country while reading.");
+                "You are a professional travel writer and destination marketing specialist with deep knowledge of world tourism, cultures, gastronomy, and attractions. " +
+                "Your goal is to write inspiring, enthusiastic, and promotional texts that encourage people to visit and explore countries. " +
+                "You excel at creating captivating opening sentences that spark curiosity and excitement. " +
+                "You know the main tourist attractions, landmarks, and must-visit places in countries around the world. " +
+                "Your texts are written to attract tourists and sell destinations in an authentic and inspiring way. " +
+                "The text should be around 200–250 words, written in an enthusiastic and inviting tone. " +
+                "Always start with an exciting introduction that makes readers want to discover the country immediately. " +
+                "CRITICAL FORMATTING: You MUST structure your response with clear visual separation: " +
+                "1) Opening paragraph, 2) Section title 'Top 5 Tourist Attractions:' followed by a blank line, then 5 numbered items (1), 2), 3), 4), 5)) each on its own separate line, " +
+                "3) Section title 'Top 5 Experiences:' followed by a blank line, then 5 numbered items (1), 2), 3), 4), 5)) each on its own separate line, " +
+                "4) Closing paragraph. Each numbered item must be on its own line with proper line breaks for visual clarity. " +
+                "Emphasize tourist attractions, cultural experiences, gastronomy, natural beauty, and unique aspects that make each destination special. " +
+                "Make readers feel they absolutely must visit this amazing country.");
             
             // User message
             Map<String, Object> userMessage = new HashMap<>();
@@ -136,7 +157,7 @@ public class CountryCuriositiesService {
             request.put("model", "gpt-3.5-turbo");
             request.put("messages", List.of(systemMessage, userMessage));
             request.put("temperature", 0.7);
-            request.put("max_tokens", 500);
+            request.put("max_tokens", 700);
 
             String requestBody = objectMapper.writeValueAsString(request);
 

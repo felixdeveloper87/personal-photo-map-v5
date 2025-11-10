@@ -293,15 +293,63 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     </HStack>
                   </HStack>
 
-                  <Text
-                    fontSize="md"
-                    color={textColor}
-                    lineHeight="1.7"
-                    textAlign="justify"
-                    px={1}
-                  >
-                    {wikipediaData.summary}
-                  </Text>
+                  <Box fontSize="md" color={textColor} lineHeight="1.8" px={1}>
+                    {wikipediaData.summary.split('\n').map((line, index) => {
+                      const trimmedLine = line.trim();
+                      
+                      // Detecta títulos de seção (Top 5 Tourist Attractions: ou Top 5 Experiences:)
+                      if (trimmedLine.endsWith(':') && (trimmedLine.includes('Top 5') || trimmedLine.includes('Attractions') || trimmedLine.includes('Experiences'))) {
+                        return (
+                          <Text
+                            key={index}
+                            as="h3"
+                            fontSize="lg"
+                            fontWeight="bold"
+                            color={accentColor}
+                            mt={index > 0 ? 4 : 0}
+                            mb={2}
+                          >
+                            {trimmedLine}
+                          </Text>
+                        );
+                      }
+                      
+                      // Detecta itens numerados (1), 2), etc.)
+                      if (/^\d+\)/.test(trimmedLine)) {
+                        return (
+                          <Text
+                            key={index}
+                            as="div"
+                            ml={4}
+                            mb={1.5}
+                            fontSize="md"
+                            color={textColor}
+                          >
+                            {trimmedLine}
+                          </Text>
+                        );
+                      }
+                      
+                      // Linha em branco
+                      if (trimmedLine === '') {
+                        return <Box key={index} h={2} />;
+                      }
+                      
+                      // Texto normal (parágrafos)
+                      return (
+                        <Text
+                          key={index}
+                          as="span"
+                          display="block"
+                          mb={2}
+                          textAlign="justify"
+                          color={textColor}
+                        >
+                          {line}
+                        </Text>
+                      );
+                    })}
+                  </Box>
                 </Box>
 
                 <Box
