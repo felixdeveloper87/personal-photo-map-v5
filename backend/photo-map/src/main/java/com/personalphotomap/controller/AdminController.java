@@ -78,11 +78,17 @@ public class AdminController {
      */
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        boolean deleted = userService.deleteUserAndImagesById(id);
-        if (deleted) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        try {
+            boolean deleted = userService.deleteUserAndImagesById(id);
+            if (deleted) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(404).body("User not found");
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting user " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error deleting user: " + e.getMessage());
         }
     }
 }

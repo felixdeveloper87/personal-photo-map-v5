@@ -300,7 +300,16 @@ public class UserService {
             AppUser user = userOptional.get();
             List<Image> images = imageRepository.findByUserId(userId);
 
-            images.forEach(image -> imageDeleteService.deleteImage(image));
+            // Delete all images synchronously within the transaction
+            for (Image image : images) {
+                try {
+                    imageDeleteService.deleteImageSync(image);
+                } catch (Exception e) {
+                    // Log error but continue with deletion
+                    System.err.println("Error deleting image " + image.getId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
 
             userRepository.delete(user);
             return true;

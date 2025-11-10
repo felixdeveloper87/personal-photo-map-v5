@@ -116,8 +116,32 @@ const AdminPage = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to delete user');
+        let errorMessage = 'Failed to delete user';
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage = errorText;
+          } else {
+            // If no error text, use status-based message
+            if (response.status === 404) {
+              errorMessage = 'User not found';
+            } else if (response.status === 403) {
+              errorMessage = 'Access denied. You do not have permission to delete users.';
+            } else if (response.status === 401) {
+              errorMessage = 'Unauthorized. Please log in again.';
+            } else {
+              errorMessage = `Failed to delete user (Status: ${response.status})`;
+            }
+          }
+        } catch (e) {
+          // If we can't read the error text, use status-based message
+          if (response.status === 404) {
+            errorMessage = 'User not found';
+          } else {
+            errorMessage = `Failed to delete user (Status: ${response.status})`;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       toast({
@@ -132,9 +156,15 @@ const AdminPage = () => {
       fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        userId,
+        userEmail
+      });
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete user',
+        description: error.message || 'Failed to delete user. Please check the console for details.',
         status: 'error',
         duration: 5000,
         isClosable: true,
