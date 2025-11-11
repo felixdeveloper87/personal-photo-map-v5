@@ -249,7 +249,7 @@ const CTASection = ({ onOpenRegister }) => {
               </MotionBox>
             </HStack>
 
-            {/* === Extra Info === */}
+            {/* === Extra Info === d*/}
             <VStack spacing={4} pt={4}>
               <HStack spacing={8} flexWrap="wrap" justify="center" opacity={0.9}>
                 {[
