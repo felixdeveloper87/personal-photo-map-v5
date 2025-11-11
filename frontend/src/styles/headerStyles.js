@@ -114,9 +114,6 @@ export const useHeaderStyles = () => {
 
 export const headerContainerStyles = (backgroundPattern) => ({
   w: "100%",
-  position: "sticky",
-  top: 0,
-  zIndex: 1000,
   backdropFilter: "blur(24px)",
   borderBottom: "2px solid",
   borderColor: "rgba(39, 143, 195, 0.2)",

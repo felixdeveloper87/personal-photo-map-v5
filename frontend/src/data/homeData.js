@@ -68,7 +68,7 @@ export const educationalFeatures = [
     title: 'Cultural Insights',
     description: 'Native languages, currencies, capitals, and demographic information with cultural context.',
     color: 'indigo',
-    gradient: 'linear(135deg, indigo.400, blue.500)'
+    gradient: 'linear(135deg, blue.400, pink.500)'
   },
   {
     icon: HiBookOpen,
@@ -92,7 +92,7 @@ export const videoFeatures = [
     title: 'Smart Audio Matching',
     description: 'Automatically sync background music with your video content, creating perfect audio-visual harmony for your travel memories.',
     color: 'purple',
-    gradient: 'linear(135deg, purple.400, indigo.500)'
+    gradient: 'linear(135deg, blue.400, pink.500)'
   },
   {
     icon: HiSparkles,

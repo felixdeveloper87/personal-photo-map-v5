@@ -16,6 +16,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CountriesProvider } from './context/CountriesContext';
 import { usePhotoUploadListener } from './hooks/usePhotoUploadListener';
 import AdminRoute from './components/ui/AdminRoute';
+import { useHeaderHeight } from './hooks/useHeaderHeight';
 
 /**
  * App Component
@@ -33,6 +34,7 @@ function App() {
 
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const { headerHeight, headerRef } = useHeaderHeight();
 
   return (
     <AuthProvider> {/* Provides authentication context to the entire app */}
@@ -42,7 +44,7 @@ function App() {
 
           {/* Header Section */}
           <Box as="header">
-            <Header />
+            <Header ref={headerRef} />
           </Box>
 
           {/* Main Content Section */}
@@ -51,6 +53,7 @@ function App() {
             flex="1" 
             px={0} 
             pb={0}
+            pt={`${headerHeight}px`}
           >
             <Routes>
               <Route path="/" element={<SmartHomeRoute />} />

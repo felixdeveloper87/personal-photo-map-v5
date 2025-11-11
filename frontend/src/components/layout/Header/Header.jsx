@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -46,7 +46,7 @@ import PhotoStorageModal from "../../modals/PhotoStorageModal";
 import LoginModal from "../../modals/LoginModal";
 import RegisterModal from "../../modals/RegisterModal";
 
-const Header = () => {
+const Header = forwardRef((props, ref) => {
   const navigate = useNavigate();
   const toast = useToast();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -201,13 +201,23 @@ const Header = () => {
   const [isCompact] = useMediaQuery("(max-width: 1100px)");
 
   return (
-    <Box as="header" w="100%" position="relative" zIndex={100}>
+    <Box 
+      ref={ref} 
+      as="header" 
+      w="100%" 
+      position="fixed" 
+      top="0" 
+      left="0" 
+      right="0" 
+      zIndex={1000}
+    >
       <Container
         maxW="container.2xl"
         px={{ base: 2, sm: 4, md: 6 }}
         borderTop="2px solid"
         borderTopColor={useColorModeValue('black', 'white')}
-        {...headerContainerStyles(styles)}
+        bg={styles.cardBg}
+        {...headerContainerStyles(styles.backgroundPattern)}
         borderBottom={borderBottom}
         borderBottomColor={borderBottomColor}
       >
@@ -495,7 +505,9 @@ const Header = () => {
       />
     </Box>
   );
-};
+});
+
+Header.displayName = "Header";
 
 export default Header;
 

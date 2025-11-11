@@ -42,13 +42,18 @@ const CTASection = ({ onOpenRegister }) => {
     'radial(circle, whiteAlpha.100, transparent)'
   );
 
+  const bgGradient = useColorModeValue(
+    'linear(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+    'linear(135deg,rgb(0, 0, 0) 0%,rgb(10, 9, 9) 50%,rgb(20, 19, 19) 100%)'
+  );
+
   const badgeBefore = useColorModeValue('rgba(0,0,0,0.2)', 'rgba(255,255,255,0.2)');
   const textColor = useColorModeValue('gray.800', 'white');
   const textColorLight = useColorModeValue('gray.700', 'white');
 
   return (
     <Box
-      bgGradient="linear(135deg, #1e40af 0%, #7c3aed 50%, #4338ca 100%)"
+      bgGradient={bgGradient}
       color="white"
       py={{ base: 12, sm: 16, md: 24, lg: 32 }}
       position="relative"
