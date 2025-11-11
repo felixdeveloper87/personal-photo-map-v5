@@ -3,22 +3,18 @@ import {
   HiCamera,
   HiGlobeAlt,
   HiUsers,
-  HiRocketLaunch,
-  HiStar,
   HiAcademicCap,
   HiChartBar,
   HiBuildingLibrary,
   HiBookOpen,
   HiGlobeAmericas,
   HiLightBulb,
-  HiCpuChip,
   HiVideoCamera,
   HiPlay,
   HiMusicalNote,
   HiSparkles,
   HiFilm,
   HiArrowUpTray,
-  HiArrowDownTray
 } from 'react-icons/hi2';
 
 export const features = [
@@ -194,6 +190,13 @@ export const testimonials = [
     text: 'Creating videos from my travel photos has never been easier. The smooth transitions and templates make my content look incredibly professional.',
     rating: 5,
     avatar: '📸'
+  },
+  {
+    name: 'James Wilson',
+    location: 'Data Scientist, San Francisco',
+    text: 'As a data scientist, I appreciate the quality and reliability of the data sources. The platform makes it easy to visualize and understand global trends for my research projects.',
+    rating: 5,
+    avatar: '👨‍💻'
   }
 ];
 
@@ -202,24 +205,32 @@ export const learningSteps = [
     step: '01',
     title: 'Upload & Organize',
     description: 'Upload your travel photos and automatically organize them by country and date',
-    icon: HiCamera
+    icon: HiCamera,
+    color: 'blue',
+    gradient: 'linear(135deg, blue.400, cyan.500)'
   },
   {
     step: '02',
     title: 'Learn About Destinations',
     description: 'Explore comprehensive educational data and statistics for each country you visit',
-    icon: HiGlobeAlt
+    icon: HiGlobeAlt,
+    color: 'green',
+    gradient: 'linear(135deg, green.400, teal.500)'
   },
   {
     step: '03',
     title: 'Create Social Videos',
     description: 'Transform your photos into videos optimized for social media platforms',
-    icon: HiVideoCamera
+    icon: HiVideoCamera,
+    color: 'purple',
+    gradient: 'linear(135deg, purple.400, pink.500)'
   },
   {
     step: '04',
     title: 'Share Your Journey',
     description: 'Export and share your travel stories across Instagram, TikTok, and YouTube',
-    icon: HiArrowUpTray
+    icon: HiArrowUpTray,
+    color: 'orange',
+    gradient: 'linear(135deg, orange.400, red.500)'
   }
 ];

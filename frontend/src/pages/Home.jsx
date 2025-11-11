@@ -44,8 +44,6 @@ function Home() {
         badgeIcon={HiRocketLaunch}
         columns={{ base: 1, md: 2, lg: 4 }}
         spacing={8}
-        bg="gray.50"
-        bgDark="gray.900"
       />
 
       {/* Video Features Section */}
@@ -57,8 +55,6 @@ function Home() {
         badgeIcon={HiVideoCamera}
         columns={{ base: 1, md: 2, lg: 3 }}
         spacing={8}
-        bg="gray.50"
-        bgDark="gray.900"
       />
 
       {/* Educational Data Section */}
@@ -70,8 +66,6 @@ function Home() {
         badgeIcon={HiChartBar}
         columns={{ base: 1, md: 2 }}
         spacing={10}
-        bg="white"
-        bgDark="gray.800"
       />
 
       {/* How It Works Section */}
