@@ -216,10 +216,30 @@ const Header = forwardRef((props, ref) => {
         px={{ base: 2, sm: 4, md: 6 }}
         borderTop="2px solid"
         borderTopColor={useColorModeValue('black', 'white')}
-        bg={styles.cardBg}
-        {...headerContainerStyles(styles.backgroundPattern)}
+        {...headerContainerStyles()}
         borderBottom={borderBottom}
         borderBottomColor={borderBottomColor}
+        position="relative"
+        overflow="hidden"
+        _after={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bg: useColorModeValue(
+            // ⭐ Liquid Carbon Prism – Light Mode
+            `url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='lcg1-light' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fafafa'/%3E%3Cstop offset='50%25' stop-color='%23f1f1f1'/%3E%3Cstop offset='100%25' stop-color='%23e7e7e7'/%3E%3C/linearGradient%3E%3ClinearGradient id='shine-light' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.55)'/%3E%3Cstop offset='40%25' stop-color='rgba(255,255,255,0.15)'/%3E%3Cstop offset='100%25' stop-color='rgba(255,255,255,0)'/%3E%3C/linearGradient%3E%3Cpattern id='liquid-carbon-light' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Crect width='40' height='40' fill='url(%23lcg1-light)'/%3E%3Cpath d='M-20 20 L20 -20 M0 40 L40 0 M20 60 L60 20' stroke='rgba(0,0,0,0.1)' stroke-width='3'/%3E%3Cpath d='M-20 0 L20 40 M0 -20 L40 20 M20 -40 L60 0' stroke='rgba(0,0,0,0.06)' stroke-width='3'/%3E%3Crect x='0' y='0' width='40' height='40' fill='url(%23shine-light)'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23liquid-carbon-light)'/%3E%3C/svg%3E")`,
+        
+            // 🌑 Liquid Carbon Prism – Dark Mode
+            `url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='lcg1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23111218'/%3E%3Cstop offset='50%25' stop-color='%231d1f27'/%3E%3Cstop offset='100%25' stop-color='%230b0c10'/%3E%3C/linearGradient%3E%3ClinearGradient id='shine' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.18)'/%3E%3Cstop offset='40%25' stop-color='rgba(255,255,255,0.03)'/%3E%3Cstop offset='100%25' stop-color='rgba(255,255,255,0)'/%3E%3C/linearGradient%3E%3Cpattern id='liquid-carbon' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Crect width='40' height='40' fill='url(%23lcg1)'/%3E%3Cpath d='M-20 20 L20 -20 M0 40 L40 0 M20 60 L60 20' stroke='rgba(255,255,255,0.08)' stroke-width='3'/%3E%3Cpath d='M-20 0 L20 40 M0 -20 L40 20 M20 -40 L60 0' stroke='rgba(255,255,255,0.04)' stroke-width='3'/%3E%3Crect x='0' y='0' width='40' height='40' fill='url(%23shine)'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23liquid-carbon)'/%3E%3C/svg%3E")`
+          ),
+          opacity: 0.6,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+        
       >
         <Flex
           align="center"
@@ -227,6 +247,8 @@ const Header = forwardRef((props, ref) => {
           w="100%"
           h="auto"
           gap={{ base: 1, sm: 2, md: 4 }}
+          position="relative"
+          zIndex={1}
           pb={isLoggedIn && isCompact ? 4 : 0}
         >
           {/* ESQUERDA: Logo (canto esquerdo) */}

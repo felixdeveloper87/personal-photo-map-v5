@@ -9,13 +9,13 @@
 .leaflet-tooltip,
 .country-tooltip {
     position: absolute;
-    /* Gradiente de fundo mais sutil */
     background: linear-gradient(135deg,
-        rgba(250, 252, 251, 0.98) 0%,
-        rgba(245, 248, 247, 0.98) 100%);
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(240, 253, 250, 0.98) 50%,
+        rgba(255, 255, 255, 0.95) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: none;
+    border: 1px solid rgba(44, 82, 77, 0.1);
     border-radius: 8px;
     padding: 6px 10px;
     font-size: 14px;
@@ -29,12 +29,40 @@
     z-index: 1000;
     white-space: nowrap;
     transform: translateY(-8px);
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    opacity: 1 !important;
+    transition: opacity 0.05s ease-out, transform 0.05s ease-out;
+    will-change: opacity, transform;
+}
+
+/* Esconder tooltips que estão sendo fechados pelo Leaflet */
+.leaflet-tooltip-fade,
+.leaflet-tooltip-fade.leaflet-tooltip-fade-anim {
+    opacity: 0 !important;
+    transition: opacity 0.05s ease-out !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* Garantir que apenas tooltips ativos sejam visíveis */
+.leaflet-tooltip:not(.leaflet-tooltip-fade) {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+/* Esconder tooltips que não estão ativos (rastros) */
+.leaflet-tooltip[style*="display: none"],
+.leaflet-tooltip[style*="opacity: 0"],
+.leaflet-tooltip[style*="visibility: hidden"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .tooltip.show {
-    opacity: 1;
+    opacity: 1 !important;
     transform: translateY(-8px);
 }
 
@@ -57,7 +85,7 @@
     pointer-events: none;
 }
 
-.tooltip::after {
+.country-tooltip::after {
     content: '';
     position: absolute;
     bottom: -8px;
@@ -67,8 +95,12 @@
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid rgba(230, 242, 238, 0.95);
+    border-top: 8px solid rgba(240, 253, 250, 0.98);
     filter: drop-shadow(0 2px 4px rgba(44, 82, 77, 0.1));
+}
+
+[data-theme="dark"] .country-tooltip::after {
+    border-top-color: rgba(30, 41, 59, 0.98);
 }
 
 /* Oceano otimizado para modo claro - cores mais suaves e profissionais */

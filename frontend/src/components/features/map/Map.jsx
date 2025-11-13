@@ -21,6 +21,50 @@ const ResponsiveZoom = React.memo(({ zoom }) => {
   return null;
 });
 
+// ✅ Componente para gerenciar tooltips - fecha tooltips anteriores quando um novo é aberto
+const TooltipManager = React.memo(() => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!map) return;
+
+    let currentTooltip = null;
+
+    const handleTooltipOpen = (e) => {
+      // Fecha o tooltip anterior imediatamente
+      if (currentTooltip && currentTooltip !== e.tooltip) {
+        // Remove o tooltip anterior do DOM imediatamente
+        if (currentTooltip._container) {
+          currentTooltip._container.style.display = 'none';
+          currentTooltip._container.style.opacity = '0';
+          currentTooltip._container.style.visibility = 'hidden';
+        }
+        // Fecha o tooltip usando o método do Leaflet
+        if (currentTooltip.close) {
+          currentTooltip.close();
+        }
+      }
+      currentTooltip = e.tooltip;
+    };
+
+    const handleTooltipClose = (e) => {
+      if (currentTooltip === e.tooltip) {
+        currentTooltip = null;
+      }
+    };
+
+    map.on('tooltipopen', handleTooltipOpen);
+    map.on('tooltipclose', handleTooltipClose);
+
+    return () => {
+      map.off('tooltipopen', handleTooltipOpen);
+      map.off('tooltipclose', handleTooltipClose);
+    };
+  }, [map]);
+
+  return null;
+});
+
 // ✅ Oceano memoizado
 const OceanRectangle = React.memo(({ oceanStyles, oceanBounds }) => (
   <Rectangle
@@ -112,7 +156,19 @@ const Map = () => {
   const onEachCountry = useCallback(
     (feature, layer) => {
       const countryId = feature.properties.iso_a2?.toLowerCase();
+      const countryName = feature.properties.name || feature.properties.NAME || 'Unknown';
       const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
+
+      // Bind tooltip com o nome do país
+      layer.bindTooltip(countryName, {
+        permanent: false,
+        direction: 'top',
+        className: 'country-tooltip',
+        offset: [0, -10],
+        opacity: 1,
+        interactive: false,
+        sticky: false,
+      });
 
       layer.on({
         click: () => {
@@ -166,6 +222,9 @@ const Map = () => {
         <MapContainerComponent {...mapConfig}>
           {/* ✅ Ajuste dinâmico de zoom */}
           <ResponsiveZoom zoom={mapConfig.zoom} />
+          
+          {/* ✅ Gerenciador de tooltips */}
+          <TooltipManager />
 
           <OceanRectangle oceanStyles={oceanStyles} oceanBounds={mapConfig.oceanBounds} />
 

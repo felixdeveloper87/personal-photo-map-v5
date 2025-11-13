@@ -107,24 +107,7 @@ export const createCountryStyle = (colors) => {
     const hasPhotos = countriesWithPhotos.some((country) => country.countryId === countryId);
     const isHighlighted = highlightedCountries.includes(countryId);
 
-    // Países destacados para usuários LOGADOS com cores de verão - ESTÁTICO
-    if (isLoggedIn && isEffectActive && isHighlighted && hasPhotos) {
-      const randomColor = Math.random();
-      const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
-      const colorIndex = Math.floor(randomColor * colorSets.length);
-      const colorSet = colorSets[colorIndex];
-
-      return {
-        fillColor: colorSet.fill,
-        weight: 2,
-        color: colorSet.border,
-        fillOpacity: 0.7,
-        transition: 'all 0.3s ease',
-        filter: `drop-shadow(0 1px 4px ${colorSet.shadow}30) brightness(1.02)`,
-      };
-    }
-
-    // Highlighted countries for non-logged users - MESMAS CORES dos usuários logados
+    // Highlighted countries for non-logged users - cores de verão
     if (!isLoggedIn && isEffectActive && isHighlighted) {
       const randomColor = Math.random();
       const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
@@ -188,9 +171,3 @@ export const createMiniMapStyle = (colorMode) => {
   return styleFunction;
 };
 
-// Função para limpar cache quando necessário
-export const clearStyleCache = () => {
-  countryStyleCache.clear();
-  oceanStylesCache.clear();
-  miniMapStyleCache.clear();
-};

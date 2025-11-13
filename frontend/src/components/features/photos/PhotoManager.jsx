@@ -8,7 +8,6 @@ import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
 import { buildApiUrl, buildImageUrl } from '../../../utils/apiConfig';
-import '../../../styles/photoManagerAnimations.css';
 import darkThemeImage from '../../../assets/darkTheme.jpg';
 import lightThemeImage from '../../../assets/lightTheme.jpg';
 import {

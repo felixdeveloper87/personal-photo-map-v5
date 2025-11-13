@@ -19,7 +19,10 @@ import MiniMap from './MiniMap';
 
 const MotionBox = motion.create(Box);
 
-const PATTERN_URL =
+const PATTERN_URL_LIGHT =
+  'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")';
+
+const PATTERN_URL_DARK =
   'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")';
 
 const BUTTON_BEFORE = {
@@ -51,15 +54,12 @@ const HIGHLIGHT_BEFORE = {
 const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
   const navigate = useNavigate();
 
-  const bgGradient = useColorModeValue(
-    'linear(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-    'linear(135deg,rgb(0, 0, 0) 0%,rgb(10, 9, 9) 50%,rgb(20, 19, 19) 100%)'
-  );
+  const patternUrl = useColorModeValue(PATTERN_URL_LIGHT, PATTERN_URL_DARK);
+  const headingColor = useColorModeValue('gray.900', 'white');
+  const textColor = useColorModeValue('gray.700', 'white');
 
   return (
     <Box
-      bgGradient={bgGradient}
-      color="white"
       pt={10}
       pb={10}
       px={2}
@@ -69,18 +69,6 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
       display="flex"
       alignItems="center"
       mt="-1px"
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '100px',
-        bgGradient:
-          'linear(to-b, rgba(0, 0, 0, 0.05) 0%, transparent 100%)',
-        zIndex: 2,
-        pointerEvents: 'none',
-      }}
       _after={{
         content: '""',
         position: 'absolute',
@@ -88,11 +76,12 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        bg: PATTERN_URL,
+        bg: patternUrl,
         opacity: 0.5,
-        animation: 'subtleFloat 20s ease-in-out infinite',
         zIndex: 0,
+        pointerEvents: 'none',
       }}
+
     >
       <Container maxW="container.2xl" position="relative" zIndex={1}>
         <Grid
@@ -168,8 +157,7 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
                   lg: '5xl',
                   xl: '6xl',
                 }}
-                color="white"
-                textShadow="0 4px 20px rgba(0,0,0,0.2)"
+                color={headingColor}
                 position="relative"
                 _before={{
                   content: '""',
@@ -233,11 +221,10 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
             >
               <Text
                 fontSize={{ base: 'sm', sm: 'md', md: 'lg', lg: 'xl' }}
-                color="whiteAlpha.900"
+                color={textColor}
                 lineHeight={{ base: '1.6', md: '1.8' }}
                 maxW="700px"
                 fontWeight="medium"
-                textShadow="0 2px 10px rgba(0,0,0,0.1)"
                 position="relative"
                 _before={{
                   content: '""',
@@ -304,21 +291,23 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
                     size={{ base: 'md', md: 'lg' }}
                     variant="outline"
                     borderWidth="2px"
-                    borderColor="white"
-                    color="white"
-                    bg="whiteAlpha.100"
+                    borderColor={useColorModeValue('gray.300', 'whiteAlpha.300')}
+                    color={headingColor}
+                    bg={useColorModeValue('whiteAlpha.800', 'whiteAlpha.100')}
                     backdropFilter="blur(10px)"
                     _hover={{
-                      bg: 'whiteAlpha.200',
+                      bg: useColorModeValue('gray.50', 'whiteAlpha.200'),
                       transform: 'translateY(-2px)',
-                      boxShadow:
-                        '0 10px 30px rgba(255, 255, 255, 0.2)',
-                      borderColor: 'whiteAlpha.900',
+                      boxShadow: useColorModeValue(
+                        '0 10px 30px rgba(0, 0, 0, 0.1)',
+                        '0 10px 30px rgba(255, 255, 255, 0.2)'
+                      ),
+                      borderColor: useColorModeValue('gray.400', 'whiteAlpha.900'),
                       _before: { opacity: 1 },
                     }}
                     _active={{
                       transform: 'translateY(0)',
-                      bg: 'whiteAlpha.300',
+                      bg: useColorModeValue('gray.100', 'whiteAlpha.300'),
                     }}
                     leftIcon={<HiGlobeAlt />}
                     onClick={() => navigate('/map')}
