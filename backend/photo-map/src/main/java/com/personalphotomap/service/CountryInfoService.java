@@ -14,6 +14,7 @@ import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -744,7 +745,10 @@ public class CountryInfoService {
     
     public CountryInfoService(CountryInfoRepository repository, CountryCuriositiesService curiositiesService, CacheManager cacheManager) {
         this.repository = repository;
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(5000);
+        requestFactory.setReadTimeout(10000);
+        this.restTemplate = new RestTemplate(requestFactory);
         this.objectMapper = new ObjectMapper();
         this.curiositiesService = curiositiesService;
         this.cacheManager = cacheManager;
@@ -760,6 +764,60 @@ public class CountryInfoService {
     @Cacheable(value = "countryInfo", key = "#countryId", unless = "#result == null")
     public CountryInfo getCountryInfo(String countryId) {
         return getCountryInfo(countryId, "en");
+    }
+
+    /**
+     * Gets only basic country information for the fast page shell.
+     * This intentionally avoids World Bank rankings, demographics, and AI curiosities.
+     */
+    public CountryInfo getBasicCountryInfo(String countryId) {
+        String upperCountryId = countryId.toUpperCase();
+        LocalDateTime now = LocalDateTime.now();
+
+        Optional<CountryInfo> cached = repository.findByCountryId(upperCountryId);
+        if (cached.isPresent()) {
+            CountryInfo info = cached.get();
+            if (hasBasicInfo(info)
+                    && info.getBasicInfoExpiresAt() != null
+                    && info.getBasicInfoExpiresAt().isAfter(now)) {
+                logger.info("Returning basic country info from cache for: {}", upperCountryId);
+                return info;
+            }
+        }
+
+        CountryInfo info = cached.orElseGet(CountryInfo::new);
+        info.setCountryId(upperCountryId);
+
+        try {
+            fetchBasicInfoFromRestCountries(upperCountryId, info);
+        } catch (Exception e) {
+            logger.warn("Failed to fetch basic country info for {}: {}", upperCountryId, e.getMessage());
+        }
+
+        if (info.getLastUpdated() == null) {
+            info.setLastUpdated(now);
+        }
+        info.setBasicInfoExpiresAt(now.plusHours(BASIC_INFO_CACHE_HOURS));
+
+        // If this is a basic-only cache row, keep the full-cache expiry in the past
+        // so /info can still populate World Bank, demographics, and curiosities later.
+        if (info.getExpiresAt() == null) {
+            info.setExpiresAt(now.minusSeconds(1));
+        }
+        if (info.getEconomicDataExpiresAt() == null) {
+            info.setEconomicDataExpiresAt(now.minusSeconds(1));
+        }
+        if (info.getSocialDataExpiresAt() == null) {
+            info.setSocialDataExpiresAt(now.minusSeconds(1));
+        }
+
+        try {
+            repository.save(info);
+        } catch (Exception e) {
+            logger.warn("Failed to save basic country info for {}: {}", upperCountryId, e.getMessage());
+        }
+
+        return info;
     }
     
     /**
@@ -973,6 +1031,30 @@ public class CountryInfoService {
         logger.info("✅ Completed data fetch for {}: took {}ms ({}s)", countryId, totalDuration, totalDuration / 1000.0);
         
         return info;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fetchBasicInfoFromRestCountries(String countryId, CountryInfo info) {
+        logger.info("Fetching basic-only country info from RestCountries for: {}", countryId);
+        String url = "https://restcountries.com/v3.1/alpha/" + countryId;
+        Object response = restTemplate.getForObject(url, Object.class);
+
+        if (response instanceof List) {
+            List<Map<String, Object>> dataList = (List<Map<String, Object>>) response;
+            if (!dataList.isEmpty()) {
+                extractBasicInfo(dataList.get(0), info);
+            }
+        }
+    }
+
+    private boolean hasBasicInfo(CountryInfo info) {
+        return info.getCapital() != null
+            || info.getOfficialLanguage() != null
+            || info.getCurrency() != null
+            || info.getNativeName() != null
+            || info.getPopulation() != null
+            || info.getLatitude() != null
+            || info.getLongitude() != null;
     }
     
     /**

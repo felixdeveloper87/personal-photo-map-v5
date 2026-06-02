@@ -79,7 +79,7 @@ public class CountryInfoController {
                     .body(Map.of("error", "Invalid country ID. Must be a 2-character ISO2 code."));
             }
             
-            CountryInfo info = countryInfoService.getCountryInfo(countryId);
+            CountryInfo info = countryInfoService.getBasicCountryInfo(countryId);
             
             if (info == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
