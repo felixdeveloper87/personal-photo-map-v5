@@ -1,168 +1,177 @@
 import {
   Box,
-  VStack,
+  HStack,
   Icon,
+  Skeleton,
   Text,
+  Tooltip,
+  VStack,
   useColorModeValue,
   useBreakpointValue,
-  Skeleton,
-  Tooltip,
-} from "@chakra-ui/react";
-import { motion } from "framer-motion";
+} from '@chakra-ui/react';
+import { motion } from 'framer-motion';
 
 const MotionBox = motion.create(Box);
+
+const palette = {
+  blue: {
+    light: { icon: '#2563EB', bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.18)' },
+    dark: { icon: '#60A5FA', bg: 'rgba(37,99,235,0.16)', border: 'rgba(96,165,250,0.24)' },
+  },
+  green: {
+    light: { icon: '#059669', bg: 'rgba(5,150,105,0.08)', border: 'rgba(5,150,105,0.18)' },
+    dark: { icon: '#34D399', bg: 'rgba(5,150,105,0.14)', border: 'rgba(52,211,153,0.22)' },
+  },
+  orange: {
+    light: { icon: '#D97706', bg: 'rgba(217,119,6,0.08)', border: 'rgba(217,119,6,0.18)' },
+    dark: { icon: '#FBBF24', bg: 'rgba(217,119,6,0.14)', border: 'rgba(251,191,36,0.22)' },
+  },
+  red: {
+    light: { icon: '#DC2626', bg: 'rgba(220,38,38,0.08)', border: 'rgba(220,38,38,0.18)' },
+    dark: { icon: '#F87171', bg: 'rgba(220,38,38,0.14)', border: 'rgba(248,113,113,0.22)' },
+  },
+};
 
 export default function InfoBox({
   icon,
   label,
   value,
-  colorScheme = "blue",
+  colorScheme = 'blue',
   onClick,
-  size = "default",
+  size = 'default',
   isLoading = false,
   tooltip = null,
-  variant = "elevated",
+  variant = 'elevated',
+  layout = 'inline',
   sx = {},
 }) {
-  const tone = useColorModeValue("light", "dark");
-
-  // === Refined Soft Color Palettes ===
-  const colorSchemes = {
-    blue: tone === "light"
-      ? { icon: "#2563EB", bg: "#F8FAFC", border: "#E5E7EB" }
-      : { icon: "#60A5FA", bg: "#0A0F1C", border: "rgba(255,255,255,0.08)" },
-    green: tone === "light"
-      ? { icon: "#188038", bg: "#f6faf8", border: "#d8eee0" }
-      : { icon: "#81c995", bg: "#0f1d12", border: "#1f3d28" },
-    orange: tone === "light"
-      ? { icon: "#d97706", bg: "#fff9f2", border: "#f4e3c5" }
-      : { icon: "#f9ab00", bg: "#1e1500", border: "#3d2e00" },
-    red: tone === "light"
-      ? { icon: "#d93025", bg: "#fff6f5", border: "#f5d4d2" }
-      : { icon: "#f28b82", bg: "#1e0f0f", border: "#3b0d0c" },
-  };
-  const currentColors = colorSchemes[colorScheme] || colorSchemes.blue;
-
-  // === Sizes ===
+  const tone = useColorModeValue('light', 'dark');
   const isMobile = useBreakpointValue({ base: true, sm: false });
+  const colors = palette[colorScheme]?.[tone] || palette.blue[tone];
+
+  const surface = useColorModeValue('#FFFFFF', '#111827');
+  const surfaceSubtle = useColorModeValue('#F8FAFC', '#0B1220');
+  const hairline = useColorModeValue('#E5E7EB', 'rgba(255,255,255,0.10)');
+  const text = useColorModeValue('#0F172A', '#F8FAFC');
+  const textSoft = useColorModeValue('#64748B', '#94A3B8');
+  const shadow = useColorModeValue(
+    '0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.05)',
+    '0 1px 2px rgba(0,0,0,0.35)'
+  );
+  const hoverShadow = useColorModeValue(
+    '0 10px 26px -14px rgba(15,23,42,0.22)',
+    '0 12px 30px -14px rgba(0,0,0,0.75)'
+  );
+
   const sizes = {
     default: {
-      p: isMobile ? 3 : 4,
-      borderRadius: "16px",
-      iconSize: isMobile ? 6 : 8,
-      labelFontSize: isMobile ? "xs" : "sm",
-      valueFontSize: isMobile ? "sm" : "md",
+      p: isMobile ? 3 : 3.5,
+      minH: isMobile ? '76px' : '84px',
+      tile: isMobile ? '34px' : '38px',
+      icon: isMobile ? 4 : 4.5,
+      value: isMobile ? 'sm' : 'md',
     },
     compact: {
-      p: isMobile ? 2 : 3,
-      borderRadius: "12px",
-      iconSize: isMobile ? 5 : 6,
-      labelFontSize: isMobile ? "10px" : "xs",
-      valueFontSize: isMobile ? "xs" : "sm",
+      p: isMobile ? 2.5 : 3,
+      minH: isMobile ? '72px' : '78px',
+      tile: isMobile ? '32px' : '36px',
+      icon: isMobile ? 3.5 : 4,
+      value: isMobile ? '13px' : 'sm',
     },
   };
-  const currentSize = sizes[size];
+  const dims = sizes[size] || sizes.default;
 
-  // === Variants ===
-  const variants = {
-    flat: {
-      bg: useColorModeValue("white", "gray.800"),
-      border: `1px solid ${useColorModeValue("#e0e0e0", "#333")}`,
-      shadow: "none",
-    },
-    elevated: {
-      bg: currentColors.bg,
-      border: `1px solid ${currentColors.border}`,
-      shadow: useColorModeValue(
-        "0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.05)",
-        "0 1px 2px rgba(0,0,0,0.5)"
-      ),
-    },
-    outlined: {
-      bg: "transparent",
-      border: `1px solid ${currentColors.icon}`,
-      shadow: "none",
-    },
-  };
-  const currentVariant = variants[variant] || variants.elevated;
-
-  // === Motion Variants ===
-  const boxMotion = {
-    initial: { opacity: 0, y: 12 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
-    hover: {
-      y: -3,
-      transition: { duration: 0.18, ease: "easeInOut" },
-      boxShadow: useColorModeValue(
-        "0 8px 24px -10px rgba(15,23,42,0.12)",
-        "0 10px 28px -12px rgba(0,0,0,0.6)"
-      ),
-    },
-    tap: { scale: 0.985 },
-  };
-
-  // === Typography ===
-  const labelColor = useColorModeValue("gray.700", "gray.300");
-  const valueColor = useColorModeValue("gray.900", "gray.100");
-
-  const boxContent = (
-    <VStack
-      spacing={1.5}
-      align="center"
-      justify="center"
-      textAlign="center"
-      position="relative"
-      zIndex={1}
-    >
-      <Icon as={icon} boxSize={currentSize.iconSize} color={currentColors.icon} />
-      <Text
-        fontSize={currentSize.labelFontSize}
-        fontWeight="medium"
-        color={labelColor}
-        letterSpacing="0.4px"
-      >
-        {label}
-      </Text>
-      <Text
-        fontSize={currentSize.valueFontSize}
-        fontWeight="600"
-        color={valueColor}
-        noOfLines={2}
-        lineHeight="short"
-      >
-        {isLoading ? <Skeleton height="14px" width="60%" mx="auto" /> : value || "—"}
-      </Text>
-    </VStack>
-  );
+  const bg = variant === 'flat' ? surfaceSubtle : surface;
 
   const box = (
     <MotionBox
-      variants={boxMotion}
-      initial="initial"
-      animate="animate"
-      whileHover="hover"
-      whileTap="tap"
-      p={currentSize.p}
-      borderRadius={currentSize.borderRadius}
-      bg={currentVariant.bg}
-      border={currentVariant.border}
-      boxShadow={currentVariant.shadow}
-      cursor={onClick ? "pointer" : "default"}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } }}
+      whileHover={{ y: -2, boxShadow: hoverShadow, borderColor: colors.border }}
+      whileTap={{ scale: 0.99 }}
+      p={dims.p}
+      minH={dims.minH}
+      borderRadius="14px"
+      bg={bg}
+      border="1px solid"
+      borderColor={hairline}
+      boxShadow={shadow}
+      cursor={onClick ? 'pointer' : 'default'}
       onClick={onClick}
-      transition="all 0.2s ease"
-      _focusWithin={{
-        outline: "2px solid",
-        outlineColor: currentColors.icon,
-      }}
+      transition="border-color .2s ease, box-shadow .2s ease, transform .2s ease"
       sx={{
         minW: 0,
-        position: "relative",
-        overflow: "hidden",
-        pointerEvents: "auto",
+        position: 'relative',
+        overflow: 'hidden',
         ...sx,
       }}
     >
-      {boxContent}
+      {layout === 'stacked' ? (
+        <VStack spacing={1.5} align="center" justify="center" h="full" textAlign="center" minW={0}>
+          <Box
+            w={dims.tile}
+            h={dims.tile}
+            minW={dims.tile}
+            borderRadius="10px"
+            bg={colors.bg}
+            border="1px solid"
+            borderColor={colors.border}
+            color={colors.icon}
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon as={icon} boxSize={dims.icon} />
+          </Box>
+          <Text
+            fontSize="10px"
+            fontWeight="800"
+            color={textSoft}
+            letterSpacing="0"
+            noOfLines={1}
+            maxW="full"
+          >
+            {label}
+          </Text>
+          <Text fontSize={dims.value} fontWeight="800" color={text} noOfLines={1} lineHeight="1.2" maxW="full">
+            {isLoading ? <Skeleton height="14px" width="58px" /> : value || '-'}
+          </Text>
+        </VStack>
+      ) : (
+      <HStack spacing={3} align="center" h="full" minW={0}>
+        <Box
+          w={dims.tile}
+          h={dims.tile}
+          minW={dims.tile}
+          borderRadius="10px"
+          bg={colors.bg}
+          border="1px solid"
+          borderColor={colors.border}
+          color={colors.icon}
+          display="inline-flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Icon as={icon} boxSize={dims.icon} />
+        </Box>
+
+        <VStack spacing={0.5} align="start" minW={0} flex="1">
+          <Text
+            fontSize="10px"
+            fontWeight="800"
+            color={textSoft}
+            letterSpacing="0.08em"
+            textTransform="uppercase"
+            noOfLines={1}
+          >
+            {label}
+          </Text>
+          <Text fontSize={dims.value} fontWeight="800" color={text} noOfLines={1} lineHeight="1.25" maxW="full">
+          {isLoading ? <Skeleton height="14px" width="82px" /> : value || '-'}
+        </Text>
+      </VStack>
+      </HStack>
+      )}
     </MotionBox>
   );
 

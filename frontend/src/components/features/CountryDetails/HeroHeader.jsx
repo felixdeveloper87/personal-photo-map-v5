@@ -66,17 +66,65 @@ export default function HeroHeader({
       boxShadow: 'none',
     },
   };
+  const mobileBoxProps = {
+    size: 'compact',
+    variant: 'flat',
+    sx: {
+      p: 2,
+      minH: '92px',
+      borderRadius: '10px',
+      boxShadow: 'none',
+    },
+  };
 
   const actionButtonBase = {
     size: 'sm',
     borderRadius: '10px',
     height: { base: '36px', md: '38px' },
     fontWeight: '600',
-    fontSize: { base: 'xs', md: 'sm' },
+    fontSize: { base: 'xs', md: '13px' },
     transition: 'all .2s ease',
     minW: 0,
-    px: { base: 3, md: 3.5 },
+    px: { base: 2.5, md: 3 },
+    whiteSpace: 'nowrap',
   };
+
+  const metricCards = [
+    {
+      icon: FaLanguage,
+      label: 'Language',
+      value: countryInfo?.officialLanguage,
+    },
+    {
+      icon: FaUsers,
+      label: 'Population',
+      value: countryInfo?.population ? countryInfo.population.toLocaleString('en-US') : 'N/A',
+    },
+    {
+      icon: FaThermometerHalf,
+      label: 'Temperature',
+      value: weatherData?.temperature !== undefined ? `${weatherData.temperature} C` : 'N/A',
+    },
+    {
+      icon: FaChartLine,
+      label: 'GDP per capita',
+      value: indicatorsData?.gdpPerCapitaCurrent?.value || 'N/A',
+    },
+    {
+      icon: FaPoundSign,
+      label: 'Exchange Rate',
+      value: exchangeRate ? `GBP 1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A',
+    },
+    {
+      icon: FaHeartbeat,
+      label: 'Life Expectancy',
+      value: indicatorsData?.lifeExpectancy?.value || 'N/A',
+    },
+  ];
+  const mobileMetricSlides = [
+    metricCards.slice(0, 3),
+    metricCards.slice(3, 6),
+  ];
 
   const OneLine = () => (
     <Text
@@ -162,15 +210,19 @@ export default function HeroHeader({
             bg: t.primary,
           }}
         >
-          <Flex direction={{ base: 'column', md: 'row' }} align="stretch" gap={{ base: 4, md: 6 }}>
+          <Grid
+            templateColumns={{ base: '1fr', lg: 'minmax(300px, 0.72fr) minmax(0, 1.28fr)' }}
+            alignItems="stretch"
+            gap={{ base: 4, lg: 6 }}
+          >
             <Box
-              flex={{ base: 'none', md: '1 1 44%' }}
               display="flex"
               justifyContent="center"
               alignItems="center"
               borderRadius="14px"
               overflow="hidden"
-              h={{ base: '170px', sm: '210px', md: '280px', lg: '320px' }}
+              h={{ base: '170px', sm: '210px', md: '260px', lg: '100%' }}
+              minH={{ lg: '304px', xl: '316px' }}
               bg={t.surfaceSubtle}
               border="1px solid"
               borderColor={t.hairline}
@@ -180,8 +232,8 @@ export default function HeroHeader({
               </Box>
             </Box>
 
-            <Flex flex={{ base: 'none', md: '1 1 56%' }} direction="column" justify="space-between">
-              <VStack align="start" spacing={2.5} mb={{ base: 3, md: 4 }}>
+            <Flex minW={0} direction="column" justify="space-between">
+              <VStack align="stretch" spacing={2.5} mb={{ base: 3, md: 4 }}>
                 <HStack spacing={2}>
                   <Box w="20px" h="2px" borderRadius="full" bg={t.primary} />
                   <Text fontSize="xs" fontWeight="700" letterSpacing="0.14em" textTransform="uppercase" color={t.primary}>
@@ -191,10 +243,11 @@ export default function HeroHeader({
 
                 <Flex
                   w="full"
-                  align={{ base: 'flex-start', xl: 'center' }}
+                  align={{ base: 'stretch', xl: 'center' }}
                   justify="space-between"
                   gap={{ base: 2, md: 3 }}
                   direction={{ base: 'column', xl: 'row' }}
+                  minW={0}
                 >
                   <Text
                     fontSize={{ base: 'xl', md: '2xl' }}
@@ -202,6 +255,7 @@ export default function HeroHeader({
                     color={t.text}
                     lineHeight="1.1"
                     minW={0}
+                    maxW="100%"
                     noOfLines={{ base: 2, xl: 1 }}
                   >
                     {countryName}
@@ -211,6 +265,7 @@ export default function HeroHeader({
                     templateColumns={{ base: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(3, max-content)' }}
                     gap={1.5}
                     w={{ base: 'full', xl: 'auto' }}
+                    maxW="full"
                     flexShrink={0}
                   >
                     <Button
@@ -259,55 +314,76 @@ export default function HeroHeader({
                 </Text>
               </VStack>
 
-              <Grid templateColumns="repeat(3, 1fr)" gap={{ base: 2, sm: 3 }} mb={{ base: 3, md: 4 }} w="full">
-                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="blue" {...compactBoxProps} />
-                <InfoBox
-                  icon={FaUsers}
-                  label="Population"
-                  value={countryInfo?.population ? countryInfo.population.toLocaleString('en-US') : 'N/A'}
-                  colorScheme="blue"
-                  {...compactBoxProps}
-                />
-                <InfoBox
-                  icon={FaThermometerHalf}
-                  label="Temperature"
-                  value={weatherData?.temperature !== undefined ? `${weatherData.temperature} C` : 'N/A'}
-                  colorScheme="blue"
-                  {...compactBoxProps}
-                />
-              </Grid>
+              <Box
+                display={{ base: 'block', md: 'none' }}
+                w="full"
+                mb={3}
+                position="relative"
+                overflowX="auto"
+                overflowY="hidden"
+                pb={3}
+                sx={{
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollbarWidth: 'none',
+                  '&::-webkit-scrollbar': { display: 'none' },
+                }}
+                _after={{
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  bottom: '12px',
+                  w: '28px',
+                  pointerEvents: 'none',
+                  bg: `linear-gradient(90deg, rgba(0,0,0,0), ${t.surface})`,
+                }}
+              >
+                <HStack align="stretch" spacing={3} w="max-content">
+                  {mobileMetricSlides.map((slide, index) => (
+                    <Box key={index} w="calc(100vw - 48px)" maxW="560px" scrollSnapAlign="start">
+                      <Grid templateColumns="repeat(3, minmax(0, 1fr))" gap={2}>
+                        {slide.map((card) => (
+                          <InfoBox
+                            key={card.label}
+                            icon={card.icon}
+                            label={card.label}
+                            value={card.value}
+                            colorScheme="blue"
+                            layout="stacked"
+                            {...mobileBoxProps}
+                          />
+                        ))}
+                      </Grid>
+                    </Box>
+                  ))}
+                </HStack>
+                <HStack spacing={1.5} justify="center" mt={2}>
+                  {mobileMetricSlides.map((_, index) => (
+                    <Box
+                      key={index}
+                      w={index === 0 ? '18px' : '7px'}
+                      h="7px"
+                      borderRadius="full"
+                      bg={index === 0 ? t.primary : t.hairlineStrong}
+                    />
+                  ))}
+                </HStack>
+              </Box>
 
               <Grid
-                templateColumns="repeat(3, 1fr)"
+                templateColumns={{ md: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))' }}
                 gap={{ base: 2, sm: 3 }}
                 mb={{ base: 3, md: 4 }}
                 w="full"
                 display={{ base: 'none', md: 'grid' }}
               >
-                <InfoBox
-                  icon={FaChartLine}
-                  label="GDP per capita"
-                  value={indicatorsData?.gdpPerCapitaCurrent?.value || 'N/A'}
-                  colorScheme="blue"
-                  {...compactBoxProps}
-                />
-                <InfoBox
-                  icon={FaPoundSign}
-                  label="Exchange Rate"
-                  value={exchangeRate ? `GBP 1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A'}
-                  colorScheme="blue"
-                  {...compactBoxProps}
-                />
-                <InfoBox
-                  icon={FaHeartbeat}
-                  label="Life Expectancy"
-                  value={indicatorsData?.lifeExpectancy?.value || 'N/A'}
-                  colorScheme="blue"
-                  {...compactBoxProps}
-                />
+                {metricCards.map((card) => (
+                  <InfoBox key={card.label} icon={card.icon} label={card.label} value={card.value} colorScheme="blue" {...compactBoxProps} />
+                ))}
               </Grid>
             </Flex>
-          </Flex>
+          </Grid>
         </Box>
       </Collapse>
 
