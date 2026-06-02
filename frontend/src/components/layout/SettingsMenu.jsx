@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, MenuButton, MenuList, MenuItem, Button, HStack, Icon, Text, Box } from '@chakra-ui/react';
+import { Menu, MenuButton, MenuList, MenuItem, Button, IconButton, HStack, Icon, Text, Box } from '@chakra-ui/react';
 import { FaBars, FaCog, FaUserCircle, FaImages, FaChevronRight } from 'react-icons/fa';
 import { useLandingTokens } from '../features/landing/landingUI';
 
@@ -43,20 +43,19 @@ const SettingsMenu = ({
       }
     : isIcon
     ? {
-        h: '38px',
-        w: '44px',
-        minW: '44px',
+        h: '40px',
+        w: '40px',
+        minW: '40px',
         p: 0,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '14px',
-        bg: 'transparent',
+        borderRadius: '12px',
+        bg: t.surfaceSubtle,
         border: '1px solid',
-        borderColor: t.hairlineStrong,
+        borderColor: t.hairline,
         color: t.textSoft,
+        boxShadow: 'none',
         _hover: { bg: t.primarySoftBg, borderColor: t.primary, color: t.primary },
         _active: { bg: t.primarySoftBg },
+        _focusVisible: { boxShadow: `0 0 0 2px ${t.primarySoftBg}` },
       }
     : {
         h: size === 'xs' ? '28px' : '34px',
@@ -73,26 +72,33 @@ const SettingsMenu = ({
 
   return (
     <Menu placement={isRail ? 'right-start' : 'bottom-end'} gutter={isRail ? 12 : 8} autoSelect={false}>
-      <MenuButton as={Button} transition="all .2s ease" {...triggerStyles} {...props}>
-        {isRail ? (
-          <HStack w="full" justify="space-between">
-            <HStack spacing={3}>
-              <Icon as={FaCog} boxSize={4} />
-              <Text>Settings</Text>
+      {isIcon ? (
+        <MenuButton
+          as={IconButton}
+          icon={<Icon as={FaBars} boxSize="16px" />}
+          aria-label={props['aria-label'] || 'Open menu'}
+          transition="all .2s ease"
+          {...triggerStyles}
+          {...props}
+        />
+      ) : (
+        <MenuButton as={Button} transition="all .2s ease" {...triggerStyles} {...props}>
+          {isRail ? (
+            <HStack w="full" justify="space-between">
+              <HStack spacing={3}>
+                <Icon as={FaCog} boxSize={4} />
+                <Text>Settings</Text>
+              </HStack>
+              <Icon as={FaChevronRight} boxSize={2.5} opacity={0.6} />
             </HStack>
-            <Icon as={FaChevronRight} boxSize={2.5} opacity={0.6} />
-          </HStack>
-        ) : (
-          hideText ? (
-            <Icon as={FaBars} boxSize="15px" display="block" />
           ) : (
             <HStack spacing={2}>
               <Icon as={FaBars} boxSize="13px" />
               <Text>{title}</Text>
             </HStack>
-          )
-        )}
-      </MenuButton>
+          )}
+        </MenuButton>
+      )}
 
       <MenuList
         bg={t.surface}
