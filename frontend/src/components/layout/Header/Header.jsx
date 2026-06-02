@@ -11,20 +11,12 @@ import {
   useColorModeValue,
   Container,
   HStack,
-  VStack,
 } from "@chakra-ui/react";
-
 
 import { AuthContext } from "../../../context/AuthContext";
 import { CountriesContext } from "../../../context/CountriesContext";
+import { useHeaderStyles, useHeaderContainerStyles } from "../../../styles/headerStyles";
 
-// Estilos centralizados
-import {
-  useHeaderStyles,
-  headerContainerStyles,
-} from "../../../styles/headerStyles";
-
-// Componentes do header
 import HeaderLogo from "./HeaderLogo";
 import HeaderAuth from "./HeaderAuth";
 import SearchForm from "../../features/SearchForm";
@@ -39,7 +31,6 @@ import {
   PremiumButton,
 } from "../../ui/buttons/HeaderButtons";
 
-// Modais
 import UserProfileModal from "../../modals/UserProfileModal";
 import PremiumBenefitsModal from "../../modals/PremiumBenefitsModal";
 import PhotoStorageModal from "../../modals/PhotoStorageModal";
@@ -51,86 +42,85 @@ const Header = forwardRef((props, ref) => {
   const toast = useToast();
   const { colorMode, toggleColorMode } = useColorMode();
 
-  // Contextos
   const { isLoggedIn, fullname, isPremium, logout, togglePremiumStatus } = useContext(AuthContext);
-  const { countriesWithPhotos, photoCount, countryCount } =
-    useContext(CountriesContext);
+  const { countriesWithPhotos, photoCount, countryCount } = useContext(CountriesContext);
 
-  // Disclosures
   const photoStorageModal = useDisclosure();
   const profileModal = useDisclosure();
   const premiumModal = useDisclosure();
   const loginModal = useDisclosure();
   const registerModal = useDisclosure();
 
-  // States
   const [isUpgrading, setIsUpgrading] = useState(false);
 
-  const styles = useHeaderStyles(colorMode);
-  // Precompute any theme-dependent values used in conditional branches
-  const mobileDividerBorderColor = useColorModeValue("rgba(0, 0, 0, 0.3)", "rgba(255, 255, 255, 0.3)");
-  const borderBottom = useBreakpointValue({ base: '4px solid', md: '5px solid' });
-  const borderBottomColor = useColorModeValue('black', 'white');
+  const styles = useHeaderStyles();
+  const containerStyles = useHeaderContainerStyles();
+  const mobileDividerColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const [isCompact] = useMediaQuery("(max-width: 1100px)");
 
-  // Handle premium upgrade
+  const buttonSize = useBreakpointValue({
+    base: "xs", sm: "sm", md: "sm", lg: "md", xl: "md", "2xl": "lg",
+  });
+
+  const stackSpacing = useBreakpointValue({
+    base: 2, sm: 3, md: 4, lg: 4, xl: 6, "2xl": 8,
+  });
+
+  const centerMaxW = useBreakpointValue({
+    lg: "800px", xl: "960px", "2xl": "1140px",
+  });
+
+  const mobileButtonProps = {
+    size: "xs",
+    hideText: true,
+    w: "100%",
+    h: { base: "44px", sm: "52px" },
+    minW: "0",
+    px: { base: 1, sm: 2 },
+  };
+
+  const handleSearchTrigger = () => {
+    document.querySelector('[data-search-trigger]')?.click();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    toast({ title: "Logged out", status: "info", duration: 2000, isClosable: true });
+  };
+
   const handlePremiumUpgrade = async () => {
     setIsUpgrading(true);
     try {
-      // Use the togglePremiumStatus function from AuthContext
       await togglePremiumStatus(true);
-
       toast({
-        title: "Premium Upgrade Successful! 🎉",
+        title: "Premium Upgrade Successful!",
         description: "Welcome to Premium! You now have access to all premium features.",
         status: "success",
         duration: 8000,
         isClosable: true,
         position: "top-right",
       });
-
       premiumModal.onClose();
-
-      // Refresh page to update UI
       window.location.reload();
-
     } catch (error) {
-
-      let errorMessage = error.message || "Please try again later.";
-
-      // Handle specific error cases
-      if (error.message.includes('Access denied') || error.message.includes('restricted')) {
-        errorMessage = "Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.";
-        // Don't redirect to login for permission issues
-      } else if (error.message.includes('session has expired') || error.message.includes('log in again') || error.message.includes('Unauthorized')) {
-        errorMessage = "Your session has expired. Please log in again to continue.";
-        // Only redirect to login for actual authentication issues
-        setTimeout(() => {
-          loginModal.onOpen();
-        }, 3000);
-      } else if (error.message.includes('Access forbidden')) {
-        errorMessage = "You don't have permission to upgrade. Please contact support.";
+      let description = error.message || "Please try again later.";
+      if (error.message.includes('session has expired') || error.message.includes('Unauthorized')) {
+        description = "Your session has expired. Please log in again.";
+        setTimeout(() => loginModal.onOpen(), 3000);
+      } else if (error.message.includes('Access denied') || error.message.includes('Access forbidden')) {
+        description = "You don't have permission to upgrade. Please contact support.";
       }
-
-      toast({
-        title: "Upgrade Failed",
-        description: errorMessage,
-        status: "error",
-        duration: 8000,
-        isClosable: true,
-        position: "top-right",
-      });
+      toast({ title: "Upgrade Failed", description, status: "error", duration: 8000, isClosable: true, position: "top-right" });
     } finally {
       setIsUpgrading(false);
     }
   };
 
-  // Handle premium deactivation
   const handlePremiumDeactivate = async () => {
     setIsUpgrading(true);
     try {
-      // Use the togglePremiumStatus function from AuthContext
       await togglePremiumStatus(false);
-
       toast({
         title: "Premium Deactivated",
         description: "You have successfully deactivated your premium status.",
@@ -139,156 +129,46 @@ const Header = forwardRef((props, ref) => {
         isClosable: true,
         position: "top-right",
       });
-
       premiumModal.onClose();
-
-      // Refresh page to update UI
       window.location.reload();
-
     } catch (error) {
-      let errorMessage = error.message || "Please try again later.";
-
-      // Handle specific error cases
-      if (error.message.includes('session has expired') || error.message.includes('log in again') || error.message.includes('Unauthorized')) {
-        errorMessage = "Your session has expired. Please log in again to continue.";
-        setTimeout(() => {
-          loginModal.onOpen();
-        }, 3000);
+      let description = error.message || "Please try again later.";
+      if (error.message.includes('session has expired') || error.message.includes('Unauthorized')) {
+        description = "Your session has expired. Please log in again.";
+        setTimeout(() => loginModal.onOpen(), 3000);
       }
-
-      toast({
-        title: "Deactivation Failed",
-        description: errorMessage,
-        status: "error",
-        duration: 8000,
-        isClosable: true,
-        position: "top-right",
-      });
+      toast({ title: "Deactivation Failed", description, status: "error", duration: 8000, isClosable: true, position: "top-right" });
     } finally {
       setIsUpgrading(false);
     }
   };
 
-  // ====== Responsividade completa para todos os botões ======
-  // Tamanhos de botões responsivos para TODAS as telas
-  const buttonSize = useBreakpointValue({
-    base: "xs",    // Mobile pequeno
-    sm: "sm",      // Mobile médio
-    md: "sm",      // Tablet
-    lg: "md",      // Desktop pequeno
-    xl: "md",      // Desktop médio
-    "2xl": "lg",   // Desktop grande
-  });
-
-  // Espaçamento dos HStacks em desktop
-  const stackSpacing = useBreakpointValue({
-    base: 2,
-    sm: 3,
-    md: 4,
-    lg: 4,
-    xl: 6,
-    "2xl": 8,
-  });
-
-  // Largura máxima da área central em desktop
-  const centerMaxW = useBreakpointValue({
-    lg: "800px",
-    xl: "960px",
-    "2xl": "1140px",
-  });
-
-  // Mostrar versão compacta (hamburger + logo map button) em larguras <= 1380px
-  const [isCompact] = useMediaQuery("(max-width: 1100px)");
-
   return (
-    <Box 
-      ref={ref} 
-      as="header" 
-      w="100%" 
-      position="fixed" 
-      top="0" 
-      left="0" 
-      right="0" 
-      zIndex={1000}
-    >
+    <Box ref={ref} as="header" w="100%" position="fixed" top="0" left="0" right="0" zIndex={1000}>
       <Container
         maxW="container.2xl"
         px={{ base: 2, sm: 4, md: 6 }}
-        borderTop="2px solid"
-        borderTopColor={useColorModeValue('black', 'white')}
-        {...headerContainerStyles()}
-        borderBottom={borderBottom}
-        borderBottomColor={borderBottomColor}
-        position="relative"
-        overflow="hidden"
-        _after={{
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          bg: useColorModeValue(
-            // ⭐ Liquid Carbon Prism – Light Mode
-            `url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='lcg1-light' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fafafa'/%3E%3Cstop offset='50%25' stop-color='%23f1f1f1'/%3E%3Cstop offset='100%25' stop-color='%23e7e7e7'/%3E%3C/linearGradient%3E%3ClinearGradient id='shine-light' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.55)'/%3E%3Cstop offset='40%25' stop-color='rgba(255,255,255,0.15)'/%3E%3Cstop offset='100%25' stop-color='rgba(255,255,255,0)'/%3E%3C/linearGradient%3E%3Cpattern id='liquid-carbon-light' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Crect width='40' height='40' fill='url(%23lcg1-light)'/%3E%3Cpath d='M-20 20 L20 -20 M0 40 L40 0 M20 60 L60 20' stroke='rgba(0,0,0,0.1)' stroke-width='3'/%3E%3Cpath d='M-20 0 L20 40 M0 -20 L40 20 M20 -40 L60 0' stroke='rgba(0,0,0,0.06)' stroke-width='3'/%3E%3Crect x='0' y='0' width='40' height='40' fill='url(%23shine-light)'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23liquid-carbon-light)'/%3E%3C/svg%3E")`,
-        
-            // 🌑 Liquid Carbon Prism – Dark Mode
-            `url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='lcg1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23111218'/%3E%3Cstop offset='50%25' stop-color='%231d1f27'/%3E%3Cstop offset='100%25' stop-color='%230b0c10'/%3E%3C/linearGradient%3E%3ClinearGradient id='shine' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.18)'/%3E%3Cstop offset='40%25' stop-color='rgba(255,255,255,0.03)'/%3E%3Cstop offset='100%25' stop-color='rgba(255,255,255,0)'/%3E%3C/linearGradient%3E%3Cpattern id='liquid-carbon' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Crect width='40' height='40' fill='url(%23lcg1)'/%3E%3Cpath d='M-20 20 L20 -20 M0 40 L40 0 M20 60 L60 20' stroke='rgba(255,255,255,0.08)' stroke-width='3'/%3E%3Cpath d='M-20 0 L20 40 M0 -20 L40 20 M20 -40 L60 0' stroke='rgba(255,255,255,0.04)' stroke-width='3'/%3E%3Crect x='0' y='0' width='40' height='40' fill='url(%23shine)'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23liquid-carbon)'/%3E%3C/svg%3E")`
-          ),
-          opacity: 0.6,
-          zIndex: 0,
-          pointerEvents: 'none',
-        }}
-        
+        {...containerStyles}
+        pb={isLoggedIn && isCompact ? 2 : undefined}
       >
         <Flex
           align="center"
           justify="space-between"
           w="100%"
-          h="auto"
           gap={{ base: 1, sm: 2, md: 4 }}
-          position="relative"
-          zIndex={1}
-          pb={isLoggedIn && isCompact ? 4 : 0}
         >
-          {/* ESQUERDA: Logo (canto esquerdo) */}
           <HStack spacing={{ base: 0.5, sm: 2, md: 3 }} align="center" flex="0 0 auto">
-            <HeaderLogo styles={styles} onClick={() => navigate("/")} />
+            <HeaderLogo styles={styles} />
           </HStack>
 
-          {/* CENTRO: botões para mobile quando logado - Theme, Map e Logout */}
           {isLoggedIn && isCompact && (
-            <HStack spacing={{ base: 1, sm: 1.5, md: 2 }} align="center" flex="0 0 auto">
-              <ThemeToggleButton
-                colorMode={colorMode}
-                toggleColorMode={toggleColorMode}
-                styles={styles}
-                size={buttonSize}
-                hideText={true}
-              />
-              <MapButton
-                onClick={() => navigate("/map/private")}
-                size={buttonSize}
-                hideText={true}
-                aria-label="Go to Map"
-              />
-              <LogoutButton
-                onClick={() => {
-                  logout();
-                  navigate("/");
-                  toast({
-                    title: "Logged out",
-                    status: "info",
-                    duration: 3000,
-                  });
-                }}
-                size={buttonSize}
-                hideText={true}
-              />
+            <HStack spacing={{ base: 1, sm: 1.5 }} align="center" flex="0 0 auto">
+              <ThemeToggleButton colorMode={colorMode} toggleColorMode={toggleColorMode} styles={styles} size={buttonSize} hideText />
+              <MapButton onClick={() => navigate("/map/private")} size={buttonSize} hideText aria-label="Go to Map" />
+              <LogoutButton onClick={handleLogout} size={buttonSize} hideText />
             </HStack>
           )}
 
-          {/* CENTRO: Navegação e ações principais (desktop) */}
           <HStack
             spacing={2}
             align="center"
@@ -297,77 +177,27 @@ const Header = forwardRef((props, ref) => {
             display={isCompact ? "none" : "flex"}
             maxW={centerMaxW}
           >
-            {/* Botão Premium (antes do Map) - sempre visível se logado */}
+            {isLoggedIn && <PremiumButton      onClick={premiumModal.onOpen}               size={buttonSize} />}
+            {isLoggedIn && <MapButton          onClick={() => navigate("/map/private")}    size={buttonSize} aria-label="Go to Map" />}
+            {isLoggedIn && <UserProfileButton  onClick={profileModal.onOpen}               size={buttonSize} />}
+            {isLoggedIn && <PhotoStorageButton onClick={photoStorageModal.onOpen}          size={buttonSize} aria-label="Photo Storage" />}
+            {isLoggedIn && <SearchButton       onClick={handleSearchTrigger}               size={buttonSize} aria-label="Search Photos" />}
             {isLoggedIn && (
-              <PremiumButton
-                onClick={premiumModal.onOpen}
-                size={buttonSize}
+              <SearchForm
+                countriesWithPhotos={countriesWithPhotos}
+                onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
               />
             )}
-
-            {/* Botão Map - responsivo - apenas para usuários logados */}
-            {isLoggedIn && (
-              <MapButton
-                onClick={() =>
-                  isLoggedIn ? navigate("/map/private") : navigate("/map")
-                }
-                size={buttonSize}
-                aria-label="Go to Map"
-              />
-            )}
-
-            {isLoggedIn && (
-              <UserProfileButton
-                onClick={profileModal.onOpen}
-                size={buttonSize}
-              />
-            )}
-
-            {isLoggedIn && (
-              <>
-                <PhotoStorageButton
-                  onClick={photoStorageModal.onOpen}
-                  size={buttonSize}
-                  aria-label="Photo Storage"
-                />
-                <SearchButton
-                  onClick={() => {
-                    const searchTrigger = document.querySelector('[data-search-trigger]');
-                    if (searchTrigger) {
-                      searchTrigger.click();
-                    }
-                  }}
-                  size={buttonSize}
-                  aria-label="Search Photos"
-                />
-                <SearchForm
-                  countriesWithPhotos={countriesWithPhotos}
-                  onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
-                />
-                <TimelineButton
-                  onClick={() => navigate("/timeline")}
-                  size={buttonSize}
-                />
-              </>
-            )}
+            {isLoggedIn && <TimelineButton onClick={() => navigate("/timeline")} size={buttonSize} />}
           </HStack>
 
-          {/* DIREITA: Theme Toggle + Auth/Logout */}
           <HStack
             spacing={isCompact ? 1 : stackSpacing}
             align="center"
             flex="0 0 auto"
             display={isLoggedIn && isCompact ? "none" : "flex"}
           >
-            {/* Theme toggle - sempre visível */}
-            <ThemeToggleButton
-              colorMode={colorMode}
-              toggleColorMode={toggleColorMode}
-              styles={styles}
-              size={buttonSize}
-            />
-
-            {/* Auth buttons - sempre visível */}
+            <ThemeToggleButton colorMode={colorMode} toggleColorMode={toggleColorMode} styles={styles} size={buttonSize} />
             {!isLoggedIn ? (
               <HeaderAuth
                 styles={styles}
@@ -376,123 +206,37 @@ const Header = forwardRef((props, ref) => {
                 size={buttonSize}
               />
             ) : (
-              <LogoutButton
-                onClick={() => {
-                  logout();
-                  navigate("/"); // Redireciona para a landing page após logout
-                  toast({
-                    title: "Logged out",
-                    status: "info",
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
-                size={buttonSize}
-              />
+              <LogoutButton onClick={handleLogout} size={buttonSize} />
             )}
           </HStack>
         </Flex>
 
-        {/* Segunda linha do header - Todos os botões de ação para mobile quando logado */}
         {isLoggedIn && isCompact && (
           <Box
             w="100%"
-            pt={4}
-            pb={2}
+            mt={3}
+            pt={3}
+            pb={1}
             borderTop="1px solid"
-            borderColor={mobileDividerBorderColor}
+            borderColor={mobileDividerColor}
+            display="grid"
+            gridTemplateColumns="repeat(5, 1fr)"
+            gap={{ base: 1, sm: 1.5 }}
           >
-            <VStack spacing={{ base: 1, sm: 1.5 }} w="100%">
-              {/* Grid de 5 botões em 1 linha */}
-              <Box
-                display="grid"
-                gridTemplateColumns="repeat(5, 1fr)"
-                gap={{ base: 0.5, sm: 1.5, md: 2 }}
-                w="100%"
-              >
-                {/* Botão Premium - sempre visível se logado */}
-                {isLoggedIn && (
-                  <PremiumButton
-                    onClick={premiumModal.onOpen}
-                    size="xs"
-                    hideText={true}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    w="100%"
-                    h={{ base: "44px", sm: "52px" }}
-                    minW="0"
-                    px={{ base: 1, sm: 2 }}
-                  />
-                )}
-                
-                <PhotoStorageButton
-                  onClick={photoStorageModal.onOpen}
-                  size="xs"
-                  hideText={true}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  h={{ base: "44px", sm: "52px" }}
-                  minW="0"
-                  px={{ base: 1, sm: 2 }}
-                />
-                
-                <UserProfileButton
-                  onClick={profileModal.onOpen}
-                  size="xs"
-                  hideText={true}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  h={{ base: "44px", sm: "52px" }}
-                  minW="0"
-                  px={{ base: 1, sm: 2 }}
-                />
-                
-                <SearchButton
-                  onClick={() => {
-                    // Trigger search form
-                    const searchInput = document.querySelector('[data-search-trigger]');
-                    if (searchInput) searchInput.click();
-                  }}
-                  size="xs"
-                  hideText={true}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  h={{ base: "44px", sm: "52px" }}
-                  minW="0"
-                  px={{ base: 1, sm: 2 }}
-                />
-                
-                <TimelineButton
-                  onClick={() => navigate("/timeline")}
-                  size="xs"
-                  hideText={true}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  h={{ base: "44px", sm: "52px" }}
-                  minW="0"
-                  px={{ base: 1, sm: 2 }}
-                />
-              </Box>
-            </VStack>
+            <PremiumButton      onClick={premiumModal.onOpen}          {...mobileButtonProps} />
+            <PhotoStorageButton onClick={photoStorageModal.onOpen}     {...mobileButtonProps} />
+            <UserProfileButton  onClick={profileModal.onOpen}          {...mobileButtonProps} />
+            <SearchButton       onClick={handleSearchTrigger}          {...mobileButtonProps} />
+            <TimelineButton     onClick={() => navigate("/timeline")}  {...mobileButtonProps} />
           </Box>
         )}
       </Container>
 
-      {/* MODAIS */}
       <UserProfileModal
         isOpen={profileModal.isOpen}
         onClose={profileModal.onClose}
         fullname={fullname}
-        email={""} // TODO: Adicionar email do usuário quando disponível
+        email=""
         photoCount={photoCount}
         countryCount={countryCount}
         isPremium={isPremium}
@@ -505,31 +249,20 @@ const Header = forwardRef((props, ref) => {
         isLoading={isUpgrading}
         isPremium={isPremium}
       />
-      <PhotoStorageModal
-        isOpen={photoStorageModal.isOpen}
-        onClose={photoStorageModal.onClose}
-      />
+      <PhotoStorageModal isOpen={photoStorageModal.isOpen} onClose={photoStorageModal.onClose} />
       <LoginModal
         isOpen={loginModal.isOpen}
         onClose={loginModal.onClose}
-        onSwitchToRegister={() => {
-          loginModal.onClose();
-          registerModal.onOpen();
-        }}
+        onSwitchToRegister={() => { loginModal.onClose(); registerModal.onOpen(); }}
       />
       <RegisterModal
         isOpen={registerModal.isOpen}
         onClose={registerModal.onClose}
-        onSwitchToLogin={() => {
-          registerModal.onClose();
-          loginModal.onOpen();
-        }}
+        onSwitchToLogin={() => { registerModal.onClose(); loginModal.onOpen(); }}
       />
     </Box>
   );
 });
 
 Header.displayName = "Header";
-
 export default Header;
-
