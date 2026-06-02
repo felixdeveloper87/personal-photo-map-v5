@@ -55,7 +55,7 @@ const Header = forwardRef((props, ref) => {
 
   const styles = useHeaderStyles();
   const containerStyles = useHeaderContainerStyles();
-  const mobileDividerColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const mobileDividerColor = useColorModeValue("rgba(0, 0, 0, 0.08)", "rgba(255, 255, 255, 0.08)");
   const [isCompact] = useMediaQuery("(max-width: 1100px)");
 
   const buttonSize = useBreakpointValue({
@@ -74,7 +74,7 @@ const Header = forwardRef((props, ref) => {
     size: "xs",
     hideText: true,
     w: "100%",
-    h: { base: "44px", sm: "52px" },
+    h: { base: "38px", sm: "44px" },
     minW: "0",
     px: { base: 1, sm: 2 },
   };
@@ -157,18 +157,21 @@ const Header = forwardRef((props, ref) => {
           w="100%"
           gap={{ base: 1, sm: 2, md: 4 }}
         >
+          {/* Logo Brand */}
           <HStack spacing={{ base: 0.5, sm: 2, md: 3 }} align="center" flex="0 0 auto">
             <HeaderLogo styles={styles} />
           </HStack>
 
+          {/* Controls visible on mobile top-row when logged-in */}
           {isLoggedIn && isCompact && (
-            <HStack spacing={{ base: 1, sm: 1.5 }} align="center" flex="0 0 auto">
+            <HStack spacing={{ base: 1.5, sm: 2 }} align="center" flex="0 0 auto">
               <ThemeToggleButton colorMode={colorMode} toggleColorMode={toggleColorMode} styles={styles} size={buttonSize} hideText />
               <MapButton onClick={() => navigate("/map/private")} size={buttonSize} hideText aria-label="Go to Map" />
               <LogoutButton onClick={handleLogout} size={buttonSize} hideText />
             </HStack>
           )}
 
+          {/* Desktop Menu - Center Nav Links (Hidden on Mobile) */}
           <HStack
             spacing={2}
             align="center"
@@ -191,6 +194,7 @@ const Header = forwardRef((props, ref) => {
             {isLoggedIn && <TimelineButton onClick={() => navigate("/timeline")} size={buttonSize} />}
           </HStack>
 
+          {/* Right Side Control Bar (Desktop or Logged Out Mobile) */}
           <HStack
             spacing={isCompact ? 1 : stackSpacing}
             align="center"
@@ -211,6 +215,7 @@ const Header = forwardRef((props, ref) => {
           </HStack>
         </Flex>
 
+        {/* Mobile Row 2 - 5 Navigation circle-buttons when logged-in */}
         {isLoggedIn && isCompact && (
           <Box
             w="100%"
@@ -221,7 +226,7 @@ const Header = forwardRef((props, ref) => {
             borderColor={mobileDividerColor}
             display="grid"
             gridTemplateColumns="repeat(5, 1fr)"
-            gap={{ base: 1, sm: 1.5 }}
+            gap={{ base: 2, sm: 3 }}
           >
             <PremiumButton      onClick={premiumModal.onOpen}          {...mobileButtonProps} />
             <PhotoStorageButton onClick={photoStorageModal.onOpen}     {...mobileButtonProps} />
@@ -232,6 +237,7 @@ const Header = forwardRef((props, ref) => {
         )}
       </Container>
 
+      {/* Modals */}
       <UserProfileModal
         isOpen={profileModal.isOpen}
         onClose={profileModal.onClose}

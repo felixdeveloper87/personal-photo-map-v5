@@ -50,7 +50,7 @@ const CountriesGeoJSON = React.memo(({ geoJsonRef, countryStyle, onEachFeature, 
 // Componente memoizado para o spinner de loading
 const LoadingSpinner = React.memo(({ isLoading, colorMode, oceanStyles }) => {
   if (!isLoading) return null;
-  
+
   return (
     <Center
       position="absolute"
@@ -67,19 +67,20 @@ const LoadingSpinner = React.memo(({ isLoading, colorMode, oceanStyles }) => {
 });
 
 // Componente memoizado para o mapa
-const MapComponent = React.memo(({ 
-  center, 
-  zoom, 
-  minZoom, 
-  maxZoom, 
-  oceanStyles, 
-  countryStyle, 
-  onEachFeature, 
+const MapComponent = React.memo(({
+  center,
+  zoom,
+  minZoom,
+  maxZoom,
+  oceanStyles,
+  countryStyle,
+  onEachFeature,
   geoJsonRef,
   onMapReady,
   onMapError,
   onMouseLeave,
-  colorMode
+  colorMode,
+  dragging = true
 }) => {
   // MapMouseLeaveGuard otimizado com useCallback
   const MapMouseLeaveGuard = useCallback(() => {
@@ -104,10 +105,10 @@ const MapComponent = React.memo(({
       if (onMapReady) {
         const handleLoad = () => onMapReady();
         const handleError = () => onMapError();
-        
+
         map.whenReady(handleLoad);
         map.on('error', handleError);
-        
+
         return () => {
           map.off('error', handleError);
         };
@@ -129,7 +130,7 @@ const MapComponent = React.memo(({
       zoomControl={false}
       scrollWheelZoom={false}
       doubleClickZoom={false}
-      dragging={true}
+      dragging={dragging}
       touchZoom={false}
       preferCanvas={true}
       attributionControl={false}
@@ -140,9 +141,9 @@ const MapComponent = React.memo(({
       <ResizeInvalidator />
       <MapMouseLeaveGuard />
       <MapEventHandler />
-      
+
       <OceanRectangle oceanStyles={oceanStyles} />
-      <CountriesGeoJSON 
+      <CountriesGeoJSON
         geoJsonRef={geoJsonRef}
         countryStyle={countryStyle}
         onEachFeature={onEachFeature}
@@ -152,7 +153,7 @@ const MapComponent = React.memo(({
   );
 });
 
-const MiniMap = ({ width, height }) => {
+const MiniMap = ({ width, height, isStatic = false }) => {
   const { colorMode } = useColorMode();
   const geoJsonRef = useRef(null);
   const lastHoveredRef = useRef(null);
@@ -271,10 +272,10 @@ const MiniMap = ({ width, height }) => {
       border="1px solid"
       borderColor={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(203, 213, 224, 0.3)'}
     >
-      <LoadingSpinner 
-        isLoading={isLoading} 
-        colorMode={colorMode} 
-        oceanStyles={oceanStyles} 
+      <LoadingSpinner
+        isLoading={isLoading}
+        colorMode={colorMode}
+        oceanStyles={oceanStyles}
       />
 
       <MapComponent
@@ -287,6 +288,7 @@ const MiniMap = ({ width, height }) => {
         onMapError={handleMapError}
         onMouseLeave={handleMouseLeave}
         colorMode={colorMode}
+        dragging={!isStatic}
       />
     </Box>
   );

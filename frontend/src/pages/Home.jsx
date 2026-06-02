@@ -1,18 +1,11 @@
 import React, { useContext } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 import { AuthContext } from '../context/AuthContext';
-import { HiRocketLaunch, HiVideoCamera, HiChartBar } from 'react-icons/hi2';
 import HeroSection from '../components/features/landing/HeroSection';
-import FeaturesSection from '../components/features/landing/FeaturesSection';
+import BentoShowcase from '../components/features/landing/BentoShowcase';
 import CTASection from '../components/features/landing/CTASection';
 import TestimonialsSection from '../components/features/landing/TestimonialsSection';
 import HowItWorksSection from '../components/features/landing/HowItWorksSection';
-import BenefitsSection from '../components/features/landing/BenefitsSection';
-import { 
-  features, 
-  educationalFeatures,
-  videoFeatures
-} from '../data/homeData';
 import LoginModal from '../components/modals/LoginModal';
 import RegisterModal from '../components/modals/RegisterModal';
 
@@ -29,55 +22,22 @@ function Home() {
 
   return (
     <>
-      {/* Hero Section */}
-      <HeroSection 
+      {/* Hero */}
+      <HeroSection
         onOpenRegister={handleOpenRegister}
         onOpenLogin={loginModal.onOpen}
       />
 
-      {/* Core Features Section */}
-      <FeaturesSection
-        title="Interactive Learning Features"
-        description="Discover how our platform combines travel memories with comprehensive educational data for a unique learning experience"
-        features={features}
-        badgeText="Core Features"
-        badgeIcon={HiRocketLaunch}
-        columns={{ base: 1, md: 2, lg: 4 }}
-        spacing={8}
-      />
+      {/* Product showcase — consolidated bento grid */}
+      <BentoShowcase />
 
-      {/* Video Features Section */}
-      <FeaturesSection
-        title="Social Media Video Creation"
-        description="Create professional videos from your travel photos, optimized for Instagram, TikTok, YouTube and other social platforms"
-        features={videoFeatures}
-        badgeText="Video Features"
-        badgeIcon={HiVideoCamera}
-        columns={{ base: 1, md: 2, lg: 3 }}
-        spacing={8}
-      />
-
-      {/* Educational Data Section */}
-      <FeaturesSection
-        title="Comprehensive Country Data"
-        description="Access real-time economic, social, and cultural information from trusted sources including World Bank, CIA Factbook, and international databases"
-        features={educationalFeatures}
-        badgeText="Data Sources"
-        badgeIcon={HiChartBar}
-        columns={{ base: 1, md: 2 }}
-        spacing={10}
-      />
-
-      {/* How It Works Section */}
+      {/* How It Works */}
       <HowItWorksSection />
 
-      {/* Benefits Section */}
-      <BenefitsSection />
-
-      {/* Testimonials Section */}
+      {/* Social proof */}
       <TestimonialsSection />
 
-      {/* CTA Section */}
+      {/* CTA */}
       <CTASection onOpenRegister={handleOpenRegister} />
 
       {/* Authentication Modals */}

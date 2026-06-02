@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flex, Heading, Image, Box, Text } from '@chakra-ui/react';
+import { Flex, Heading, Image, Box, Text, useColorModeValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
 import { logoStyles } from '../../../styles/headerStyles';
@@ -7,39 +7,66 @@ import { logoStyles } from '../../../styles/headerStyles';
 const HeaderLogo = ({ styles }) => {
   const navigate = useNavigate();
 
+  // Single brand accent — "Refined Blue", no rainbow
+  const mapColor = useColorModeValue("#2563EB", "#60A5FA");
+  const mapHoverColor = useColorModeValue("#1D4ED8", "#93C5FD");
+
   return (
     <Flex
       {...logoStyles()}
       onClick={() => navigate("/")}
-      _hover={{ transform: "translateY(-1px)", opacity: 0.85 }}
+      align="center"
+      role="group"
     >
-      <Image
-        src={logo}
-        alt="Photomap Logo"
-        h={{ base: "40px", sm: "44px", md: "48px" }}
-        w={{ base: "40px", sm: "44px", md: "48px" }}
-        mr={{ base: 2, sm: 2.5, md: 3 }}
-        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.12))"
-      />
+      <Box position="relative" mr={{ base: 1.5, sm: 2.5, md: 3 }} flexShrink={0}>
+        <Image
+          src={logo}
+          alt="Photomap Logo"
+          h={{ base: "30px", sm: "40px", md: "46px" }}
+          w={{ base: "30px", sm: "40px", md: "46px" }}
+          transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))"
+          _groupHover={{
+            transform: "scale(1.08) rotate(8deg)",
+            filter: "drop-shadow(0 0 8px rgba(56,189,248,0.6))"
+          }}
+        />
+      </Box>
       <Box>
         <Heading
           as="h1"
-          size="lg"
-          color={styles.logoTextColor}
-          fontWeight="800"
-          letterSpacing="tight"
-          lineHeight="1.2"
+          fontSize={{ base: "md", sm: "xl", md: "2xl" }}
+          fontWeight="900"
+          letterSpacing="-0.5px"
+          lineHeight="1"
+          display="flex"
+          alignItems="center"
         >
-          Photomap
+          <Text as="span" color={styles.logoTextColor}>
+            Photo
+          </Text>
+          <Text
+            as="span"
+            color={mapColor}
+            transition="color 0.3s ease"
+            _groupHover={{ color: mapHoverColor }}
+          >
+            map
+          </Text>
         </Heading>
         <Text
           color={styles.logoSubtextColor}
-          fontSize="xs"
-          fontWeight="500"
-          letterSpacing="wide"
-          lineHeight="1.1"
+          fontSize="9px"
+          fontWeight="800"
+          letterSpacing="1.8px"
+          lineHeight="1"
+          textTransform="uppercase"
+          mt={1.5}
+          display={{ base: "none", sm: "block" }}
+          transition="all 0.3s ease"
+          _groupHover={{ color: useColorModeValue("gray.700", "gray.300"), letterSpacing: "2px" }}
         >
-          Journey through photos.
+          Journey through photos
         </Text>
       </Box>
     </Flex>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { HStack, Box } from '@chakra-ui/react';
 import {
-  LoginButton,
-  RegisterButton,
-} from '../../ui/buttons/HeaderButtons';
+  ModernLoginButton,
+  ModernRegisterButton,
+} from '../../ui/buttons/ModernButtons';
 
 const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...props }) => {
 
@@ -13,12 +13,14 @@ const HeaderAuth = ({ onLoginClick, onRegisterClick, display, size = "sm", ...pr
       <HStack 
         spacing={{ base: 2, sm: 2, md: 3, lg: 4, xl: 4, "2xl": 4 }}
       >
-        <LoginButton 
+        <ModernLoginButton 
           onClick={onLoginClick} 
+          variant="compact"
           size={size}
         />
-        <RegisterButton 
+        <ModernRegisterButton 
           onClick={onRegisterClick} 
+          variant="compact"
           size={size}
         />
       </HStack>

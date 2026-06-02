@@ -1,124 +1,57 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  VStack,
-  Heading,
-  Text,
-  SimpleGrid,
-  Badge,
-  HStack,
-  Icon,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import { motion } from 'framer-motion';
-import { HiRocketLaunch } from 'react-icons/hi2';
-import { learningSteps } from '../../../data/homeData';
-import FeatureCard from './FeatureCard';
+import { Box, Container, VStack, HStack, Heading, Text, SimpleGrid, Icon } from '@chakra-ui/react';
+import { HiArrowUpTray, HiMapPin, HiAcademicCap, HiVideoCamera } from 'react-icons/hi2';
+import { useLandingTokens, SectionHeading, MotionBox, fadeInUp } from './landingUI';
 
-const MotionBox = motion.create(Box);
-
-const PATTERN_URL_LIGHT =
-  'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")';
-
-const PATTERN_URL_DARK =
-  'url("data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M0 0h40v40H0V0zm40 40h40v40H40V40z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")';
+const STEPS = [
+  { n: '01', icon: HiArrowUpTray, title: 'Upload your photos', desc: 'Add your travel photos — location and date are read automatically from each file.' },
+  { n: '02', icon: HiMapPin, title: 'See them mapped', desc: 'Photos are grouped by country and date on an interactive world map.' },
+  { n: '03', icon: HiAcademicCap, title: 'Learn the destination', desc: 'Explore GDP, population, literacy and cultural facts from the World Bank.' },
+  { n: '04', icon: HiVideoCamera, title: 'Export & share', desc: 'Generate a polished video slideshow, ready for Instagram and TikTok.' },
+];
 
 const HowItWorksSection = () => {
-  const headingColor = useColorModeValue('gray.900', 'white');
-  const textColor = useColorModeValue('gray.700', 'white');
-  const bgValue = useColorModeValue('gray.50', 'black');
-  const badgeBg = useColorModeValue('teal.500', 'teal.400');
-  const patternUrl = useColorModeValue(PATTERN_URL_LIGHT, PATTERN_URL_DARK);
+  const t = useLandingTokens();
 
   return (
-    <Box 
-      py={10} 
-      bg={bgValue}
-      position="relative"
-      overflow="hidden"
-      _after={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: patternUrl,
-        opacity: 0.5,
-        zIndex: 0,
-        pointerEvents: 'none',
-      }}
-    >
-      <Container maxW="container.2xl" position="relative" zIndex={1}>
-        <VStack spacing={24}>
-          {/* === Header Section === */}
-          <VStack spacing={10} textAlign="center" maxW="900px">
-            <Badge
-              colorScheme="teal"
-              variant="solid"
-              px={6}
-              py={3}
-              borderRadius="full"
-              fontSize="lg"
-              fontWeight="semibold"
-              bg={badgeBg}
-              color="white"
-              boxShadow="0 4px 6px -1px rgba(20, 184, 166, 0.2)"
-            >
-              <HStack spacing={2} align="center" justify="center">
-                <Icon as={HiRocketLaunch} boxSize={5} />
-                <Text>Getting Started</Text>
-              </HStack>
-            </Badge>
+    <Box as="section" py={{ base: 16, md: 24 }} bg={t.surfaceSubtle} borderTop="1px solid" borderBottom="1px solid" borderColor={t.hairline}>
+      <Container maxW="container.xl">
+        <VStack spacing={{ base: 12, md: 16 }}>
+          <MotionBox {...fadeInUp}>
+            <SectionHeading
+              eyebrow="How it works"
+              title="Four steps to a smarter journey"
+              subtitle="From upload to insight to share — everything is connected, with nothing to set up."
+            />
+          </MotionBox>
 
-            <Heading
-              size="2xl"
-              color={headingColor}
-              lineHeight="1.2"
-              fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
-              fontWeight="extrabold"
-            >
-              Your Learning Journey
-            </Heading>
-
-            <Text
-              fontSize={{ base: 'lg', md: 'xl' }}
-              color={textColor}
-              lineHeight="1.7"
-              maxW="700px"
-              fontWeight="medium"
-            >
-              Start exploring the world through data-driven insights and
-              interactive learning experiences
-            </Text>
-          </VStack>
-
-          {/* === Steps Grid === */}
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 4 }}
-            spacing={8}
-            w="100%"
-          >
-            {learningSteps.map((step, index) => (
-              <MotionBox
-                key={index}
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.8,
-                  delay: index * 0.1,
-                  ease: 'easeOut',
-                  type: 'spring',
-                  stiffness: 100,
-                }}
-                viewport={{ once: true, margin: '-100px' }}
-                whileHover={{
-                  y: -8,
-                  transition: { duration: 0.3, ease: 'easeOut' },
-                }}
-              >
-                <FeatureCard feature={step} />
+          <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={5} w="full">
+            {STEPS.map((step, i) => (
+              <MotionBox key={step.n} {...fadeInUp} transition={{ ...fadeInUp.transition, delay: i * 0.08 }} h="full">
+                <VStack
+                  align="start"
+                  spacing={5}
+                  h="full"
+                  bg={t.surface}
+                  border="1px solid"
+                  borderColor={t.hairline}
+                  borderRadius="20px"
+                  boxShadow={t.shadowSm}
+                  p={7}
+                  transition="border-color .25s ease, box-shadow .25s ease, transform .25s ease"
+                  _hover={{ borderColor: t.hairlineStrong, boxShadow: t.shadowMd, transform: 'translateY(-3px)' }}
+                >
+                  <HStack justify="space-between" w="full">
+                    <Box display="inline-flex" p={3} borderRadius="12px" bg={t.primarySoftBg} color={t.primary}>
+                      <Icon as={step.icon} boxSize={5} />
+                    </Box>
+                    <Text fontSize="sm" fontWeight="800" color={t.textMuted} letterSpacing="0.05em">{step.n}</Text>
+                  </HStack>
+                  <VStack align="start" spacing={2}>
+                    <Heading fontSize="lg" fontWeight="700" color={t.text} letterSpacing="-0.01em">{step.title}</Heading>
+                    <Text fontSize="sm" color={t.textSoft} lineHeight="1.65">{step.desc}</Text>
+                  </VStack>
+                </VStack>
               </MotionBox>
             ))}
           </SimpleGrid>
