@@ -8,8 +8,7 @@ import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
 import { buildApiUrl, buildImageUrl } from '../../../utils/apiConfig';
-import darkThemeImage from '../../../assets/darkTheme.jpg';
-import lightThemeImage from '../../../assets/lightTheme.jpg';
+import { useLandingTokens } from '../landing/landingUI';
 import {
   Box,
   Button,
@@ -30,7 +29,6 @@ import {
   PopoverArrow,
   Icon,
   useColorModeValue,
-  useColorMode,
 } from '@chakra-ui/react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -140,10 +138,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const loginModal = useDisclosure();
   const registerModal = useDisclosure();
 
-  // Theme
-  const { colorMode } = useColorMode();
-  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.90)', 'rgba(0, 0, 0, 0.90)');
+  const t = useLandingTokens();
 
   // Confirms
   const {
@@ -448,18 +443,8 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   return (
     <Box
-      bgImage={backgroundImage}
       position="relative"
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: overlayBg,
-        zIndex: 0,
-      }}
+      bg={t.bg}
     >
       <Box position="relative" zIndex={1}>
       {/* Controles / Filtros */}

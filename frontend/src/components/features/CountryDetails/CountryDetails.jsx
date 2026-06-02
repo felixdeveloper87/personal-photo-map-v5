@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, useColorModeValue, Flex, Divider, useToast } from '@chakra-ui/react';
+import { Box, useToast } from '@chakra-ui/react';
 import { useState, useEffect, useContext } from 'react';
 import moment from 'moment-timezone';
 import { CountriesContext } from '../../../context/CountriesContext';
+import { useLandingTokens } from '../landing/landingUI';
 
 // Styles - Removed CSS dependency, using only Chakra UI
 
@@ -25,6 +26,7 @@ const CountryDetails = () => {
   const queryClient = useQueryClient();
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
   const toast = useToast();
+  const t = useLandingTokens();
 
 
   // Early return if countryId is invalid
@@ -40,12 +42,6 @@ const CountryDetails = () => {
     navigate('/not-found');
     return null;
   }
-
-  // Color mode values
-  const bgColor = useColorModeValue('white', 'black');
-  const cardBg = useColorModeValue('white', 'black');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
 
   // State for live clock
   const [currentTime, setCurrentTime] = useState(null);
@@ -141,17 +137,17 @@ const CountryDetails = () => {
     }
   }, [indicatorsData, countryId]);
 
-  if (countryLoading) return <LoadingState mutedTextColor={mutedTextColor} />;
+  if (countryLoading) return <LoadingState mutedTextColor={t.textSoft} />;
   if (countryError) return null;
 
   return (
-    <Box bg={bgColor} minH="100vh" className="country-details-page">
+    <Box bg={t.bg} minH="100vh" className="country-details-page">
       <Box 
-        px={{ base: 1, md: 4 }} 
-        pt={{ base: 4, md: 6 }} 
-        pb={{ base: 1, md: 4 }} 
+        px={{ base: 3, sm: 4, lg: 6 }} 
+        pt={{ base: 3, md: 5 }} 
+        pb={{ base: 8, md: 10 }} 
         position="relative" 
-        maxW={{ base: '100%', lg: '1600px', xl: '2200px', '2xl': '2600px' }} 
+        maxW={{ base: '100%', lg: '1500px', '2xl': '1680px' }} 
         mx="auto"
       >
         {/* Hero Header */}
@@ -167,31 +163,19 @@ const CountryDetails = () => {
           navigate={navigate}
         />
 
-        {/* Divider */}
-        <Divider my={3} />
-
-        {/* Country Insights Section */}
-        <Flex gap="6">
-          <Box flex="1">
-            <CountryInsightsSection
-              countryInfo={countryInfo}
-              cardBg={cardBg}
-              borderColor={borderColor}
-              countryId={countryId}
-              onUploadSuccess={() => {
-                // Refresh data after upload
-                queryClient.invalidateQueries(['allImages', countryId]);
-                queryClient.invalidateQueries(['years', countryId]);
-                queryClient.invalidateQueries(['albums', countryId]);
-                // Force immediate refresh of countries data to update map
-                refreshCountriesWithPhotos(true);
-              }}
-            />
-          </Box>
-        </Flex>
+        <CountryInsightsSection
+          countryInfo={countryInfo}
+          countryId={countryId}
+          onUploadSuccess={() => {
+            queryClient.invalidateQueries(['allImages', countryId]);
+            queryClient.invalidateQueries(['years', countryId]);
+            queryClient.invalidateQueries(['albums', countryId]);
+            refreshCountriesWithPhotos(true);
+          }}
+        />
 
         {/* Photo Gallery */}
-        <Box mt={1}>
+        <Box mt={{ base: 3, md: 4 }}>
           <PhotoManager 
             countryId={countryId} 
             onUploadSuccess={async () => {

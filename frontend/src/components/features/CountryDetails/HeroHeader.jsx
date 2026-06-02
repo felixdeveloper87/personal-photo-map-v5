@@ -1,27 +1,36 @@
 import {
   Box,
-  Flex,
-  Text,
-  IconButton,
-  useColorModeValue,
-  useColorMode,
-  useDisclosure,
-  Collapse,
   Button,
+  Collapse,
+  Flex,
   Grid,
+  HStack,
+  IconButton,
+  Text,
+  VStack,
   chakra,
   useBreakpointValue,
-} from '@chakra-ui/react'
-import { ArrowBackIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
-import countries from 'i18n-iso-countries'
-import moment from 'moment-timezone'
-import { FaLanguage, FaUsers, FaThermometerHalf, FaChartLine, FaPoundSign, FaHeartbeat, FaChartBar, FaPlane, FaBed } from 'react-icons/fa'
-import EnhancedFlag from './EnhancedFlag'
-import InfoBox from './InfoBox'
-import BaseModal from '../../modals/BaseModal'
-import IndicatorsModal from './IndicatorsModal'
-import darkThemeImage from '../../../assets/darkTheme.jpg';
-import lightThemeImage from '../../../assets/lightTheme.jpg';
+  useDisclosure,
+} from '@chakra-ui/react';
+import { ArrowBackIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import countries from 'i18n-iso-countries';
+import moment from 'moment-timezone';
+import {
+  FaBed,
+  FaChartBar,
+  FaChartLine,
+  FaHeartbeat,
+  FaLanguage,
+  FaPlane,
+  FaPoundSign,
+  FaThermometerHalf,
+  FaUsers,
+} from 'react-icons/fa';
+import EnhancedFlag from './EnhancedFlag';
+import InfoBox from './InfoBox';
+import BaseModal from '../../modals/BaseModal';
+import IndicatorsModal from './IndicatorsModal';
+import { useLandingTokens } from '../landing/landingUI';
 
 export default function HeroHeader({
   countryId,
@@ -33,90 +42,84 @@ export default function HeroHeader({
   factbookData,
   navigate,
 }) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const { isOpen: isExpanded, onToggle } = useDisclosure({ defaultIsOpen: true })
-  const { colorMode } = useColorMode()
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isExpanded, onToggle } = useDisclosure({ defaultIsOpen: true });
+  const t = useLandingTokens();
 
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const textPrimary = useColorModeValue('black', 'white')
-  const textSecondary = useColorModeValue('gray.800', 'gray.300')
-  const dateFaded = useColorModeValue('gray.600', 'gray.200')
-  const isSmall = useBreakpointValue({ base: true, md: false })
-  const buttonText = useBreakpointValue({ base: 'View Data', sm: 'View Data', md: 'View Indicators' })
-  const flightsButtonText = useBreakpointValue({ base: 'Flights', md: 'Check Flights' })
-  const hotelsButtonText = useBreakpointValue({ base: 'Hotels', md: 'Find Hotels' })
+  const isSmall = useBreakpointValue({ base: true, md: false });
+  const buttonText = useBreakpointValue({ base: 'View Data', md: 'View Indicators' });
+  const flightsButtonText = useBreakpointValue({ base: 'Flights', md: 'Check Flights' });
+  const hotelsButtonText = useBreakpointValue({ base: 'Hotels', md: 'Find Hotels' });
 
-
-  const countryName =
-    countries.getName(countryId?.toUpperCase() || '', 'en') || countryId?.toUpperCase()
-
+  const countryName = countries.getName(countryId?.toUpperCase() || '', 'en') || countryId?.toUpperCase();
   const dateFormatted = weatherData?.timezone
     ? moment().utcOffset(weatherData.timezone / 60).format('DD/MM/YYYY')
-    : moment().format('DD/MM/YYYY')
+    : moment().format('DD/MM/YYYY');
 
-  const overlayBg = useColorModeValue('rgba(255, 255, 255, 0.70)', 'rgba(0, 0, 0, 0.75)');
-  const backgroundImage = colorMode === 'dark' ? `url(${darkThemeImage})` : `url(${lightThemeImage})`;
+  const compactBoxProps = {
+    size: 'compact',
+    variant: 'flat',
+    sx: {
+      p: { base: 2, sm: 2.5, md: 3 },
+      minH: { base: '74px', sm: '82px', md: '96px' },
+      borderRadius: '12px',
+      boxShadow: 'none',
+    },
+  };
 
-  // Linha principal (País • Capital • Hora • Data)
+  const actionButtonBase = {
+    size: 'sm',
+    borderRadius: '10px',
+    height: { base: '36px', md: '38px' },
+    fontWeight: '600',
+    fontSize: { base: 'xs', md: 'sm' },
+    transition: 'all .2s ease',
+    minW: 0,
+    px: { base: 3, md: 3.5 },
+  };
+
   const OneLine = () => (
     <Text
       fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-      color={textPrimary}
+      color={t.text}
       noOfLines={1}
       whiteSpace="nowrap"
       overflow="hidden"
       textOverflow="ellipsis"
     >
-      <chakra.span fontWeight="bold">{countryName}</chakra.span>
-      {countryInfo?.capital && (
-        <chakra.span color={textSecondary}> • {countryInfo.capital}</chakra.span>
-      )}
-      <chakra.span color={textSecondary}> • {currentTime}</chakra.span>
-      <chakra.span
-        color={isSmall ? dateFaded : textSecondary}
-        fontSize={isSmall ? '10px' : 'inherit'}
-      >
+      <chakra.span fontWeight="800">{countryName}</chakra.span>
+      {countryInfo?.capital && <chakra.span color={t.textSoft}> - {countryInfo.capital}</chakra.span>}
+      <chakra.span color={t.textSoft}> - {currentTime || '--:--:--'}</chakra.span>
+      <chakra.span color={isSmall ? t.textMuted : t.textSoft} fontSize={isSmall ? '10px' : 'inherit'}>
         {' '}
-        • {dateFormatted}
+        - {dateFormatted}
       </chakra.span>
     </Text>
-  )
-
-  const compactBoxProps = {
-    size: 'compact',
-    sx: {
-      p: { base: 1.5, sm: 2, md: 3 },
-      minH: { base: '70px', sm: '80px', md: '100px' },
-      fontSize: { base: '10px', sm: 'xs', md: 'sm' },
-      '.chakra-icon': { fontSize: { base: '14px', sm: '16px', md: '18px' } },
-      '.chakra-text': {
-        fontSize: { base: '9px', sm: '10px', md: 'xs' },
-      },
-    },
-  }
+  );
 
   return (
-    <Box mb={2} w="100%">
-      {/* Header principal */}
+    <Box mb={{ base: 3, md: 4 }} w="100%">
       <Box
-        px={{ base: 3, sm: 4, md: 6 }}
-        py={{ base: 2, sm: 3 }}
-        borderRadius="md"
+        px={{ base: 2.5, sm: 4, md: 5 }}
+        py={{ base: 2, sm: 2.5 }}
+        borderRadius="14px"
         border="1px solid"
-        borderColor={borderColor}
-        boxShadow={useColorModeValue(
-          '0 2px 10px rgba(0,0,0,0.05)',
-          '0 2px 10px rgba(0,0,0,0.25)'
-        )}
+        borderColor={t.hairline}
+        bg={t.surface}
+        boxShadow={t.shadowSm}
       >
-        <Grid templateColumns="auto 1fr auto" alignItems="center" columnGap={2}>
+        <Grid templateColumns="auto 1fr auto" alignItems="center" columnGap={{ base: 2, md: 3 }}>
           <IconButton
             aria-label="Go back"
             icon={<ArrowBackIcon />}
             onClick={() => navigate('/')}
             size="sm"
-            variant="ghost"
-            colorScheme="blue"
+            borderRadius="10px"
+            bg={t.surfaceSubtle}
+            border="1px solid"
+            borderColor={t.hairline}
+            color={t.textSoft}
+            _hover={{ bg: t.primarySoftBg, borderColor: t.primary, color: t.primary }}
           />
 
           <Box minW={0} textAlign="center">
@@ -128,119 +131,152 @@ export default function HeroHeader({
             icon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
             onClick={onToggle}
             size="sm"
-            variant="ghost"
-            colorScheme="blue"
+            borderRadius="10px"
+            bg={t.surfaceSubtle}
+            border="1px solid"
+            borderColor={t.hairline}
+            color={t.textSoft}
+            _hover={{ bg: t.primarySoftBg, borderColor: t.primary, color: t.primary }}
           />
         </Grid>
       </Box>
 
-      {/* Detalhes colapsáveis */}
       <Collapse in={isExpanded} animateOpacity>
         <Box
-          mt={4}
-          borderRadius="lg"
+          mt={3}
+          borderRadius="16px"
           border="1px solid"
-          borderColor={borderColor}
-          p={{ base: 3, sm: 4, md: 5 }}
-          boxShadow={useColorModeValue(
-            '0 4px 12px rgba(0,0,0,0.06)',
-            '0 4px 12px rgba(0,0,0,0.3)'
-          )}
-          bgImage={backgroundImage}
+          borderColor={t.hairline}
+          p={{ base: 3, sm: 4, md: 5, xl: 6 }}
+          boxShadow={t.shadowMd}
+          bg={t.surface}
           position="relative"
-          backdropFilter="blur(12px)"
-          _before={{
+          overflow="hidden"
+          _after={{
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0,
-            bg: overlayBg,
-            zIndex: 0,
-            borderRadius: 'lg',
+            height: '3px',
+            bg: t.primary,
           }}
         >
-          <Flex
-            direction={{ base: 'column', md: 'row' }}
-            align="stretch"
-            gap={{ base: 4, md: 6 }}
-            position="relative"
-            zIndex={1}
-          >
-            {/* ====== LEFT: FLAG ====== */}
+          <Flex direction={{ base: 'column', md: 'row' }} align="stretch" gap={{ base: 4, md: 6 }}>
             <Box
-              flex={{ base: 'none', md: '1 1 45%' }}
+              flex={{ base: 'none', md: '1 1 44%' }}
               display="flex"
               justifyContent="center"
               alignItems="center"
-              borderRadius="lg"
+              borderRadius="14px"
               overflow="hidden"
-              h={{ base: '180px', sm: '200px', md: '280px', lg: '320px' }}
-              position="relative"
+              h={{ base: '170px', sm: '210px', md: '280px', lg: '320px' }}
+              bg={t.surfaceSubtle}
+              border="1px solid"
+              borderColor={t.hairline}
             >
-              <Box 
-                position="relative" 
-                zIndex={1} 
-                w="100%" 
-                h="100%" 
-                display="flex" 
-                justifyContent="center" 
-                alignItems="center"
-                borderRadius="lg"
-              >
-                <EnhancedFlag 
-                  countryCode={countryId?.toUpperCase()} 
-                  isHero={false}
-                />
+              <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
+                <EnhancedFlag countryCode={countryId?.toUpperCase()} isHero={false} />
               </Box>
             </Box>
 
-            {/* ====== RIGHT: INFOBOXES + BUTTONS ====== */}
-            <Flex
-              flex={{ base: 'none', md: '1 1 55%' }}
-              direction="column"
-              justify="space-between"
-            >
-              {/* InfoBoxes line */}
-              <Grid
-                templateColumns="repeat(3, 1fr)"
-                gap={{ base: 2, sm: 3 }}
-                mb={{ base: 3, md: 4 }}
-                w="full"
-              >
-                <InfoBox
-                  icon={FaLanguage}
-                  label="Language"
-                  value={countryInfo?.officialLanguage}
-                  colorScheme="orange"
-                  {...compactBoxProps}
-                />
+            <Flex flex={{ base: 'none', md: '1 1 56%' }} direction="column" justify="space-between">
+              <VStack align="start" spacing={2.5} mb={{ base: 3, md: 4 }}>
+                <HStack spacing={2}>
+                  <Box w="20px" h="2px" borderRadius="full" bg={t.primary} />
+                  <Text fontSize="xs" fontWeight="700" letterSpacing="0.14em" textTransform="uppercase" color={t.primary}>
+                    Country overview
+                  </Text>
+                </HStack>
+
+                <Flex
+                  w="full"
+                  align={{ base: 'flex-start', xl: 'center' }}
+                  justify="space-between"
+                  gap={{ base: 2, md: 3 }}
+                  direction={{ base: 'column', xl: 'row' }}
+                >
+                  <Text
+                    fontSize={{ base: 'xl', md: '2xl' }}
+                    fontWeight="800"
+                    color={t.text}
+                    lineHeight="1.1"
+                    minW={0}
+                    noOfLines={{ base: 2, xl: 1 }}
+                  >
+                    {countryName}
+                  </Text>
+
+                  <Grid
+                    templateColumns={{ base: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(3, max-content)' }}
+                    gap={1.5}
+                    w={{ base: 'full', xl: 'auto' }}
+                    flexShrink={0}
+                  >
+                    <Button
+                      onClick={onOpen}
+                      leftIcon={<FaChartBar />}
+                      bg={t.primary}
+                      color="white"
+                      boxShadow={t.shadowSm}
+                      _hover={{ transform: 'translateY(-1px)', boxShadow: t.shadowMd, bg: t.primaryHover }}
+                      _active={{ transform: 'translateY(0)' }}
+                      {...actionButtonBase}
+                    >
+                      {buttonText}
+                    </Button>
+                    <Button
+                      onClick={() => window.open(`https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(countryName)}`, '_blank')}
+                      leftIcon={<FaPlane />}
+                      bg="transparent"
+                      border="1px solid"
+                      borderColor={t.hairlineStrong}
+                      color={t.text}
+                      _hover={{ transform: 'translateY(-1px)', boxShadow: t.shadowMd, bg: t.primarySoftBg, color: t.primary, borderColor: t.primary }}
+                      _active={{ transform: 'translateY(0)' }}
+                      {...actionButtonBase}
+                    >
+                      {flightsButtonText}
+                    </Button>
+                    <Button
+                      onClick={() => window.open(`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(countryName)}`, '_blank')}
+                      leftIcon={<FaBed />}
+                      bg="transparent"
+                      border="1px solid"
+                      borderColor={t.hairlineStrong}
+                      color={t.text}
+                      _hover={{ transform: 'translateY(-1px)', boxShadow: t.shadowMd, bg: t.primarySoftBg, color: t.primary, borderColor: t.primary }}
+                      _active={{ transform: 'translateY(0)' }}
+                      {...actionButtonBase}
+                    >
+                      {hotelsButtonText}
+                    </Button>
+                  </Grid>
+                </Flex>
+
+                <Text fontSize="sm" color={t.textSoft}>
+                  Essential trip context, live conditions, and travel actions.
+                </Text>
+              </VStack>
+
+              <Grid templateColumns="repeat(3, 1fr)" gap={{ base: 2, sm: 3 }} mb={{ base: 3, md: 4 }} w="full">
+                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="blue" {...compactBoxProps} />
                 <InfoBox
                   icon={FaUsers}
                   label="Population"
-                  value={
-                    countryInfo?.population
-                      ? countryInfo.population.toLocaleString('en-US')
-                      : 'N/A'
-                  }
-                  colorScheme="green"
+                  value={countryInfo?.population ? countryInfo.population.toLocaleString('en-US') : 'N/A'}
+                  colorScheme="blue"
                   {...compactBoxProps}
                 />
                 <InfoBox
                   icon={FaThermometerHalf}
                   label="Temperature"
-                  value={
-                    weatherData?.temperature !== undefined
-                      ? `${weatherData.temperature}°C`
-                      : 'N/A'
-                  }
-                  colorScheme="red"
+                  value={weatherData?.temperature !== undefined ? `${weatherData.temperature} C` : 'N/A'}
+                  colorScheme="blue"
                   {...compactBoxProps}
                 />
               </Grid>
 
-              {/* Second row of InfoBoxes - Only visible on MD+ */}
               <Grid
                 templateColumns="repeat(3, 1fr)"
                 gap={{ base: 2, sm: 3 }}
@@ -252,132 +288,29 @@ export default function HeroHeader({
                   icon={FaChartLine}
                   label="GDP per capita"
                   value={indicatorsData?.gdpPerCapitaCurrent?.value || 'N/A'}
-                  colorScheme="purple"
+                  colorScheme="blue"
                   {...compactBoxProps}
                 />
                 <InfoBox
                   icon={FaPoundSign}
                   label="Exchange Rate"
-                  value={exchangeRate ? `£1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A'}
-                  colorScheme="teal"
+                  value={exchangeRate ? `GBP 1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A'}
+                  colorScheme="blue"
                   {...compactBoxProps}
                 />
                 <InfoBox
                   icon={FaHeartbeat}
                   label="Life Expectancy"
                   value={indicatorsData?.lifeExpectancy?.value || 'N/A'}
-                  colorScheme="pink"
+                  colorScheme="blue"
                   {...compactBoxProps}
                 />
-              </Grid>
-
-              {/* Buttons full-width */}
-              <Grid
-                templateColumns="repeat(3, 1fr)"
-                gap={{ base: 1.5, sm: 2 }}
-                w="full"
-              >
-                <Button
-                  onClick={onOpen}
-                  leftIcon={<FaChartBar />}
-                  bg="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
-                  color="white"
-                  size="sm"
-                  borderRadius="lg"
-                  height={{ base: '40px', md: '44px' }}
-                  fontWeight="600"
-                  fontSize={{ base: 'xs', sm: 'sm' }}
-                  boxShadow="md"
-                  sx={{
-                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                  }}
-                  _hover={{
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg',
-                    bg: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
-                  }}
-                  _active={{
-                    transform: 'translateY(0px)',
-                    boxShadow: 'md',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  {buttonText}
-                </Button>
-                <Button
-                  onClick={() =>
-                    window.open(
-                      `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(
-                        countryName
-                      )}`,
-                      '_blank'
-                    )
-                  }
-                  leftIcon={<FaPlane />}
-                  variant="outline"
-                  borderWidth="2px"
-                  borderColor="green.400"
-                  color={useColorModeValue('green.600', 'green.300')}
-                  size="sm"
-                  borderRadius="lg"
-                  height={{ base: '40px', md: '44px' }}
-                  fontWeight="600"
-                  fontSize={{ base: 'xs', sm: 'sm' }}
-                  bg={useColorModeValue('white', 'gray.800')}
-                  _hover={{
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg',
-                    bg: useColorModeValue('green.50', 'green.900'),
-                    borderColor: 'green.500',
-                  }}
-                  _active={{
-                    transform: 'translateY(0px)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  {flightsButtonText}
-                </Button>
-                <Button
-                  onClick={() =>
-                    window.open(
-                      `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
-                        countryName
-                      )}`,
-                      '_blank'
-                    )
-                  }
-                  leftIcon={<FaBed />}
-                  variant="outline"
-                  borderWidth="2px"
-                  borderColor="yellow.400"
-                  color={useColorModeValue('yellow.600', 'yellow.300')}
-                  size="sm"
-                  borderRadius="lg"
-                  height={{ base: '40px', md: '44px' }}
-                  fontWeight="600"
-                  fontSize={{ base: 'xs', sm: 'sm' }}
-                  bg={useColorModeValue('white', 'gray.800')}
-                  _hover={{
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg',
-                    bg: useColorModeValue('yellow.50', 'yellow.900'),
-                    borderColor: 'yellow.500',
-                  }}
-                  _active={{
-                    transform: 'translateY(0px)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  {hotelsButtonText}
-                </Button>
               </Grid>
             </Flex>
           </Flex>
         </Box>
       </Collapse>
 
-
-      {/* Modal de Indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="Detailed Indicators">
         <IndicatorsModal
           indicatorsData={indicatorsData}
@@ -388,5 +321,5 @@ export default function HeroHeader({
         />
       </BaseModal>
     </Box>
-  )
+  );
 }

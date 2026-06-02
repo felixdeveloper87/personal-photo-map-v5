@@ -29,8 +29,8 @@ export default function InfoBox({
   // === Refined Soft Color Palettes ===
   const colorSchemes = {
     blue: tone === "light"
-      ? { icon: "#1a73e8", bg: "#f7f9ff", border: "#e0e7ff" }
-      : { icon: "#8ab4f8", bg: "#0c1424", border: "#1e3a8a" },
+      ? { icon: "#2563EB", bg: "#F8FAFC", border: "#E5E7EB" }
+      : { icon: "#60A5FA", bg: "#0A0F1C", border: "rgba(255,255,255,0.08)" },
     green: tone === "light"
       ? { icon: "#188038", bg: "#f6faf8", border: "#d8eee0" }
       : { icon: "#81c995", bg: "#0f1d12", border: "#1f3d28" },
@@ -74,8 +74,8 @@ export default function InfoBox({
       bg: currentColors.bg,
       border: `1px solid ${currentColors.border}`,
       shadow: useColorModeValue(
-        "0 2px 6px rgba(0,0,0,0.08)",
-        "0 2px 6px rgba(0,0,0,0.4)"
+        "0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.05)",
+        "0 1px 2px rgba(0,0,0,0.5)"
       ),
     },
     outlined: {
@@ -94,8 +94,8 @@ export default function InfoBox({
       y: -3,
       transition: { duration: 0.18, ease: "easeInOut" },
       boxShadow: useColorModeValue(
-        "0 6px 14px rgba(0,0,0,0.08)",
-        "0 6px 14px rgba(0,0,0,0.4)"
+        "0 8px 24px -10px rgba(15,23,42,0.12)",
+        "0 10px 28px -12px rgba(0,0,0,0.6)"
       ),
     },
     tap: { scale: 0.985 },
@@ -104,29 +104,6 @@ export default function InfoBox({
   // === Typography ===
   const labelColor = useColorModeValue("gray.700", "gray.300");
   const valueColor = useColorModeValue("gray.900", "gray.100");
-
-  // === Texture (subtle carbon lines) ===
-  const texturePattern = useColorModeValue(
-    `repeating-linear-gradient(
-      45deg,
-      rgba(0, 0, 0, 0.015) 0px,
-      rgba(0, 0, 0, 0.015) 10px,
-      transparent 10px,
-      transparent 20px
-    )`,
-    `repeating-linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.03) 0px,
-      rgba(255, 255, 255, 0.03) 10px,
-      transparent 10px,
-      transparent 20px
-    )`
-  );
-
-  const dotOverlay = useColorModeValue(
-    "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 0)",
-    "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)"
-  );
 
   const boxContent = (
     <VStack
@@ -181,9 +158,6 @@ export default function InfoBox({
         minW: 0,
         position: "relative",
         overflow: "hidden",
-        backgroundImage: `${texturePattern}, ${dotOverlay}`,
-        backgroundSize: "20px 20px, 12px 12px",
-        backgroundBlendMode: "overlay",
         pointerEvents: "auto",
         ...sx,
       }}

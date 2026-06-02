@@ -1,10 +1,11 @@
-import { Box, Card, CardBody, Text, Flex, VStack, HStack, Button, Icon, useDisclosure, useColorModeValue, Badge, Divider, Tooltip, useToast } from '@chakra-ui/react';
-import { FaCloudUploadAlt, FaGlobe, FaMapMarkerAlt, FaShare } from 'react-icons/fa';
+import { Box, Card, CardBody, Text, Flex, HStack, Button, Icon, useDisclosure, Tooltip, useToast } from '@chakra-ui/react';
+import { FaCloudUploadAlt, FaGlobe, FaShare } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import { buildApiUrl } from '../../../utils/apiConfig';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
+import { useLandingTokens } from '../landing/landingUI';
 
 // Helper function to fetch user photos for a country
 const getAuthHeaders = () => {
@@ -25,10 +26,11 @@ async function fetchUserPhotos(countryId) {
   return response.json();
 }
 
-const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, onUploadSuccess }) => {
+const CountryInsightsSection = ({ countryId, onUploadSuccess }) => {
   const { isOpen: isImageUploaderOpen, onOpen: onImageUploaderOpen, onClose: onImageUploaderClose } = useDisclosure();
   const toast = useToast();
   const { isLoggedIn } = useContext(AuthContext);
+  const t = useLandingTokens();
 
   // Check if user has photos in this country
   const { data: userPhotos = [] } = useQuery({
@@ -39,19 +41,6 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
     retry: false,
   });
 
-  // Color mode values for subtle design
-  const subtleBorder = useColorModeValue('gray.200', 'gray.600');
-  const textSecondary = useColorModeValue('gray.600', 'gray.400');
-  const iconColor = useColorModeValue('gray.500', 'gray.400');
-  const bgColor = useColorModeValue('white', 'black');
-  // Precompute button theme values so hook order stays stable even if section returns null
-  const addPhotoBtnBg = useColorModeValue('blue.50', 'blue.900');
-  const addPhotoBtnColor = useColorModeValue('blue.600', 'blue.200');
-  const addPhotoBtnHoverBg = useColorModeValue('blue.100', 'blue.800');
-  const shareBtnBg = useColorModeValue('gray.100', 'gray.700');
-  const shareBtnColor = useColorModeValue('gray.600', 'gray.300');
-  const shareBtnHoverBg = useColorModeValue('gray.200', 'gray.600');
-  
   // Share functionality - In development
   const handleShare = () => {
     toast({
@@ -70,32 +59,34 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
   }
 
   return (
-    <Box mb={3}>
+    <Box mb={{ base: 3, md: 4 }}>
       <Card 
-        bg ={bgColor}
+        bg={t.surface}
         border="1px solid" 
-        borderColor={subtleBorder} 
-        shadow="sm" 
+        borderColor={t.hairline} 
+        shadow="none" 
         className="country-details-card card-entrance"
-        borderRadius="lg"
+        borderRadius="14px"
         overflow="hidden"
       >
-        <CardBody p={2} px={4}>
+        <CardBody p={{ base: 3, md: 3.5 }} px={{ base: 3, md: 4 }}>
           <Flex 
             justify="space-between" 
             align="center" 
             gap={{ base: 2, sm: 3, md: 4 }}
-            flexWrap="nowrap"
+            flexWrap={{ base: 'wrap', sm: 'nowrap' }}
             overflow="hidden"
           >
             
             {/* Left: Icon + Text */}
             <HStack spacing={{ base: 1, sm: 2 }} flexShrink={0}>
-              <Icon as={FaGlobe} color={iconColor} boxSize={{ base: 3.5, sm: 4 }} />
+              <Box display="inline-flex" p={2} borderRadius="10px" bg={t.primarySoftBg} color={t.primary}>
+                <Icon as={FaGlobe} boxSize={{ base: 3.5, sm: 4 }} />
+              </Box>
               <Text 
                 fontSize={{ base: "xs", sm: "sm" }} 
-                fontWeight="medium" 
-                color={textSecondary}
+                fontWeight="700" 
+                color={t.text}
                 whiteSpace="nowrap"
               >
                 Travel Hub
@@ -109,20 +100,20 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   onClick={onImageUploaderOpen}
                   leftIcon={<Icon as={FaCloudUploadAlt} boxSize={{ base: 3, sm: 3.5 }} />}
                   variant="ghost"
-                  colorScheme="blue"
                   size={{ base: "xs", sm: "sm" }}
-                  bg={addPhotoBtnBg}
-                  color={addPhotoBtnColor}
+                  bg={t.primary}
+                  color="white"
                   _hover={{
-                    bg: addPhotoBtnHoverBg,
+                    bg: t.primaryHover,
                     transform: "translateY(-1px)",
+                    boxShadow: t.shadowMd,
                   }}
                   _active={{
                     transform: "translateY(0)"
                   }}
                   transition="all 0.2s ease"
-                  borderRadius="md"
-                  fontWeight="medium"
+                  borderRadius="10px"
+                  fontWeight="600"
                   px={{ base: 2, sm: 3 }}
                   py={1.5}
                   fontSize={{ base: "xs", sm: "sm" }}
@@ -137,20 +128,23 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   onClick={handleShare}
                   leftIcon={<Icon as={FaShare} boxSize={{ base: 3, sm: 3.5 }} />}
                   variant="ghost"
-                  colorScheme="gray"
                   size={{ base: "xs", sm: "sm" }}
-                  bg={shareBtnBg}
-                  color={shareBtnColor}
+                  bg="transparent"
+                  color={t.textSoft}
+                  border="1px solid"
+                  borderColor={t.hairlineStrong}
                   _hover={{
-                    bg: shareBtnHoverBg,
+                    bg: t.primarySoftBg,
+                    color: t.primary,
+                    borderColor: t.primary,
                     transform: "translateY(-1px)",
                   }}
                   _active={{
                     transform: "translateY(0)"
                   }}
                   transition="all 0.2s ease"
-                  borderRadius="md"
-                  fontWeight="medium"
+                  borderRadius="10px"
+                  fontWeight="600"
                   px={{ base: 2, sm: 3 }}
                   py={1.5}
                   fontSize={{ base: "xs", sm: "sm" }}
@@ -160,21 +154,6 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                 </Button>
               </Tooltip>
             </HStack>
-
-            {/* Right: Badge */}
-            <Badge 
-              colorScheme="blue" 
-              variant="subtle" 
-              fontSize={{ base: "2xs", sm: "xs" }}
-              px={{ base: 1.5, sm: 2 }}
-              py={{ base: 0.5, sm: 1 }}
-              borderRadius="md"
-              flexShrink={0}
-              whiteSpace="nowrap"
-              display={{ base: "none", sm: "block" }}
-            >
-              Explore
-            </Badge>
 
           </Flex>
         </CardBody>
