@@ -1,22 +1,7 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { Box, Flex } from '@chakra-ui/react';
-import SmartHomeRoute from './components/ui/SmartHomeRoute';
-import ProtectedRoute from './components/ui/ProtectedRoute';
-import Header from './components/layout/Header/Header';
-
-import Footer from './components/layout/Footer';
-import { CountryDetails } from './components/features';
-import NotFound from './components/ui/Notfound.jsx';
-import About from './pages/About';
-import Contact from "./pages/Contact";
-import TimelinePage from './pages/TimelinePage';
-import MapPage from './pages/MapPage';
-import AdminPage from './pages/AdminPage';
+import AppShell from './components/layout/AppShell';
 import { AuthProvider } from './context/AuthContext';
 import { CountriesProvider } from './context/CountriesContext';
 import { usePhotoUploadListener } from './hooks/usePhotoUploadListener';
-import AdminRoute from './components/ui/AdminRoute';
-import { useHeaderHeight } from './hooks/useHeaderHeight';
 
 /**
  * App Component
@@ -31,70 +16,11 @@ import { useHeaderHeight } from './hooks/useHeaderHeight';
  * @returns {JSX.Element} The main application wrapper.
  */
 function App() {
-
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
-  const { headerHeight, headerRef } = useHeaderHeight();
-
   return (
     <AuthProvider> {/* Provides authentication context to the entire app */}
       <CountriesProvider> {/* Provides country-related data to the app */}
         <PhotoUploadListener /> {/* Listens for photo upload events globally */}
-        <Flex direction="column" minH="100vh"> {/* Ensures a full-height layout */}
-
-          {/* Header Section */}
-          <Box as="header">
-            <Header ref={headerRef} />
-          </Box>
-
-          {/* Main Content Section */}
-          <Box 
-            as="main" 
-            flex="1" 
-            px={0} 
-            pb={0}
-            pt={`${headerHeight}px`}
-          >
-            <Routes>
-              <Route path="/" element={<SmartHomeRoute />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/map/private" element={
-                <ProtectedRoute>
-                  <MapPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/countries/:countryId" element={
-                <ProtectedRoute>
-                  <CountryDetails />
-                </ProtectedRoute>
-              } />
-              <Route path="/timeline" element={
-                <ProtectedRoute>
-                  <TimelinePage />
-                </ProtectedRoute>
-              } />
-              <Route path="/timeline/:year" element={
-                <ProtectedRoute>
-                  <TimelinePage />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              } />
-              <Route path="*" element={<NotFound />} /> {/* 404 Page */}
-            </Routes>
-          </Box>
-
-          {/* Footer Section */}
-          <Box as="footer">
-            <Footer />
-          </Box>
-
-        </Flex>
+        <AppShell />
       </CountriesProvider>
     </AuthProvider>
   );

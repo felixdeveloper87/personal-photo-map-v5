@@ -14,10 +14,8 @@ import {
   HStack,
   Badge,
   Icon,
-  useColorModeValue,
   SimpleGrid,
   Circle,
-  Button,
   Divider,
   IconButton,
   Tooltip,
@@ -38,7 +36,9 @@ import {
   FaCrown
 } from 'react-icons/fa';
 import BaseModal from './BaseModal';
+import ModalButton from './ModalButton';
 import EnhancedFlag from '../features/CountryDetails/EnhancedFlag';
+import { useLandingTokens } from '../features/landing/landingUI';
 
 countries.registerLocale(en);
 const MotionBox = motion.create(Box);
@@ -54,12 +54,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   });
   const [continentCount, setContinentCount] = useState(0);
 
-  const textColor = useColorModeValue("gray.700", "gray.100");
-  const headingColor = useColorModeValue("black", "white");
-  const accentColor = useColorModeValue("blue.500", "blue.300");
-  const borderColor = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)");
-  const cardBg = useColorModeValue("rgba(255,255,255,0.65)", "rgba(0,0,0,0.55)");
-  const premiumGradient = "linear-gradient(135deg, #fbbf24, #f59e0b)";
+  const t = useLandingTokens();
+  const textColor = t.textSoft;
+  const headingColor = t.text;
+  const accentColor = t.primary;
+  const borderColor = t.hairline;
+  const cardBg = t.surface;
+  const premiumGradient = t.accent; // gold reserved for the premium highlight
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -151,10 +152,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
           backdropFilter="blur(8px)"
           border="1px solid"
           borderColor={borderColor}
-          boxShadow={useColorModeValue(
-            "0 1px 3px rgba(0,0,0,0.05)",
-            "0 1px 3px rgba(255,255,255,0.05)"
-          )}
+          boxShadow={t.shadowSm}
           position="relative"
         >
           <Flex align="center" justify="space-between" flexDir={{ base: "column", sm: "row" }} gap={3}>
@@ -219,7 +217,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 size="sm"
                 variant="ghost"
                 color={textColor}
-                _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
+                _hover={{ bg: t.surfaceSubtle, color: t.text }}
               />
             </Tooltip>
           </Flex>
@@ -228,32 +226,35 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         {/* Statistics */}
         <Box>
           <Heading size="sm" mb={4} color={headingColor}>
-            <Icon as={FaTrophy} mr={2} color="yellow.400" />
+            <Icon as={FaTrophy} mr={2} color={t.accent} />
             Travel Statistics
           </Heading>
           <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={3}>
             {[
-              { label: "Photos", value: userStats.totalPhotos, icon: FaCamera, color: "blue.400" },
-              { label: "Countries", value: userStats.countriesVisited, icon: FaGlobe, color: "green.400" },
-              { label: "Continents", value: continentCount, icon: FaFlag, color: "teal.400" },
-              { label: "Member Since", value: userStats.joinDate, icon: FaCalendarAlt, color: "purple.400" },
+              { label: "Photos", value: userStats.totalPhotos, icon: FaCamera },
+              { label: "Countries", value: userStats.countriesVisited, icon: FaGlobe },
+              { label: "Continents", value: continentCount, icon: FaFlag },
+              { label: "Member Since", value: userStats.joinDate, icon: FaCalendarAlt },
             ].map((stat, i) => (
               <Box
                 key={i}
                 bg={cardBg}
-                backdropFilter="blur(6px)"
-                borderRadius="lg"
+                borderRadius="14px"
                 border="1px solid"
                 borderColor={borderColor}
+                boxShadow={t.shadowSm}
                 p={4}
                 textAlign="center"
-                transition="all 0.2s"
+                transition="border-color .2s ease, box-shadow .2s ease, transform .2s ease"
                 _hover={{
                   transform: "translateY(-2px)",
-                  borderColor: useColorModeValue("rgba(59,130,246,0.3)", "rgba(59,130,246,0.4)"),
+                  borderColor: t.hairlineStrong,
+                  boxShadow: t.shadowMd,
                 }}
               >
-                <Icon as={stat.icon} w={5} h={5} color={stat.color} mb={2} />
+                <Box display="inline-flex" p={2} borderRadius="10px" bg={t.primarySoftBg} color={t.primary} mb={2}>
+                  <Icon as={stat.icon} w={4} h={4} />
+                </Box>
                 <Text fontSize="lg" fontWeight="bold" color={headingColor}>{stat.value}</Text>
                 <Text fontSize="sm" color={textColor}>{stat.label}</Text>
               </Box>
@@ -264,7 +265,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         {/* Countries */}
         <Box>
           <Heading size="sm" mb={4} color={headingColor}>
-            <Icon as={FaFlag} mr={2} color="blue.400" />
+            <Icon as={FaFlag} mr={2} color={t.primary} />
             Countries Explored
           </Heading>
           <Box
@@ -299,15 +300,16 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                       cursor="pointer"
                       textAlign="center"
                       _hover={{
-                        bg: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(147,51,234,0.2))",
-                        transform: "scale(1.05)",
+                        bg: t.surfaceSubtle,
+                        borderColor: t.hairlineStrong,
+                        transform: "translateY(-2px)",
                       }}
                     >
                       <Box width="48px" height="36px" mx="auto" mb={2}>
                         <EnhancedFlag countryCode={c.code} />
                       </Box>
                       <HStack justify="center" spacing={1}>
-                        <Icon as={FaCamera} w={3} h={3} color="blue.400" />
+                        <Icon as={FaCamera} w={3} h={3} color={t.primary} />
                         <Text fontSize="xs" color={textColor}>{c.photoCount}</Text>
                       </HStack>
                     </MotionBox>
@@ -315,10 +317,10 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 </SimpleGrid>
               </>
             ) : (
-              <VStack py={6}>
-                <Icon as={FaRoute} w={10} h={10} color="gray.400" />
+              <VStack py={6} spacing={2}>
+                <Icon as={FaRoute} w={9} h={9} color={t.textMuted} />
                 <Text color={textColor} fontSize="sm">
-                  Start uploading photos to see your countries! ✈️
+                  Start uploading photos to see your countries.
                 </Text>
               </VStack>
             )}
@@ -327,15 +329,9 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
         {/* Action */}
         <Flex justify="center">
-          <Button
-            colorScheme="blue"
-            onClick={onClose}
-            leftIcon={<FaCompass />}
-            _hover={{ transform: "translateY(-2px)" }}
-            transition="all 0.2s"
-          >
+          <ModalButton variant="primary" onClick={onClose} leftIcon={<FaCompass />}>
             Continue Exploring
-          </Button>
+          </ModalButton>
         </Flex>
 
       </VStack>

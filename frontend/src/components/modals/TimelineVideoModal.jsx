@@ -32,6 +32,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl, buildImageUrl } from '../../utils/apiConfig';
 import TimelineVideoGenerator from '../features/videos/components/TimelineVideoGeneratorRefactored';
+import { useLandingTokens } from '../features/landing/landingUI';
 
 // Fetch photos for video generation with retry logic
 const fetchAllPictures = async (retryCount = 0) => {
@@ -127,6 +128,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   const secondaryButtonBg = useColorModeValue('transparent', 'transparent');
   const secondaryButtonBorder = useColorModeValue('#d0d0d0', '#404040');
   const secondaryButtonText = useColorModeValue('#1a1a1a', '#f0f0f0');
+  const t = useLandingTokens();
 
   // Fetch photos with improved caching and error handling
   const { 
@@ -398,112 +400,31 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   Timeline Summary
                 </Text>
                 
-                <HStack spacing={{ base: 4, md: 6 }} justify="space-between" w="100%">
-                  <VStack 
-                    spacing={1} 
-                    align="center"
-                    flex="1"
-                    p={4}
-                    bg={useColorModeValue(
-                      "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.05))",
-                      "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1))"
-                    )}
-                    borderRadius="xl"
-                    border={`1px solid ${useColorModeValue("rgba(59, 130, 246, 0.2)", "rgba(59, 130, 246, 0.3)")}`}
-                    transition="all 0.3s ease"
-                    _hover={{
-                      bg: useColorModeValue(
-                        "linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.08))",
-                        "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.15))"
-                      ),
-                      transform: "translateY(-2px)",
-                      boxShadow: useColorModeValue(
-                        "0 8px 25px rgba(59, 130, 246, 0.15)",
-                        "0 8px 25px rgba(59, 130, 246, 0.25)"
-                      )
-                    }}
-                  >
-                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.2)")}>
-                      <FaImages size={18} color={useColorModeValue("#3B82F6", "#60A5FA")} />
-                    </Box>
-                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#3B82F6", "#60A5FA")} lineHeight="1">
-                      {totalPhotos}
-                    </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
-                      Photos
-                    </Text>
-                  </VStack>
-
-                  <VStack 
-                    spacing={1} 
-                    align="center"
-                    flex="1"
-                    p={4}
-                    bg={useColorModeValue(
-                      "linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.05))",
-                      "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1))"
-                    )}
-                    borderRadius="xl"
-                    border={`1px solid ${useColorModeValue("rgba(16, 185, 129, 0.2)", "rgba(16, 185, 129, 0.3)")}`}
-                    transition="all 0.3s ease"
-                    _hover={{
-                      bg: useColorModeValue(
-                        "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.08))",
-                        "linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15))"
-                      ),
-                      transform: "translateY(-2px)",
-                      boxShadow: useColorModeValue(
-                        "0 8px 25px rgba(16, 185, 129, 0.15)",
-                        "0 8px 25px rgba(16, 185, 129, 0.25)"
-                      )
-                    }}
-                  >
-                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(16, 185, 129, 0.1)", "rgba(16, 185, 129, 0.2)")}>
-                      <FaCalendar size={18} color={useColorModeValue("#10B981", "#34D399")} />
-                    </Box>
-                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#10B981", "#34D399")} lineHeight="1">
-                      {years.length}
-                    </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
-                      Years
-                    </Text>
-                  </VStack>
-
-                  <VStack 
-                    spacing={1} 
-                    align="center"
-                    flex="1"
-                    p={4}
-                    bg={useColorModeValue(
-                      "linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.05))",
-                      "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.1))"
-                    )}
-                    borderRadius="xl"
-                    border={`1px solid ${useColorModeValue("rgba(139, 92, 246, 0.2)", "rgba(139, 92, 246, 0.3)")}`}
-                    transition="all 0.3s ease"
-                    _hover={{
-                      bg: useColorModeValue(
-                        "linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(124, 58, 237, 0.08))",
-                        "linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.15))"
-                      ),
-                      transform: "translateY(-2px)",
-                      boxShadow: useColorModeValue(
-                        "0 8px 25px rgba(139, 92, 246, 0.15)",
-                        "0 8px 25px rgba(139, 92, 246, 0.25)"
-                      )
-                    }}
-                  >
-                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(139, 92, 246, 0.1)", "rgba(139, 92, 246, 0.2)")}>
-                      <FaVideo size={18} color={useColorModeValue("#8B5CF6", "#A78BFA")} />
-                    </Box>
-                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#8B5CF6", "#A78BFA")} lineHeight="1">
-                      {estimatedDuration}min
-                    </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
-                      Duration
-                    </Text>
-                  </VStack>
-                </HStack>
+                <SimpleGrid columns={3} spacing={{ base: 3, md: 4 }} w="100%">
+                  {[
+                    { icon: FaImages, value: totalPhotos, label: 'Photos' },
+                    { icon: FaCalendar, value: years.length, label: 'Years' },
+                    { icon: FaVideo, value: `${estimatedDuration}min`, label: 'Duration' },
+                  ].map((s) => (
+                    <VStack
+                      key={s.label}
+                      spacing={1}
+                      align="center"
+                      p={4}
+                      bg={cardBg}
+                      borderRadius="14px"
+                      border={`1px solid ${borderColor}`}
+                      transition="border-color .2s ease, transform .2s ease, box-shadow .2s ease"
+                      _hover={{ transform: 'translateY(-2px)', borderColor: t.hairlineStrong, boxShadow: t.shadowMd }}
+                    >
+                      <Box mb={2} p={2} borderRadius="10px" display="inline-flex" bg={t.primarySoftBg} color={t.primary}>
+                        <s.icon size={16} />
+                      </Box>
+                      <Text fontSize="2xl" fontWeight="bold" color={textColor} lineHeight="1">{s.value}</Text>
+                      <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">{s.label}</Text>
+                    </VStack>
+                  ))}
+                </SimpleGrid>
               </Box>
 
               {/* Anos com fotos */}
@@ -512,42 +433,24 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   Available Years
                 </Text>
                 <HStack wrap="wrap" spacing={2}>
-                  {years.map((year, index) => {
-                    const colors = [
-                      { bg: useColorModeValue("rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.2)"), border: useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(59, 130, 246, 0.4)"), text: useColorModeValue("#3B82F6", "#60A5FA") },
-                      { bg: useColorModeValue("rgba(16, 185, 129, 0.1)", "rgba(16, 185, 129, 0.2)"), border: useColorModeValue("rgba(16, 185, 129, 0.3)", "rgba(16, 185, 129, 0.4)"), text: useColorModeValue("#10B981", "#34D399") },
-                      { bg: useColorModeValue("rgba(139, 92, 246, 0.1)", "rgba(139, 92, 246, 0.2)"), border: useColorModeValue("rgba(139, 92, 246, 0.3)", "rgba(139, 92, 246, 0.4)"), text: useColorModeValue("#8B5CF6", "#A78BFA") },
-                      { bg: useColorModeValue("rgba(245, 101, 101, 0.1)", "rgba(245, 101, 101, 0.2)"), border: useColorModeValue("rgba(245, 101, 101, 0.3)", "rgba(245, 101, 101, 0.4)"), text: useColorModeValue("#F56565", "#FEB2B2") },
-                      { bg: useColorModeValue("rgba(251, 146, 60, 0.1)", "rgba(251, 146, 60, 0.2)"), border: useColorModeValue("rgba(251, 146, 60, 0.3)", "rgba(251, 146, 60, 0.4)"), text: useColorModeValue("#FB923C", "#FDD3A8") }
-                    ];
-                    const colorScheme = colors[index % colors.length];
-                    
-                    return (
-                      <Box
-                        key={year}
-                        px={3}
-                        py={2}
-                        bg={colorScheme.bg}
-                        borderRadius="lg"
-                        border={`1px solid ${colorScheme.border}`}
-                        fontSize="sm"
-                        color={colorScheme.text}
-                        fontWeight="semibold"
-                        transition="all 0.3s ease"
-                        _hover={{
-                          transform: "translateY(-2px)",
-                          boxShadow: `0 4px 12px ${colorScheme.border}`,
-                          bg: useColorModeValue(
-                            colorScheme.bg.replace('0.1', '0.15'),
-                            colorScheme.bg.replace('0.2', '0.3')
-                          )
-                        }}
-                        cursor="default"
-                      >
-                        {year} ({imagesByYear[year].length})
-                      </Box>
-                    );
-                  })}
+                  {years.map((year) => (
+                    <Box
+                      key={year}
+                      px={3}
+                      py={2}
+                      bg={t.surfaceSubtle}
+                      borderRadius="10px"
+                      border={`1px solid ${borderColor}`}
+                      fontSize="sm"
+                      color={textColor}
+                      fontWeight="600"
+                      transition="border-color .2s ease, color .2s ease, transform .2s ease"
+                      _hover={{ transform: "translateY(-1px)", borderColor: t.primary, color: t.primary }}
+                      cursor="default"
+                    >
+                      {year} ({imagesByYear[year].length})
+                    </Box>
+                  ))}
                 </HStack>
               </Box>
 
@@ -780,7 +683,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   </HStack>
                   <HStack spacing={3} align="start">
                     <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
-                    <Text fontSize="sm" color={mutedTextColor}>📱 iPhone compatible MP4 export</Text>
+                    <Text fontSize="sm" color={mutedTextColor}>iPhone compatible MP4 export</Text>
                   </HStack>
                 </VStack>
                 
@@ -793,7 +696,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   border={`1px solid ${borderColor}`}
                 >
                   <Text fontSize="xs" color={mutedTextColor} lineHeight="1.4">
-                    <strong>📱 iPhone:</strong> Videos download to Files app. To save to Photos: open video → share → "Save to Photos"
+                    <strong>iPhone:</strong> Videos download to Files app. To save to Photos: open video → share → "Save to Photos"
                   </Text>
                 </Box>
               </Box>
@@ -816,27 +719,20 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
           >
             <Button
               leftIcon={<FaVideo />}
-              bg={buttonBg}
-              color={buttonText}
-              size={{ base: "lg", md: "lg" }}
+              bg={t.primary}
+              color="white"
+              size="lg"
               onClick={() => setShowGenerator(true)}
               px={{ base: 8, md: 10 }}
               py={6}
               w={{ base: "90%", sm: "auto" }}
               minW="280px"
-              borderRadius="xl"
+              borderRadius="14px"
               fontSize="md"
-              fontWeight="semibold"
-              _hover={{ 
-                transform: "translateY(-1px)",
-                boxShadow: useColorModeValue(
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.4)"
-                )
-              }}
+              fontWeight="600"
+              _hover={{ bg: t.primaryHover, transform: "translateY(-1px)", boxShadow: t.shadowMd }}
               _active={{ transform: "translateY(0)" }}
               transition="all 0.2s"
-              border={`1px solid ${useColorModeValue("transparent", "#404040")}`}
             >
               Start Generating Video
             </Button>

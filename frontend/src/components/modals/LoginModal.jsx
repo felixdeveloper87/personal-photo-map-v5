@@ -11,7 +11,6 @@ import {
   FormControl,
   FormLabel,
   FormErrorMessage,
-  useColorModeValue,
   Divider,
   useToast,
   InputLeftElement,
@@ -31,6 +30,7 @@ import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
 import ResetPasswordModal from './ResetPasswordModal';
 import { buildApiUrl } from '../../utils/apiConfig';
+import { useLandingTokens } from '../features/landing/landingUI';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const navigate = useNavigate();
@@ -43,10 +43,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  const textColor = useColorModeValue('gray.700', 'gray.100');
-  const borderColor = useColorModeValue('rgba(0,0,0,0.08)', 'rgba(255,255,255,0.12)');
-  const cardBg = useColorModeValue('rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)');
-  const accentColor = useColorModeValue('blue.500', 'blue.300');
+  const t = useLandingTokens();
+  const textColor = t.textSoft;
+  const borderColor = t.hairline;
+  const cardBg = t.surfaceSubtle;
+  const accentColor = t.primary;
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -99,7 +100,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
   const handleSocialLogin = provider => {
     toast({
-      title: 'Coming Soon! 🚀',
+      title: 'Coming soon',
       description: `${provider} login will be available soon.`,
       status: 'info',
       duration: 3000,
@@ -147,17 +148,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           <Box
             textAlign="center"
             p={5}
-            borderRadius="xl"
+            borderRadius="14px"
             bg={cardBg}
-            backdropFilter="blur(8px)"
             border="1px solid"
             borderColor={borderColor}
-            boxShadow={useColorModeValue(
-              '0 1px 3px rgba(0,0,0,0.05)',
-              '0 1px 3px rgba(255,255,255,0.05)'
-            )}
           >
-            <Text fontSize="md" color={useColorModeValue('blue.700', 'blue.200')}>
+            <Text fontSize="md" color={t.text}>
               Sign in to continue your photo mapping journey
             </Text>
           </Box>
@@ -210,11 +206,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={e => handleInputChange('email', e.target.value)}
-                    borderRadius="lg"
+                    borderRadius="10px"
                     border="1px solid"
                     borderColor={borderColor}
                     bg={cardBg}
-                    backdropFilter="blur(8px)"
                     _focus={{
                       borderColor: accentColor,
                       boxShadow: `0 0 0 1px ${accentColor}`,
@@ -237,11 +232,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={e => handleInputChange('password', e.target.value)}
-                    borderRadius="lg"
+                    borderRadius="10px"
                     border="1px solid"
                     borderColor={borderColor}
                     bg={cardBg}
-                    backdropFilter="blur(8px)"
                     _focus={{
                       borderColor: accentColor,
                       boxShadow: `0 0 0 1px ${accentColor}`,
@@ -266,18 +260,17 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           {/* Security note */}
           <Box
             p={3}
-            borderRadius="lg"
+            borderRadius="10px"
             bg={cardBg}
             border="1px solid"
             borderColor={borderColor}
-            backdropFilter="blur(8px)"
           >
             <Text
               fontSize="xs"
-              color={useColorModeValue('gray.600', 'gray.400')}
+              color={t.textMuted}
               textAlign="center"
             >
-              🔒 Your data is encrypted and secure. We never store your password.
+              Your data is encrypted and secure. We never store your password.
             </Text>
           </Box>
         </VStack>

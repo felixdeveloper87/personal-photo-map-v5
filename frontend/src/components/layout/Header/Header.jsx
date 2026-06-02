@@ -1,62 +1,33 @@
-import React, { useContext, useState, forwardRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { forwardRef } from "react";
 import {
   Box,
   Flex,
-  useDisclosure,
-  useToast,
   useMediaQuery,
-  useColorMode,
   useBreakpointValue,
-  useColorModeValue,
   Container,
   HStack,
 } from "@chakra-ui/react";
+import { FaClock, FaCrown, FaGlobe, FaImages, FaMoon, FaSearch, FaSignOutAlt, FaSun, FaUserCircle } from "react-icons/fa";
 
-import { AuthContext } from "../../../context/AuthContext";
-import { CountriesContext } from "../../../context/CountriesContext";
 import { useHeaderStyles, useHeaderContainerStyles } from "../../../styles/headerStyles";
 
 import HeaderLogo from "./HeaderLogo";
 import HeaderAuth from "./HeaderAuth";
-import SearchForm from "../../features/SearchForm";
+import SettingsMenu from "../SettingsMenu";
 import {
   ThemeToggleButton,
   LogoutButton,
   MapButton,
-  PhotoStorageButton,
-  UserProfileButton,
   SearchButton,
   TimelineButton,
   PremiumButton,
 } from "../../ui/buttons/HeaderButtons";
 
-import UserProfileModal from "../../modals/UserProfileModal";
-import PremiumBenefitsModal from "../../modals/PremiumBenefitsModal";
-import PhotoStorageModal from "../../modals/PhotoStorageModal";
-import LoginModal from "../../modals/LoginModal";
-import RegisterModal from "../../modals/RegisterModal";
-
-const Header = forwardRef((props, ref) => {
-  const navigate = useNavigate();
-  const toast = useToast();
-  const { colorMode, toggleColorMode } = useColorMode();
-
-  const { isLoggedIn, fullname, isPremium, logout, togglePremiumStatus } = useContext(AuthContext);
-  const { countriesWithPhotos, photoCount, countryCount } = useContext(CountriesContext);
-
-  const photoStorageModal = useDisclosure();
-  const profileModal = useDisclosure();
-  const premiumModal = useDisclosure();
-  const loginModal = useDisclosure();
-  const registerModal = useDisclosure();
-
-  const [isUpgrading, setIsUpgrading] = useState(false);
-
+const Header = forwardRef(({ nav }, ref) => {
   const styles = useHeaderStyles();
   const containerStyles = useHeaderContainerStyles();
-  const mobileDividerColor = useColorModeValue("rgba(0, 0, 0, 0.08)", "rgba(255, 255, 255, 0.08)");
   const [isCompact] = useMediaQuery("(max-width: 1100px)");
+  const isLoggedIn = nav.isLoggedIn;
 
   const buttonSize = useBreakpointValue({
     base: "xs", sm: "sm", md: "sm", lg: "md", xl: "md", "2xl": "lg",
@@ -70,78 +41,16 @@ const Header = forwardRef((props, ref) => {
     lg: "800px", xl: "960px", "2xl": "1140px",
   });
 
-  const mobileButtonProps = {
-    size: "xs",
-    hideText: true,
-    w: "100%",
-    h: { base: "38px", sm: "44px" },
-    minW: "0",
-    px: { base: 1, sm: 2 },
-  };
-
-  const handleSearchTrigger = () => {
-    document.querySelector('[data-search-trigger]')?.click();
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-    toast({ title: "Logged out", status: "info", duration: 2000, isClosable: true });
-  };
-
-  const handlePremiumUpgrade = async () => {
-    setIsUpgrading(true);
-    try {
-      await togglePremiumStatus(true);
-      toast({
-        title: "Premium Upgrade Successful!",
-        description: "Welcome to Premium! You now have access to all premium features.",
-        status: "success",
-        duration: 8000,
-        isClosable: true,
-        position: "top-right",
-      });
-      premiumModal.onClose();
-      window.location.reload();
-    } catch (error) {
-      let description = error.message || "Please try again later.";
-      if (error.message.includes('session has expired') || error.message.includes('Unauthorized')) {
-        description = "Your session has expired. Please log in again.";
-        setTimeout(() => loginModal.onOpen(), 3000);
-      } else if (error.message.includes('Access denied') || error.message.includes('Access forbidden')) {
-        description = "You don't have permission to upgrade. Please contact support.";
-      }
-      toast({ title: "Upgrade Failed", description, status: "error", duration: 8000, isClosable: true, position: "top-right" });
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
-
-  const handlePremiumDeactivate = async () => {
-    setIsUpgrading(true);
-    try {
-      await togglePremiumStatus(false);
-      toast({
-        title: "Premium Deactivated",
-        description: "You have successfully deactivated your premium status.",
-        status: "info",
-        duration: 8000,
-        isClosable: true,
-        position: "top-right",
-      });
-      premiumModal.onClose();
-      window.location.reload();
-    } catch (error) {
-      let description = error.message || "Please try again later.";
-      if (error.message.includes('session has expired') || error.message.includes('Unauthorized')) {
-        description = "Your session has expired. Please log in again.";
-        setTimeout(() => loginModal.onOpen(), 3000);
-      }
-      toast({ title: "Deactivation Failed", description, status: "error", duration: 8000, isClosable: true, position: "top-right" });
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
+  const mobileMenuItems = [
+    { icon: FaCrown, label: "Premium", onClick: nav.premiumModal.onOpen },
+    { icon: FaGlobe, label: "Map", onClick: () => nav.navigate("/map/private") },
+    { icon: FaSearch, label: "Search", onClick: nav.handleSearchTrigger },
+    { icon: FaClock, label: "Timeline", onClick: () => nav.navigate("/timeline") },
+    { icon: FaUserCircle, label: "Profile", onClick: nav.profileModal.onOpen },
+    { icon: FaImages, label: "Photos", onClick: nav.photoStorageModal.onOpen },
+    { icon: nav.colorMode === "light" ? FaMoon : FaSun, label: "Theme", onClick: nav.toggleColorMode },
+    { icon: FaSignOutAlt, label: "Logout", onClick: nav.handleLogout, danger: true },
+  ];
 
   return (
     <Box ref={ref} as="header" w="100%" position="fixed" top="0" left="0" right="0" zIndex={1000}>
@@ -165,9 +74,14 @@ const Header = forwardRef((props, ref) => {
           {/* Controls visible on mobile top-row when logged-in */}
           {isLoggedIn && isCompact && (
             <HStack spacing={{ base: 1.5, sm: 2 }} align="center" flex="0 0 auto">
-              <ThemeToggleButton colorMode={colorMode} toggleColorMode={toggleColorMode} styles={styles} size={buttonSize} hideText />
-              <MapButton onClick={() => navigate("/map/private")} size={buttonSize} hideText aria-label="Go to Map" />
-              <LogoutButton onClick={handleLogout} size={buttonSize} hideText />
+              <SettingsMenu
+                items={mobileMenuItems}
+                title="Menu"
+                variant="icon"
+                size="sm"
+                hideText
+                aria-label="Open menu"
+              />
             </HStack>
           )}
 
@@ -180,18 +94,17 @@ const Header = forwardRef((props, ref) => {
             display={isCompact ? "none" : "flex"}
             maxW={centerMaxW}
           >
-            {isLoggedIn && <PremiumButton      onClick={premiumModal.onOpen}               size={buttonSize} />}
-            {isLoggedIn && <MapButton          onClick={() => navigate("/map/private")}    size={buttonSize} aria-label="Go to Map" />}
-            {isLoggedIn && <UserProfileButton  onClick={profileModal.onOpen}               size={buttonSize} />}
-            {isLoggedIn && <PhotoStorageButton onClick={photoStorageModal.onOpen}          size={buttonSize} aria-label="Photo Storage" />}
-            {isLoggedIn && <SearchButton       onClick={handleSearchTrigger}               size={buttonSize} aria-label="Search Photos" />}
+            {isLoggedIn && <PremiumButton onClick={nav.premiumModal.onOpen} size={buttonSize} />}
+            {isLoggedIn && <MapButton onClick={() => nav.navigate("/map/private")} size={buttonSize} aria-label="Go to Map" />}
+            {isLoggedIn && <SearchButton onClick={nav.handleSearchTrigger} size={buttonSize} aria-label="Search Photos" />}
+            {isLoggedIn && <TimelineButton onClick={() => nav.navigate("/timeline")} size={buttonSize} />}
             {isLoggedIn && (
-              <SearchForm
-                countriesWithPhotos={countriesWithPhotos}
-                onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
+              <SettingsMenu
+                onProfile={nav.profileModal.onOpen}
+                onPhotos={nav.photoStorageModal.onOpen}
+                size={buttonSize}
               />
             )}
-            {isLoggedIn && <TimelineButton onClick={() => navigate("/timeline")} size={buttonSize} />}
           </HStack>
 
           {/* Right Side Control Bar (Desktop or Logged Out Mobile) */}
@@ -201,71 +114,21 @@ const Header = forwardRef((props, ref) => {
             flex="0 0 auto"
             display={isLoggedIn && isCompact ? "none" : "flex"}
           >
-            <ThemeToggleButton colorMode={colorMode} toggleColorMode={toggleColorMode} styles={styles} size={buttonSize} />
+            <ThemeToggleButton colorMode={nav.colorMode} toggleColorMode={nav.toggleColorMode} styles={styles} size={buttonSize} />
             {!isLoggedIn ? (
               <HeaderAuth
                 styles={styles}
-                onLoginClick={loginModal.onOpen}
-                onRegisterClick={registerModal.onOpen}
+                onLoginClick={nav.loginModal.onOpen}
+                onRegisterClick={nav.registerModal.onOpen}
                 size={buttonSize}
               />
             ) : (
-              <LogoutButton onClick={handleLogout} size={buttonSize} />
+              <LogoutButton onClick={nav.handleLogout} size={buttonSize} />
             )}
           </HStack>
         </Flex>
 
-        {/* Mobile Row 2 - 5 Navigation circle-buttons when logged-in */}
-        {isLoggedIn && isCompact && (
-          <Box
-            w="100%"
-            mt={3}
-            pt={3}
-            pb={1}
-            borderTop="1px solid"
-            borderColor={mobileDividerColor}
-            display="grid"
-            gridTemplateColumns="repeat(5, 1fr)"
-            gap={{ base: 2, sm: 3 }}
-          >
-            <PremiumButton      onClick={premiumModal.onOpen}          {...mobileButtonProps} />
-            <PhotoStorageButton onClick={photoStorageModal.onOpen}     {...mobileButtonProps} />
-            <UserProfileButton  onClick={profileModal.onOpen}          {...mobileButtonProps} />
-            <SearchButton       onClick={handleSearchTrigger}          {...mobileButtonProps} />
-            <TimelineButton     onClick={() => navigate("/timeline")}  {...mobileButtonProps} />
-          </Box>
-        )}
       </Container>
-
-      {/* Modals */}
-      <UserProfileModal
-        isOpen={profileModal.isOpen}
-        onClose={profileModal.onClose}
-        fullname={fullname}
-        email=""
-        photoCount={photoCount}
-        countryCount={countryCount}
-        isPremium={isPremium}
-      />
-      <PremiumBenefitsModal
-        isOpen={premiumModal.isOpen}
-        onClose={premiumModal.onClose}
-        onUpgrade={handlePremiumUpgrade}
-        onDeactivate={handlePremiumDeactivate}
-        isLoading={isUpgrading}
-        isPremium={isPremium}
-      />
-      <PhotoStorageModal isOpen={photoStorageModal.isOpen} onClose={photoStorageModal.onClose} />
-      <LoginModal
-        isOpen={loginModal.isOpen}
-        onClose={loginModal.onClose}
-        onSwitchToRegister={() => { loginModal.onClose(); registerModal.onOpen(); }}
-      />
-      <RegisterModal
-        isOpen={registerModal.isOpen}
-        onClose={registerModal.onClose}
-        onSwitchToLogin={() => { registerModal.onClose(); loginModal.onOpen(); }}
-      />
     </Box>
   );
 });

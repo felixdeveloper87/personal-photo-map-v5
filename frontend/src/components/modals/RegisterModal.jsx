@@ -11,7 +11,6 @@ import {
   FormControl,
   FormLabel,
   FormErrorMessage,
-  useColorModeValue,
   Divider,
   Checkbox,
   useToast,
@@ -33,6 +32,7 @@ import {
 import { AuthContext } from '../../context/AuthContext';
 import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
+import { useLandingTokens } from '../features/landing/landingUI';
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const navigate = useNavigate();
@@ -51,10 +51,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
-  const textColor = useColorModeValue('gray.700', 'gray.100');
-  const borderColor = useColorModeValue('rgba(0,0,0,0.08)', 'rgba(255,255,255,0.12)');
-  const cardBg = useColorModeValue('rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)');
-  const focusColor = 'rgba(72,187,120,0.65)';
+  const t = useLandingTokens();
+  const textColor = t.textSoft;
+  const borderColor = t.hairline;
+  const cardBg = t.surfaceSubtle;
+  const focusColor = t.primary;
 
   const countries = [
     { code: 'br', name: 'Brazil' },
@@ -133,7 +134,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       }
 
       toast({
-        title: 'Account created successfully! 🎉',
+        title: 'Account created successfully',
         description: 'You can now sign in with your new account.',
         status: 'success',
         duration: 4000,
@@ -191,18 +192,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         <Box
           textAlign="center"
           p={5}
-          borderRadius="xl"
+          borderRadius="14px"
           bg={cardBg}
-          backdropFilter="blur(8px)"
           border="1px solid"
           borderColor={borderColor}
-          boxShadow={useColorModeValue(
-            '0 1px 3px rgba(0,0,0,0.05)',
-            '0 1px 3px rgba(255,255,255,0.05)'
-          )}
         >
-          <Text fontSize="md" color={useColorModeValue('green.700', 'green.200')}>
-            Start your photo mapping adventure today! 📸🌍
+          <Text fontSize="md" color={t.text}>
+            Start your photo mapping adventure today.
           </Text>
         </Box>
 
@@ -213,7 +209,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           </Text>
           <HStack spacing={3} flexDirection={{ base: 'column', sm: 'row' }}>
             <ModalButton variant="outline" onClick={() => toast({
-              title: 'Coming Soon! 🚀',
+              title: 'Coming soon',
               description: 'Google sign up will be available soon.',
               status: 'info',
               duration: 3000,
@@ -223,7 +219,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               Google
             </ModalButton>
             <ModalButton variant="outline" onClick={() => toast({
-              title: 'Coming Soon! 🚀',
+              title: 'Coming soon',
               description: 'GitHub sign up will be available soon.',
               status: 'info',
               duration: 3000,
@@ -348,10 +344,10 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         {/* Terms */}
         <VStack spacing={2} align="stretch">
           <FormControl isInvalid={!!formErrors.terms}>
-            <Checkbox isChecked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} colorScheme="green">
+            <Checkbox isChecked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} colorScheme="blue">
               <Text fontSize="sm" color={textColor}>
                 I accept the{' '}
-                <Text as="span" color="green.500" _hover={{ textDecoration: 'underline' }}>
+                <Text as="span" color={t.primary} _hover={{ textDecoration: 'underline' }}>
                   Terms and Conditions
                 </Text>
               </Text>
@@ -359,10 +355,10 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <FormErrorMessage>{formErrors.terms}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!formErrors.privacy}>
-            <Checkbox isChecked={acceptedPrivacy} onChange={e => setAcceptedPrivacy(e.target.checked)} colorScheme="green">
+            <Checkbox isChecked={acceptedPrivacy} onChange={e => setAcceptedPrivacy(e.target.checked)} colorScheme="blue">
               <Text fontSize="sm" color={textColor}>
                 I accept the{' '}
-                <Text as="span" color="green.500" _hover={{ textDecoration: 'underline' }}>
+                <Text as="span" color={t.primary} _hover={{ textDecoration: 'underline' }}>
                   Privacy Policy
                 </Text>
               </Text>
@@ -380,8 +376,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           border="1px solid"
           borderColor={borderColor}
         >
-          <Text fontSize="xs" color={useColorModeValue('gray.600', 'gray.400')} textAlign="center">
-            🔒 Your data is encrypted and secure. We never store your password.
+          <Text fontSize="xs" color={t.textMuted} textAlign="center">
+            Your data is encrypted and secure. We never store your password.
           </Text>
         </Box>
       </VStack>
