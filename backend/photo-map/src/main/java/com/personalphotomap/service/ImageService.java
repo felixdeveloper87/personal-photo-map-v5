@@ -313,7 +313,7 @@ public class ImageService {
 
     public List<ImageDTO> getImagesByCountry(String countryId, String token) { // ✅
         AppUser user = getUserFromToken(token);
-        List<Image> images = imageRepository.findByCountryIdAndUserId(countryId, user.getId());
+        List<Image> images = imageRepository.findByCountryIdAndUserIdOrderByYearDescUploadDateDescIdDesc(countryId, user.getId());
         return convertToDTOList(images);
     }
 
@@ -385,7 +385,7 @@ public class ImageService {
      */
     public List<ImageDTO> getImagesByCountryAndYear(String countryId, int year, String token) { // ✅
         AppUser user = getUserFromToken(token);
-        List<Image> images = imageRepository.findByCountryIdAndYearAndUserId(countryId, year, user.getId());
+        List<Image> images = imageRepository.findByCountryIdAndYearAndUserIdOrderByUploadDateDescIdDesc(countryId, year, user.getId());
         return convertToDTOList(images);
     }
 

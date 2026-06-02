@@ -53,9 +53,19 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findByCountryIdAndUserId(String countryId, Long userId);
 
     /**
+     * Finds all images uploaded by a user for a specific country, newest trip years first.
+     */
+    List<Image> findByCountryIdAndUserIdOrderByYearDescUploadDateDescIdDesc(String countryId, Long userId);
+
+    /**
      * Finds all images uploaded by a user for a specific country and year.
      */
     List<Image> findByCountryIdAndYearAndUserId(String countryId, int year, Long userId);
+
+    /**
+     * Finds all images uploaded by a user for a specific country and year, newest uploads first.
+     */
+    List<Image> findByCountryIdAndYearAndUserIdOrderByUploadDateDescIdDesc(String countryId, int year, Long userId);
 
     /**
      * Returns a list of unique country IDs where a user has uploaded images.
@@ -84,7 +94,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     /**
      * Returns a list of distinct years a user has uploaded images for a specific country.
      */
-    @Query("SELECT DISTINCT i.year FROM Image i WHERE i.countryId = :countryId AND i.user.id = :userId ORDER BY i.year")
+    @Query("SELECT DISTINCT i.year FROM Image i WHERE i.countryId = :countryId AND i.user.id = :userId ORDER BY i.year DESC")
     List<Integer> findDistinctYearsByCountryIdAndUserId(@Param("countryId") String countryId,
                                                         @Param("userId") Long userId);
 

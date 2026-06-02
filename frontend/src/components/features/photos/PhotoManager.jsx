@@ -411,7 +411,24 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     id: image.id,
     year: image.year,
     countryId: image.countryId,
+    uploadDate: image.uploadDate,
   });
+
+  const sortYearsNewestFirst = (years) =>
+    [...years].sort((a, b) => Number(b) - Number(a));
+
+  const sortImagesNewestFirst = (imageList) =>
+    [...imageList].sort((a, b) => {
+      const yearDiff = Number(b.year || 0) - Number(a.year || 0);
+      if (yearDiff !== 0) return yearDiff;
+
+      const aUploadTime = a.uploadDate ? Date.parse(a.uploadDate) : 0;
+      const bUploadTime = b.uploadDate ? Date.parse(b.uploadDate) : 0;
+      const uploadDiff = bUploadTime - aUploadTime;
+      if (uploadDiff !== 0) return uploadDiff;
+
+      return Number(b.id || 0) - Number(a.id || 0);
+    });
 
   const mapAlbumDto = (album) => ({
     id: album.id,
@@ -423,13 +440,18 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   });
 
   const allImages = useMemo(
-    () => (Array.isArray(allImagesData) ? allImagesData.map(mapImageDto) : []),
+    () => (Array.isArray(allImagesData) ? sortImagesNewestFirst(allImagesData.map(mapImageDto)) : []),
     [allImagesData]
   );
 
   const images = useMemo(
-    () => (Array.isArray(imagesData) ? imagesData.map(mapImageDto) : []),
+    () => (Array.isArray(imagesData) ? sortImagesNewestFirst(imagesData.map(mapImageDto)) : []),
     [imagesData]
+  );
+
+  const sortedYearsData = useMemo(
+    () => (Array.isArray(yearsData) ? sortYearsNewestFirst(yearsData) : []),
+    [yearsData]
   );
 
   const albumsWithImages = useMemo(
@@ -461,7 +483,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
             px={{ base: 2, sm: 3, md: 4 }}
           >
             {/* Anos */}
-            {yearsData.map((year) => (
+            {sortedYearsData.map((year) => (
               <WrapItem key={year}>
                 <YearSelectableButton
                   year={year}
@@ -586,7 +608,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
               </WrapItem>
             )}
 
-            {(yearsData.length > 1 || (yearsData.length >= 1 && albumsWithImages.length >= 1)) && (
+            {(sortedYearsData.length > 1 || (sortedYearsData.length >= 1 && albumsWithImages.length >= 1)) && (
               <WrapItem>
                 <ShowAllButton isSelected={showAllSelected} onClick={toggleShowAll} />
               </WrapItem>
