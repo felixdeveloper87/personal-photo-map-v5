@@ -69,7 +69,7 @@ services:
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
       
       # Java optimization for production (reduced for 1.8GB VPS + Cloudinary offloads processing)
-      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:MaxMetaspaceSize=256m
+      - JAVA_OPTS=-Xmx512m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:MaxMetaspaceSize=128m
     volumes:
       - ./storage:/photomap/storage
     depends_on:
