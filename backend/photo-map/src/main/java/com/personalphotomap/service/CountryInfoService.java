@@ -3,6 +3,7 @@ package com.personalphotomap.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.personalphotomap.model.CountryInfo;
 import com.personalphotomap.repository.CountryInfoRepository;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -19,6 +20,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -38,6 +43,7 @@ public class CountryInfoService {
     private final ObjectMapper objectMapper;
     private final CountryCuriositiesService curiositiesService;
     private final CacheManager cacheManager;
+    private final ExecutorService worldBankExecutor;
     
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
@@ -742,6 +748,10 @@ public class CountryInfoService {
         "lifeExpectancy", "internetUsers", "urbanPopulation", "education",
         "accessToEletricity", "healthExpenses", "netMigration"
     );
+
+    private static final Set<String> PRIORITY_RANKING_INDICATORS = Set.of(
+        "gdp", "gdpPerCapitaCurrent", "lifeExpectancy", "internetUsers", "hdi"
+    );
     
     public CountryInfoService(CountryInfoRepository repository, CountryCuriositiesService curiositiesService, CacheManager cacheManager) {
         this.repository = repository;
@@ -752,6 +762,12 @@ public class CountryInfoService {
         this.objectMapper = new ObjectMapper();
         this.curiositiesService = curiositiesService;
         this.cacheManager = cacheManager;
+        this.worldBankExecutor = Executors.newFixedThreadPool(4);
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        worldBankExecutor.shutdown();
     }
     
     /**
@@ -764,6 +780,10 @@ public class CountryInfoService {
     @Cacheable(value = "countryInfo", key = "#countryId", unless = "#result == null")
     public CountryInfo getCountryInfo(String countryId) {
         return getCountryInfo(countryId, "en");
+    }
+
+    public CountryInfo getCountryInfo(String countryId, String lang) {
+        return getCountryInfo(countryId, lang, false);
     }
 
     /**
@@ -828,7 +848,7 @@ public class CountryInfoService {
      * @param lang Language parameter (ignored - translation is done in frontend)
      * @return CountryInfo object with all available data (curiosities always in English)
      */
-    public CountryInfo getCountryInfo(String countryId, String lang) {
+    public CountryInfo getCountryInfo(String countryId, String lang, boolean includeCuriosities) {
         String upperCountryId = countryId.toUpperCase();
         logger.info("Fetching country info for: {}", upperCountryId);
         
@@ -844,7 +864,7 @@ public class CountryInfoService {
                 boolean needsSave = false;
                 
                 // Se não tem curiosidades, tenta gerar em inglês
-                if (info.getCuriosities() == null || info.getCuriosities().isEmpty()) {
+                if (includeCuriosities && (info.getCuriosities() == null || info.getCuriosities().isEmpty())) {
                     logger.info("Cache valid but no curiosities found for: {}, attempting to generate in English...", upperCountryId);
                     try {
                         String curiosities = curiositiesService.generateCuriosities(info);
@@ -943,7 +963,7 @@ public class CountryInfoService {
         }
         
         // 5. Gerar curiosidades em inglês (sempre)
-        if (countryInfo.getCuriosities() == null || countryInfo.getCuriosities().isEmpty()) {
+        if (includeCuriosities && (countryInfo.getCuriosities() == null || countryInfo.getCuriosities().isEmpty())) {
             logger.info("🤖 [Curiosities] Starting generation for: {} (English)", upperCountryId);
             long startTime = System.currentTimeMillis();
             try {
@@ -1149,37 +1169,51 @@ public class CountryInfoService {
         
         logger.info("Fetching World Bank data for {} (ISO3: {})", countryId, iso3);
         
-        // Buscar indicadores em paralelo para acelerar
         List<Map.Entry<String, String>> indicatorsList = new ArrayList<>(WORLD_BANK_INDICATORS.entrySet());
         int totalIndicators = indicatorsList.size();
+
+        List<CompletableFuture<Map.Entry<String, Map<String, Object>>>> futures = indicatorsList.stream()
+            .map(entry -> CompletableFuture.supplyAsync(() -> {
+                String key = entry.getKey();
+                String indicatorCode = entry.getValue();
+                try {
+                    Map<String, Object> indicatorData = fetchWorldBankIndicator(iso3, indicatorCode);
+                    return new AbstractMap.SimpleEntry<>(key, indicatorData);
+                } catch (Exception e) {
+                    logger.debug("Error fetching indicator {} for {}: {}", indicatorCode, countryId, e.getMessage());
+                    return new AbstractMap.SimpleEntry<>(key, null);
+                }
+            }, worldBankExecutor))
+            .toList();
+
         int processedIndicators = 0;
-        
-        // Buscar cada indicador
-        for (Map.Entry<String, String> entry : indicatorsList) {
-            String key = entry.getKey();
-            String indicatorCode = entry.getValue();
+        for (int i = 0; i < futures.size(); i++) {
+            Map.Entry<String, String> indicatorEntry = indicatorsList.get(i);
+            String key = indicatorEntry.getKey();
+            String indicatorCode = indicatorEntry.getValue();
             processedIndicators++;
-            
+
             try {
-                logger.debug("Fetching indicator {}/{}: {} ({})", processedIndicators, totalIndicators, key, indicatorCode);
-                Map<String, Object> indicatorData = fetchWorldBankIndicator(iso3, indicatorCode);
-                if (indicatorData != null) {
-                    String year = (String) indicatorData.get("date");
-                    extractWorldBankData(key, indicatorData, info);
-                    
-                    // Calcular ranking para este indicador (pode ser lento)
-                    if (year != null) {
-                        logger.debug("Calculating ranking for {}/{}: {} (year: {})", processedIndicators, totalIndicators, key, year);
-                        calculateAndSetRanking(countryId, iso3, indicatorCode, key, year, info);
-                    }
-                } else {
+                Map.Entry<String, Map<String, Object>> result = futures.get(i).get(15, TimeUnit.SECONDS);
+                Map<String, Object> indicatorData = result.getValue();
+                if (indicatorData == null) {
                     logger.debug("No data found for indicator: {} ({})", key, indicatorCode);
+                    continue;
+                }
+
+                String year = (String) indicatorData.get("date");
+                extractWorldBankData(key, indicatorData, info);
+
+                // Full rankings are the expensive part. Keep them for high-value dashboard cards.
+                if (year != null && PRIORITY_RANKING_INDICATORS.contains(key)) {
+                    logger.debug("Calculating priority ranking for {}/{}: {} (year: {})", processedIndicators, totalIndicators, key, year);
+                    calculateAndSetRanking(countryId, iso3, indicatorCode, key, year, info);
                 }
             } catch (Exception e) {
-                logger.debug("Error fetching indicator {} for {}: {}", indicatorCode, countryId, e.getMessage());
+                logger.debug("Error processing indicator {} for {}: {}", indicatorCode, countryId, e.getMessage());
             }
         }
-        
+
         logger.info("Completed fetching World Bank data for {}: {} indicators processed", countryId, processedIndicators);
         
         // Buscar dados de HDI separadamente (não está no World Bank)

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,7 +35,10 @@ public class CountryCuriositiesService {
     private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
     public CountryCuriositiesService() {
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(5000);
+        requestFactory.setReadTimeout(20000);
+        this.restTemplate = new RestTemplate(requestFactory);
         this.objectMapper = new ObjectMapper();
     }
 

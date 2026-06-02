@@ -39,7 +39,8 @@ public class CountryInfoController {
     @GetMapping("/{countryId}/info")
     public ResponseEntity<?> getCountryInfo(
             @PathVariable String countryId,
-            @RequestParam(required = false, defaultValue = "en") String lang) {
+            @RequestParam(required = false, defaultValue = "en") String lang,
+            @RequestParam(required = false, defaultValue = "false") boolean includeCuriosities) {
         try {
             if (countryId == null || countryId.length() != 2) {
                 return ResponseEntity.badRequest()
@@ -48,7 +49,7 @@ public class CountryInfoController {
             
             // Language parameter is ignored - translation is done in frontend
             // Always return English text
-            CountryInfo info = countryInfoService.getCountryInfo(countryId, "en");
+            CountryInfo info = countryInfoService.getCountryInfo(countryId, "en", includeCuriosities);
             
             if (info == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

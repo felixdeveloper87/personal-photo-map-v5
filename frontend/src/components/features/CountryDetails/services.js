@@ -384,7 +384,7 @@ const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
 export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExceeded = null) => {
   try {
     // Sempre buscar em inglês do backend
-    const endpoint = `/api/countries/${countryId}/info`;
+    const endpoint = `/api/countries/${countryId}/info?includeCuriosities=true`;
     const backendUrl = buildApiUrl(endpoint);
     console.log(`🤖 [AI Curiosities] Fetching English text from backend: ${backendUrl}`);
     

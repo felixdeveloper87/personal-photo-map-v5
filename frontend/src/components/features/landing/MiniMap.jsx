@@ -3,7 +3,6 @@ import { MapContainer, GeoJSON, useMap, Rectangle } from 'react-leaflet';
 import { Box, useColorMode, Spinner, Center } from '@chakra-ui/react';
 import 'leaflet/dist/leaflet.css';
 
-import countriesData from '../../../data/map/countries.json';
 import { getOceanStyles, createMiniMapStyle } from '../../../styles/mapStyles';
 
 // Componentes memoizados para evitar re-renderizações
@@ -36,7 +35,7 @@ const OceanRectangle = React.memo(({ oceanStyles }) => (
 ));
 
 // Componente memoizado para países
-const CountriesGeoJSON = React.memo(({ geoJsonRef, countryStyle, onEachFeature, colorMode }) => (
+const CountriesGeoJSON = React.memo(({ geoJsonRef, countryStyle, onEachFeature, colorMode, countriesData }) => (
   <GeoJSON
     ref={geoJsonRef}
     data={countriesData}
@@ -80,6 +79,7 @@ const MapComponent = React.memo(({
   onMapError,
   onMouseLeave,
   colorMode,
+  countriesData,
   dragging = true
 }) => {
   // MapMouseLeaveGuard otimizado com useCallback
@@ -148,6 +148,7 @@ const MapComponent = React.memo(({
         countryStyle={countryStyle}
         onEachFeature={onEachFeature}
         colorMode={colorMode}
+        countriesData={countriesData}
       />
     </MapContainer>
   );
@@ -159,6 +160,28 @@ const MiniMap = ({ width, height, isStatic = false }) => {
   const lastHoveredRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [countriesData, setCountriesData] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    import('../../../data/map/countries.json')
+      .then((module) => {
+        if (active) {
+          setCountriesData(module.default || module);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setIsLoading(false);
+          setHasError(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Estilos estáticos - não mudam com colorMode para MiniMap
   const countryStyle = useMemo(
@@ -278,18 +301,21 @@ const MiniMap = ({ width, height, isStatic = false }) => {
         oceanStyles={oceanStyles}
       />
 
-      <MapComponent
-        {...mapConfig}
-        oceanStyles={oceanStyles}
-        countryStyle={countryStyle}
-        onEachFeature={onEachFeature}
-        geoJsonRef={geoJsonRef}
-        onMapReady={handleMapReady}
-        onMapError={handleMapError}
-        onMouseLeave={handleMouseLeave}
-        colorMode={colorMode}
-        dragging={!isStatic}
-      />
+      {countriesData && (
+        <MapComponent
+          {...mapConfig}
+          oceanStyles={oceanStyles}
+          countryStyle={countryStyle}
+          onEachFeature={onEachFeature}
+          geoJsonRef={geoJsonRef}
+          onMapReady={handleMapReady}
+          onMapError={handleMapError}
+          onMouseLeave={handleMouseLeave}
+          colorMode={colorMode}
+          countriesData={countriesData}
+          dragging={!isStatic}
+        />
+      )}
     </Box>
   );
 };
