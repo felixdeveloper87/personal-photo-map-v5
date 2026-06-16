@@ -32,6 +32,9 @@ import BaseModal from '../../modals/BaseModal';
 import IndicatorsModal from './IndicatorsModal';
 import { useLandingTokens } from '../landing/landingUI';
 
+const SERIF = "'Instrument Serif', Georgia, serif";
+const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+
 export default function HeroHeader({
   countryId,
   countryInfo,
@@ -94,31 +97,37 @@ export default function HeroHeader({
       icon: FaLanguage,
       label: 'Language',
       value: countryInfo?.officialLanguage,
+      tone: 'amber',
     },
     {
       icon: FaUsers,
       label: 'Population',
       value: countryInfo?.population ? countryInfo.population.toLocaleString('en-US') : 'N/A',
+      tone: 'teal',
     },
     {
       icon: FaThermometerHalf,
       label: 'Temperature',
       value: weatherData?.temperature !== undefined ? `${weatherData.temperature} C` : 'N/A',
+      tone: 'rose',
     },
     {
       icon: FaChartLine,
       label: 'GDP per capita',
       value: indicatorsData?.gdpPerCapitaCurrent?.value || 'N/A',
+      tone: 'amber',
     },
     {
       icon: FaPoundSign,
       label: 'Exchange Rate',
       value: exchangeRate ? `GBP 1 = ${exchangeRate} ${countryInfo?.currency || ''}` : 'N/A',
+      tone: 'teal',
     },
     {
       icon: FaHeartbeat,
       label: 'Life Expectancy',
       value: indicatorsData?.lifeExpectancy?.value || 'N/A',
+      tone: 'rose',
     },
   ];
   const mobileMetricSlides = [
@@ -136,11 +145,16 @@ export default function HeroHeader({
       textOverflow="ellipsis"
     >
       <chakra.span fontWeight="800">{countryName}</chakra.span>
-      {countryInfo?.capital && <chakra.span color={t.textSoft}> - {countryInfo.capital}</chakra.span>}
-      <chakra.span color={t.textSoft}> - {currentTime || '--:--:--'}</chakra.span>
-      <chakra.span color={isSmall ? t.textMuted : t.textSoft} fontSize={isSmall ? '10px' : 'inherit'}>
+      {countryInfo?.capital && <chakra.span color={t.textSoft}> · {countryInfo.capital}</chakra.span>}
+      <chakra.span fontFamily={MONO} color={t.primary} letterSpacing="0.02em"> · {currentTime || '--:--:--'}</chakra.span>
+      <chakra.span
+        fontFamily={MONO}
+        color={isSmall ? t.textMuted : t.textSoft}
+        fontSize={isSmall ? '10px' : 'xs'}
+        letterSpacing="0.02em"
+      >
         {' '}
-        - {dateFormatted}
+        · {dateFormatted}
       </chakra.span>
     </Text>
   );
@@ -234,9 +248,16 @@ export default function HeroHeader({
 
             <Flex minW={0} direction="column" justify="space-between">
               <VStack align="stretch" spacing={2.5} mb={{ base: 3, md: 4 }}>
-                <HStack spacing={2}>
-                  <Box w="20px" h="2px" borderRadius="full" bg={t.primary} />
-                  <Text fontSize="xs" fontWeight="700" letterSpacing="0.14em" textTransform="uppercase" color={t.primary}>
+                <HStack spacing={2.5}>
+                  <Box w="22px" h="2px" borderRadius="full" bg={t.primary} />
+                  <Text
+                    fontFamily={MONO}
+                    fontSize="xs"
+                    fontWeight="700"
+                    letterSpacing="0.08em"
+                    textTransform="uppercase"
+                    color={t.primary}
+                  >
                     Country overview
                   </Text>
                 </HStack>
@@ -250,10 +271,11 @@ export default function HeroHeader({
                   minW={0}
                 >
                   <Text
-                    fontSize={{ base: 'xl', md: '2xl' }}
-                    fontWeight="800"
+                    fontFamily={SERIF}
+                    fontSize={{ base: '2rem', md: '2.6rem' }}
+                    fontWeight="400"
                     color={t.text}
-                    lineHeight="1.1"
+                    lineHeight="1.04"
                     minW={0}
                     maxW="100%"
                     noOfLines={{ base: 2, xl: 1 }}
@@ -272,7 +294,7 @@ export default function HeroHeader({
                       onClick={onOpen}
                       leftIcon={<FaChartBar />}
                       bg={t.primary}
-                      color="white"
+                      color="#0A0C11"
                       boxShadow={t.shadowSm}
                       _hover={{ transform: 'translateY(-1px)', boxShadow: t.shadowMd, bg: t.primaryHover }}
                       _active={{ transform: 'translateY(0)' }}
@@ -349,7 +371,7 @@ export default function HeroHeader({
                             icon={card.icon}
                             label={card.label}
                             value={card.value}
-                            colorScheme="blue"
+                            colorScheme={card.tone}
                             layout="stacked"
                             {...mobileBoxProps}
                           />
@@ -379,7 +401,7 @@ export default function HeroHeader({
                 display={{ base: 'none', md: 'grid' }}
               >
                 {metricCards.map((card) => (
-                  <InfoBox key={card.label} icon={card.icon} label={card.label} value={card.value} colorScheme="blue" {...compactBoxProps} />
+                  <InfoBox key={card.label} icon={card.icon} label={card.label} value={card.value} colorScheme={card.tone} {...compactBoxProps} />
                 ))}
               </Grid>
             </Flex>
