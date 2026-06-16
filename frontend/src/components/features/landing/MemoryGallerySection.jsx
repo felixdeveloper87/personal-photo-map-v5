@@ -4,66 +4,26 @@ import { HiMapPin } from 'react-icons/hi2';
 import { SectionHeading, MotionBox, fadeInUp, useLandingTokens } from './landingUI';
 
 const CITY_PHOTOS = [
-  {
-    city: 'Lisbon',
-    country: 'Portugal',
-    meta: '38.7223 N / 9.1393 W',
-    src: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Tokyo',
-    country: 'Japan',
-    meta: '35.6762 N / 139.6503 E',
-    src: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Barcelona',
-    country: 'Spain',
-    meta: '41.3874 N / 2.1686 E',
-    src: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'New York',
-    country: 'United States',
-    meta: '40.7128 N / 74.0060 W',
-    src: 'https://images.unsplash.com/photo-1485871981521-5b1fd3805eee?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Rio de Janeiro',
-    country: 'Brazil',
-    meta: '22.9068 S / 43.1729 W',
-    src: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Paris',
-    country: 'France',
-    meta: '48.8566 N / 2.3522 E',
-    src: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Marrakech',
-    country: 'Morocco',
-    meta: '31.6295 N / 7.9811 W',
-    src: 'https://images.unsplash.com/photo-1637531114994-ef00c3f54387?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Santorini',
-    country: 'Greece',
-    meta: '36.3932 N / 25.4615 E',
-    src: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'London',
-    country: 'United Kingdom',
-    meta: '51.5072 N / 0.1276 W',
-    src: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    city: 'Dubai',
-    country: 'United Arab Emirates',
-    meta: '25.2048 N / 55.2708 E',
-    src: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80',
-  },
+  { city: 'Lisbon',       country: 'Portugal',              meta: '38.7223 N / 9.1393 W',   src: '/cities/lisbon.jpg' },
+  { city: 'Tokyo',        country: 'Japan',                 meta: '35.6762 N / 139.6503 E', src: '/cities/tokyo.jpg' },
+  { city: 'Barcelona',    country: 'Spain',                 meta: '41.3874 N / 2.1686 E',   src: '/cities/barcelona.jpg' },
+  { city: 'New York',     country: 'United States',         meta: '40.7128 N / 74.0060 W',  src: '/cities/new-york.jpg' },
+  { city: 'Rio de Janeiro', country: 'Brazil',              meta: '22.9068 S / 43.1729 W',  src: '/cities/rio.jpg' },
+  { city: 'Bangkok',      country: 'Thailand',              meta: '13.7563 N / 100.5018 E', src: '/cities/bangkok.jpg' },
+  { city: 'Giza',         country: 'Egypt',                 meta: '29.9792 N / 31.1342 E',  src: '/cities/giza.jpg' },
+  { city: 'Beijing',      country: 'China',                 meta: '39.9042 N / 116.4074 E', src: '/cities/beijing.jpg' },
+  { city: 'Rome',         country: 'Italy',                 meta: '41.9028 N / 12.4964 E',  src: '/cities/rome.jpg' },
+  { city: 'Oslo',         country: 'Norway',                meta: '59.9139 N / 10.7522 E',  src: '/cities/oslo.jpg' },
+  { city: 'Paris',        country: 'France',                meta: '48.8566 N / 2.3522 E',   src: '/cities/paris.jpg' },
+  { city: 'Marrakech',    country: 'Morocco',               meta: '31.6295 N / 7.9811 W',   src: '/cities/marrakech.jpg' },
+  { city: 'Santorini',    country: 'Greece',                meta: '36.3932 N / 25.4615 E',  src: '/cities/santorini.jpg' },
+  { city: 'London',       country: 'United Kingdom',        meta: '51.5072 N / 0.1276 W',   src: '/cities/london.jpg' },
+  { city: 'Dubai',        country: 'United Arab Emirates',  meta: '25.2048 N / 55.2708 E',  src: '/cities/dubai.jpg' },
+  { city: 'Sydney',       country: 'Australia',             meta: '33.8688 S / 151.2093 E', src: '/cities/sydney.jpg' },
+  { city: 'New Delhi',    country: 'India',                 meta: '28.6139 N / 77.2090 E',  src: '/cities/new-delhi.jpg' },
+  { city: 'Riyadh',       country: 'Saudi Arabia',          meta: '24.7136 N / 46.6753 E',  src: '/cities/riyadh.jpg' },
+  { city: 'Cusco',        country: 'Peru',                  meta: '13.5320 S / 71.9675 W',  src: '/cities/cusco.jpg' },
+  { city: 'Istanbul',     country: 'Turkey',                meta: '41.0082 N / 28.9784 E',  src: '/cities/istanbul.jpg' },
 ];
 
 const PhotoCard = ({ item, rotate = -2 }) => {
@@ -124,7 +84,7 @@ const GalleryRow = ({ items, reverse = false }) => (
     className="gallery-row"
     spacing={{ base: 4, md: 6 }}
     w="max-content"
-    animation={`${reverse ? 'galleryReverse' : 'galleryForward'} ${reverse ? 58 : 52}s linear infinite`}
+    animation={`${reverse ? 'galleryReverse' : 'galleryForward'} ${reverse ? 36 : 32}s linear infinite`}
   >
     {[...items, ...items].map((item, index) => (
       <PhotoCard key={`${item.city}-${index}`} item={item} rotate={index % 2 === 0 ? -2 : 2} />
@@ -134,8 +94,8 @@ const GalleryRow = ({ items, reverse = false }) => (
 
 const MemoryGallerySection = () => {
   const t = useLandingTokens();
-  const rowA = CITY_PHOTOS.slice(0, 5);
-  const rowB = CITY_PHOTOS.slice(5);
+  const rowA = CITY_PHOTOS.slice(0, 10);
+  const rowB = CITY_PHOTOS.slice(10);
 
   return (
     <Box

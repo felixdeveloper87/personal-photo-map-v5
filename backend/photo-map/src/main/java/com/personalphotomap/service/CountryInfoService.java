@@ -1173,15 +1173,15 @@ public class CountryInfoService {
         int totalIndicators = indicatorsList.size();
 
         List<CompletableFuture<Map.Entry<String, Map<String, Object>>>> futures = indicatorsList.stream()
-            .map(entry -> CompletableFuture.supplyAsync(() -> {
+            .map(entry -> CompletableFuture.<Map.Entry<String, Map<String, Object>>>supplyAsync(() -> {
                 String key = entry.getKey();
                 String indicatorCode = entry.getValue();
                 try {
                     Map<String, Object> indicatorData = fetchWorldBankIndicator(iso3, indicatorCode);
-                    return new AbstractMap.SimpleEntry<>(key, indicatorData);
+                    return new AbstractMap.SimpleEntry<String, Map<String, Object>>(key, indicatorData);
                 } catch (Exception e) {
                     logger.debug("Error fetching indicator {} for {}: {}", indicatorCode, countryId, e.getMessage());
-                    return new AbstractMap.SimpleEntry<>(key, null);
+                    return new AbstractMap.SimpleEntry<String, Map<String, Object>>(key, null);
                 }
             }, worldBankExecutor))
             .toList();
