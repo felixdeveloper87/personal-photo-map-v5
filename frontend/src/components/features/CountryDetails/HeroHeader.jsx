@@ -409,7 +409,7 @@ export default function HeroHeader({
         </Box>
       </Collapse>
 
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Detailed Indicators">
+      <BaseModal isOpen={isOpen} onClose={onClose} title="Detailed Indicators" icon={FaChartBar} size="2xl">
         <IndicatorsModal
           indicatorsData={indicatorsData}
           weatherData={weatherData}
