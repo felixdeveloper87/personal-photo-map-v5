@@ -20,7 +20,7 @@ const CITY_PHOTOS = [
   { city: 'London',       country: 'United Kingdom',        meta: '51.5072 N / 0.1276 W',   src: '/cities/london.jpg' },
   { city: 'Dubai',        country: 'United Arab Emirates',  meta: '25.2048 N / 55.2708 E',  src: '/cities/dubai.jpg' },
   { city: 'Sydney',       country: 'Australia',             meta: '33.8688 S / 151.2093 E', src: '/cities/sydney.jpg' },
-  { city: 'New Delhi',    country: 'India',                 meta: '28.6139 N / 77.2090 E',  src: '/cities/new-delhi.jpg' },
+  { city: 'Agra',         country: 'India',                 meta: '27.1751 N / 78.0421 E',  src: '/cities/agra.jpg' },
   { city: 'Riyadh',       country: 'Saudi Arabia',          meta: '24.7136 N / 46.6753 E',  src: '/cities/riyadh.jpg' },
   { city: 'Cusco',        country: 'Peru',                  meta: '13.5320 S / 71.9675 W',  src: '/cities/cusco.jpg' },
   { city: 'Istanbul',     country: 'Turkey',                meta: '41.0082 N / 28.9784 E',  src: '/cities/istanbul.jpg' },
@@ -41,14 +41,21 @@ const PhotoCard = ({ item, rotate = -2 }) => {
       bg={t.surface}
       border="1px solid"
       borderColor={t.hairline}
-      transform={`rotate(${rotate}deg)`}
-      boxShadow="0 24px 60px rgba(0,0,0,0.32)"
+      transform={`translate3d(0, 0, 0) rotate(${rotate}deg)`}
+      boxShadow="0 14px 30px rgba(0,0,0,0.24)"
+      contain="layout paint"
+      sx={{
+        backfaceVisibility: 'hidden',
+        isolation: 'isolate',
+      }}
     >
       <Box
         as="img"
         src={item.src}
         alt={`${item.city}, ${item.country}`}
         loading="lazy"
+        decoding="async"
+        draggable={false}
         w="full"
         h="full"
         objectFit="cover"
@@ -85,6 +92,13 @@ const GalleryRow = ({ items, reverse = false }) => (
     spacing={{ base: 4, md: 6 }}
     w="max-content"
     animation={`${reverse ? 'galleryReverse' : 'galleryForward'} ${reverse ? 36 : 32}s linear infinite`}
+    willChange="transform"
+    transform={reverse ? 'translate3d(-50%, 0, 0)' : 'translate3d(0, 0, 0)'}
+    sx={{
+      backfaceVisibility: 'hidden',
+      contain: 'layout paint',
+      transformStyle: 'preserve-3d',
+    }}
   >
     {[...items, ...items].map((item, index) => (
       <PhotoCard key={`${item.city}-${index}`} item={item} rotate={index % 2 === 0 ? -2 : 2} />
@@ -107,12 +121,12 @@ const MemoryGallerySection = () => {
       scrollMarginTop="110px"
       sx={{
         '@keyframes galleryForward': {
-          from: { transform: 'translateX(0)' },
-          to: { transform: 'translateX(-50%)' },
+          from: { transform: 'translate3d(0, 0, 0)' },
+          to: { transform: 'translate3d(-50%, 0, 0)' },
         },
         '@keyframes galleryReverse': {
-          from: { transform: 'translateX(-50%)' },
-          to: { transform: 'translateX(0)' },
+          from: { transform: 'translate3d(-50%, 0, 0)' },
+          to: { transform: 'translate3d(0, 0, 0)' },
         },
         '@media (prefers-reduced-motion: reduce)': {
           '.gallery-row': { animation: 'none' },
