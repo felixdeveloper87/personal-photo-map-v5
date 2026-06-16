@@ -1,27 +1,39 @@
-const STATIC_COLORS = {
-  summerColors: {
-    light: [
-      { fill: '#FCD34D', border: '#F59E0B', shadow: '#FEF3C7', name: 'sun-yellow' },
-      { fill: '#06B6D4', border: '#0891B2', shadow: '#67E8F9', name: 'ocean-blue' },
-      { fill: '#10B981', border: '#059669', shadow: '#34D399', name: 'nature-green' },
-      { fill: '#F97316', border: '#EA580C', shadow: '#FDBA74', name: 'coral-orange' },
-      { fill: '#EC4899', border: '#DB2777', shadow: '#F9A8D4', name: 'summer-pink' },
-      { fill: '#8B5CF6', border: '#7C3AED', shadow: '#A78BFA', name: 'violet-sunset' },
-      { fill: '#EF4444', border: '#DC2626', shadow: '#F87171', name: 'sunset-red' },
-      { fill: '#14B8A6', border: '#0D9488', shadow: '#5EEAD4', name: 'teal-ocean' },
+/*
+ * Map styles — Cartographic atlas with a local day / night mode.
+ * Night: deep navy ocean, inked land, teal contour borders.
+ * Day:   warm paper ocean, parchment land, sepia contour borders.
+ * Visited countries glow amber in both modes. Driven by a per-map `mode`
+ * ('night' | 'day') — independent from any global color mode.
+ */
+
+const PALETTES = {
+  night: {
+    land: '#2B3856',            // slate-blue land — clearly reads against the near-black sea
+    landBorder: 'rgba(122,222,209,0.6)', // bright teal contour
+    visitedFill: '#F3BC6B',     // warm vivid amber
+    visitedBorder: '#E0A055',
+    visitedGlow: '#F3BC6B',
+    highlight: [
+      { fill: '#F3BC6B', border: '#E0A055', shadow: '#F3BC6B' }, // amber
+      { fill: '#7AE0D2', border: '#4FB3A6', shadow: '#7AE0D2' }, // teal
+      { fill: '#F09385', border: '#D16B5B', shadow: '#F09385' }, // rose
     ],
-    dark: [
-      { fill: '#6366F1', border: '#4F46E5', shadow: '#8B5CF6', name: 'indigo' },
-      { fill: '#10B981', border: '#059669', shadow: '#34D399', name: 'emerald' },
-      { fill: '#F59E0B', border: '#D97706', shadow: '#FCD34D', name: 'amber' },
-      { fill: '#EF4444', border: '#DC2626', shadow: '#F87171', name: 'red' },
-      { fill: '#8B5CF6', border: '#7C3AED', shadow: '#A78BFA', name: 'violet' },
-      { fill: '#06B6D4', border: '#0891B2', shadow: '#67E8F9', name: 'cyan' },
-      { fill: '#F97316', border: '#EA580C', shadow: '#FDBA74', name: 'orange' },
-      { fill: '#EC4899', border: '#DB2777', shadow: '#F9A8D4', name: 'pink' },
+  },
+  day: {
+    land: '#D9DDE1',            // light grey land
+    landBorder: 'rgba(74,144,217,0.9)', // blue country outlines
+    visitedFill: '#F2D06B',     // golden visited countries
+    visitedBorder: '#E2BB55',
+    visitedGlow: '#F2D06B',
+    highlight: [
+      { fill: '#F2D06B', border: '#E2BB55', shadow: '#F2D06B' }, // gold
+      { fill: '#5AB0E0', border: '#3D8FC4', shadow: '#5AB0E0' }, // blue
+      { fill: '#F2916B', border: '#D16B4A', shadow: '#F2916B' }, // coral
     ],
   },
 };
+
+const getPalette = (mode) => PALETTES[mode] || PALETTES.night;
 
 const countryStyleCache = new Map();
 const oceanStylesCache = new Map();
@@ -46,28 +58,24 @@ export const selectHighlightCountries = (countriesWithPhotos) => {
     .slice(0, maxCountries);
 };
 
-export const getOceanColor = (colorMode) => {
-  return colorMode === 'dark' ? 'transparent' : '#B3E5FC';
-};
+// Ocean is transparent — the cartographic container background (CSS) shows through.
+export const getOceanColor = () => 'transparent';
+export const getOceanOpacity = () => 0;
 
-export const getOceanOpacity = (colorMode) => {
-  return colorMode === 'dark' ? 0 : 0.4;
-};
-
-export const getOceanStyles = (colorMode) => {
-  if (oceanStylesCache.has(colorMode)) {
-    return oceanStylesCache.get(colorMode);
+export const getOceanStyles = (mode = 'night') => {
+  if (oceanStylesCache.has(mode)) {
+    return oceanStylesCache.get(mode);
   }
 
   const styles = {
-    color: getOceanColor(colorMode),
-    opacity: getOceanOpacity(colorMode),
-    background: getOceanColor(colorMode),
-    fillColor: getOceanColor(colorMode),
-    fillOpacity: getOceanOpacity(colorMode),
+    color: 'transparent',
+    opacity: 0,
+    background: 'transparent',
+    fillColor: 'transparent',
+    fillOpacity: 0,
   };
 
-  oceanStylesCache.set(colorMode, styles);
+  oceanStylesCache.set(mode, styles);
   return styles;
 };
 
@@ -77,9 +85,9 @@ export const createCountryStyleBase = (
   isLoggedIn,
   isEffectActive,
   highlightIntensity,
-  colorMode
+  mode
 ) => {
-  const cacheKey = `${isLoggedIn}-${isEffectActive}-${highlightIntensity}-${colorMode}-${countriesWithPhotos.length}-${highlightedCountries.length}`;
+  const cacheKey = `${isLoggedIn}-${isEffectActive}-${highlightIntensity}-${mode}-${countriesWithPhotos.length}-${highlightedCountries.length}`;
 
   if (countryStyleCache.has(cacheKey)) {
     return countryStyleCache.get(cacheKey);
@@ -93,7 +101,7 @@ export const createCountryStyleBase = (
       isLoggedIn,
       isEffectActive,
       highlightIntensity,
-      colorMode
+      mode
     );
   };
 
@@ -109,48 +117,50 @@ export const createCountryStyle = () => {
     isLoggedIn,
     isEffectActive,
     highlightIntensity = 1,
-    colorMode = 'light'
+    mode = 'night'
   ) => {
+    const palette = getPalette(mode);
     const countryId = feature.properties.iso_a2.toLowerCase();
     const hasPhotos = countriesWithPhotos.some((country) => country.countryId === countryId);
     const isHighlighted = highlightedCountries.includes(countryId);
 
+    // Logged-out "attract" effect: pulse a few countries through the brand trio.
     if (!isLoggedIn && isEffectActive && isHighlighted) {
-      const randomColor = Math.random();
-      const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
-      const colorIndex = Math.floor(randomColor * colorSets.length);
-      const colorSet = colorSets[colorIndex];
-      const opacity = 0.6 + highlightIntensity * 0.2;
+      const colorSet = palette.highlight[Math.floor(Math.random() * palette.highlight.length)];
+      const opacity = 0.55 + highlightIntensity * 0.2;
 
       return {
         fillColor: colorSet.fill,
-        weight: 2,
+        weight: 1.4,
         color: colorSet.border,
         fillOpacity: opacity,
         transition: 'all 0.6s ease-in-out',
-        filter: `drop-shadow(0 1px 4px ${colorSet.shadow}30) brightness(${1 + highlightIntensity * 0.1})`,
-        transform: `scale(${1 + highlightIntensity * 0.01})`,
+        filter: `drop-shadow(0 0 8px ${colorSet.shadow}66) brightness(${1 + highlightIntensity * 0.08})`,
+        className: 'country-highlight',
       };
     }
 
+    // Your visited countries — glowing amber on the map.
     if (isLoggedIn && hasPhotos) {
       return {
-        fillColor: colorMode === 'dark' ? '#3B82F6' : '#FCD34D',
-        weight: 2.5,
-        color: colorMode === 'dark' ? '#1D4ED8' : '#F59E0B',
-        fillOpacity: colorMode === 'dark' ? 0.8 : 0.7,
+        fillColor: palette.visitedFill,
+        weight: 1.3,
+        color: palette.visitedBorder,
+        fillOpacity: 0.92,
         transition: 'all 0.3s ease',
-        filter: `drop-shadow(0 1px 3px ${colorMode === 'dark' ? '#1D4ED820' : '#F59E0B20'}) brightness(1.01)`,
+        filter: `drop-shadow(0 0 7px ${palette.visitedGlow}59) brightness(1.02)`,
+        className: 'country-with-photos',
       };
     }
 
+    // Default land with a faint contour.
     return {
-      fillColor: colorMode === 'dark' ? '#4B5563' : '#E5E7EB',
-      weight: 1.5,
-      color: '#94A3B8',
-      fillOpacity: colorMode === 'dark' ? 0.7 : 0.5,
-      transition: 'all 0.2s ease',
-      className: 'country-gradient-gray',
+      fillColor: palette.land,
+      weight: 0.7,
+      color: palette.landBorder,
+      fillOpacity: 1,
+      transition: 'all 0.25s ease',
+      className: 'country-ink',
     };
   };
 };

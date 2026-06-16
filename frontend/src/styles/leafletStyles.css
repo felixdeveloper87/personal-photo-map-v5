@@ -1,30 +1,27 @@
 /*
- * Arquivo de Estilos CSS para o Mapa
- * Contém estilos para o oceano, países e tooltips em modos claro e escuro.
- * As cores foram otimizadas para um visual mais profissional e de alto contraste.
+ * Map styles — Cartographic atlas.
+ * Deep navy ocean with faint contour glows, inked land, amber visited countries,
+ * teal borders, and a monospace "field label" tooltip. Theme-independent (fixed dark).
  */
 
-/* Estilos do Tooltip Vintage - mais limpo e elegante */
+/* ===== Tooltip — technical field label ===== */
 .tooltip,
 .leaflet-tooltip,
 .country-tooltip {
     position: absolute;
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(240, 253, 250, 0.98) 50%,
-        rgba(255, 255, 255, 0.95) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(44, 82, 77, 0.1);
+    background: rgba(17, 21, 30, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(235, 181, 114, 0.32);
     border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 14px;
+    padding: 6px 11px;
+    font-size: 12px;
     font-weight: 600;
-    font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    font-family: 'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace;
     letter-spacing: 0.03em;
-    color: rgba(44, 82, 77, 0.98);
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 12px rgba(44, 82, 77, 0.1);
+    color: #ECE7DC;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.72);
     pointer-events: none;
     z-index: 1000;
     white-space: nowrap;
@@ -34,7 +31,7 @@
     will-change: opacity, transform;
 }
 
-/* Esconder tooltips que estão sendo fechados pelo Leaflet */
+/* Hide tooltips that Leaflet is fading out (prevents trails) */
 .leaflet-tooltip-fade,
 .leaflet-tooltip-fade.leaflet-tooltip-fade-anim {
     opacity: 0 !important;
@@ -44,14 +41,12 @@
     display: none !important;
 }
 
-/* Garantir que apenas tooltips ativos sejam visíveis */
 .leaflet-tooltip:not(.leaflet-tooltip-fade) {
     opacity: 1 !important;
     visibility: visible !important;
     display: block !important;
 }
 
-/* Esconder tooltips que não estão ativos (rastros) */
 .leaflet-tooltip[style*="display: none"],
 .leaflet-tooltip[style*="opacity: 0"],
 .leaflet-tooltip[style*="visibility: hidden"] {
@@ -66,97 +61,98 @@
     transform: translateY(-8px);
 }
 
-.tooltip::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg,
-        rgba(154, 206, 181, 0.15) 0%,
-        rgba(164, 218, 211, 0.1) 25%,
-        transparent 50%,
-        rgba(174, 230, 216, 0.1) 75%,
-        rgba(154, 206, 181, 0.15) 100%);
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-}
-
 .country-tooltip::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    bottom: -7px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid rgba(240, 253, 250, 0.98);
-    filter: drop-shadow(0 2px 4px rgba(44, 82, 77, 0.1));
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid rgba(17, 21, 30, 0.92);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 
-[data-theme="dark"] .country-tooltip::after {
-    border-top-color: rgba(30, 41, 59, 0.98);
-}
-
-/* Oceano otimizado para modo claro - cores mais suaves e profissionais */
+/* ===== Ocean / container ===== */
 .leaflet-container {
-    /* Gradiente mais sutil, com tons dessaturados */
+    background-color: #070B14;
     background-image:
-        linear-gradient(135deg, #E0F7FA 0%, #B3E5FC 100%),
-        radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 18% 22%, rgba(243, 188, 107, 0.10) 0%, transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(122, 224, 210, 0.11) 0%, transparent 42%),
+        radial-gradient(circle at 50% 55%, rgba(70, 120, 200, 0.10) 0%, transparent 65%),
+        linear-gradient(160deg, #070B14 0%, #0D1626 55%, #0A1120 100%);
     background-size: cover;
     background-position: center;
     animation: none;
     will-change: auto;
 
-    /* Borda sólida e mais limpa, com sombra sutil */
-    border: 1px solid rgba(179, 229, 252, 0.6);
-    border-radius: 12px;
+    border: 1px solid rgba(236, 231, 220, 0.10);
+    border-radius: 16px;
     box-shadow:
-        0 0 0 1px rgba(179, 229, 252, 0.2),
-        0 8px 24px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        inset 0 1px 0 rgba(236, 231, 220, 0.05),
+        0 34px 90px -38px rgba(0, 0, 0, 0.88);
 }
 
-/* Tema escuro - Paleta profissional e de alto contraste */
-[data-theme="dark"] .leaflet-container {
-    /* Base mais escura com um toque de azul */
-    background-image:
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-        linear-gradient(45deg, #0F172A 0%, #1A2740 50%, #253355 100%),
-        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
-    background-size: 200% 200%, 300% 300%, 150% 150%;
-    background-position: 0% 0%, 0% 0%, 100% 100%;
-    animation: none;
-    will-change: auto;
-
-    /* Borda com mais destaque para alto contraste */
-    border: 1px solid rgba(139, 92, 246, 0.6);
-    border-radius: 12px;
+/* Day mode — clean light-blue sea */
+[data-theme="day"] .leaflet-container {
+    background-color: #AAD9EC;
+    background-image: linear-gradient(160deg, #BCE4F2 0%, #ABDAEC 55%, #A0D2E7 100%);
+    border: 1px solid rgba(90, 140, 170, 0.25);
+    border-radius: 16px;
     box-shadow:
-        0 0 0 1px rgba(59, 130, 246, 0.3),
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 30px 80px -40px rgba(30, 70, 96, 0.45);
 }
 
-[data-theme="dark"] .tooltip {
-    /* Fundo mais escuro para contraste */
-    background: linear-gradient(135deg,
-        rgba(15, 23, 42, 0.95) 0%,
-        rgba(30, 41, 59, 0.98) 50%,
-        rgba(51, 65, 85, 0.95) 100%);
-    color: #f1f5f9;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+/* Day tooltip — ink on paper */
+[data-theme="day"] .tooltip,
+[data-theme="day"] .leaflet-tooltip,
+[data-theme="day"] .country-tooltip {
+    background: rgba(255, 251, 242, 0.94);
+    border: 1px solid rgba(120, 104, 76, 0.30);
+    color: #3A2E1C;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+    box-shadow: 0 14px 34px -20px rgba(60, 46, 28, 0.5);
 }
 
-/* Redução de movimento */
+[data-theme="day"] .country-tooltip::after {
+    border-top-color: rgba(255, 251, 242, 0.94);
+}
+
+[data-theme="day"] .leaflet-interactive:hover {
+    filter: brightness(1.04) drop-shadow(0 0 6px rgba(181, 126, 55, 0.35));
+}
+
+/* ===== Countries ===== */
+/* No stroke color here — per-country `color` (set by Leaflet) drives border hue. */
+.leaflet-interactive {
+    stroke-width: 0.7;
+    stroke-opacity: 0.65;
+    fill-opacity: 1;
+    transition: fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease;
+    will-change: fill, stroke, filter;
+}
+
+.leaflet-interactive:hover {
+    stroke-width: 1.4;
+    stroke-opacity: 1;
+    filter: brightness(1.12) drop-shadow(0 0 6px rgba(235, 181, 114, 0.3));
+}
+
+.leaflet-interactive:focus {
+    outline: 2px solid #EBB572;
+    outline-offset: 2px;
+}
+
+/* Visited countries — amber glow, brighter on hover */
+.country-with-photos:hover {
+    stroke-width: 1.8;
+    filter: brightness(1.06) drop-shadow(0 0 10px rgba(235, 181, 114, 0.5));
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .leaflet-container {
         animation: none;
@@ -167,58 +163,20 @@
     }
 }
 
-/* Estilos dos países */
-.leaflet-interactive {
-    /* Ajuste de peso e opacidade para um visual mais robusto */
-    stroke-width: 1.2;
-    stroke-opacity: 0.7;
-    stroke: #4A90E2;
-    fill-opacity: 0.8;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: fill, stroke, filter;
-}
-
-.leaflet-interactive:hover {
-    stroke-width: 1.8;
-    stroke-opacity: 0.9;
-    stroke: #3B82F6;
-    fill-opacity: 0.9;
-    filter: brightness(1.02) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.leaflet-interactive:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
-
-/* Países com fotos */
-.country-with-photos {
-    stroke: #059669;
-    stroke-width: 1.5;
-    filter: brightness(1.05) saturate(1.1);
-}
-
-.country-with-photos:hover {
-    stroke: #047857;
-    stroke-width: 2.5;
-    filter: brightness(1.03) saturate(1.05) drop-shadow(0 3px 6px rgba(5, 150, 105, 0.2));
-}
-
-/* Responsividade mobile */
+/* ===== Mobile ===== */
 @media (max-width: 768px) {
     .tooltip {
-        font-size: 14px;
-        padding: 10px 16px;
-        border-radius: 12px;
-        transform: translateY(-10px) scale(0.95);
-        backdrop-filter: blur(12px);
+        font-size: 13px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        transform: translateY(-10px) scale(0.96);
     }
 
     .tooltip.show {
         transform: translateY(-14px) scale(1);
     }
 
-    .tooltip::after {
+    .country-tooltip::after {
         bottom: -6px;
         border-left-width: 6px;
         border-right-width: 6px;
@@ -226,31 +184,19 @@
     }
 
     .leaflet-interactive {
-        stroke-width: 1;
+        stroke-width: 0.6;
     }
 
     .leaflet-interactive:hover {
-        stroke-width: 1.8;
+        stroke-width: 1.4;
     }
 
     .leaflet-container {
-        border-width: 2px;
-        border-radius: 8px;
-        box-shadow:
-            0 0 0 1px rgba(154, 206, 181, 0.3),
-            0 4px 16px rgba(44, 82, 77, 0.12);
-    }
-
-    [data-theme="dark"] .leaflet-container {
-        border-width: 2px;
-        border-radius: 8px;
-        box-shadow:
-            0 0 0 1px rgba(59, 130, 246, 0.3),
-            0 4px 16px rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
     }
 }
 
-/* Otimizações de performance */
+/* ===== Performance ===== */
 .leaflet-container {
     contain: layout style paint;
     transform: translateZ(0);
@@ -263,5 +209,5 @@
 
 .leaflet-interactive {
     contain: layout;
-    shape-rendering: optimizeSpeed;
+    shape-rendering: geometricPrecision;
 }

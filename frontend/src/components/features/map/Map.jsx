@@ -1,9 +1,10 @@
 /* eslint-disable react/display-name */
 /* eslint-disable react/prop-types */
-import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useContext, useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, GeoJSON, Rectangle, useMap } from 'react-leaflet';
-import { Box, useColorMode, useBreakpointValue } from '@chakra-ui/react';
+import { Box, HStack, Icon, useBreakpointValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import { FaMoon, FaSun } from 'react-icons/fa';
 import 'leaflet/dist/leaflet.css';
 
 import countriesData from '../../../data/map/countries.json';
@@ -80,9 +81,10 @@ const OceanRectangle = React.memo(({ oceanStyles, oceanBounds }) => (
 ));
 
 // ✅ GeoJSON memoizado
-const CountriesGeoJSON = React.memo(({ geoJsonKey, countryStyle, onEachCountry }) => (
+const CountriesGeoJSON = React.memo(({ geoJsonKey, geoJsonRef, countryStyle, onEachCountry }) => (
   <GeoJSON
     key={geoJsonKey}
+    ref={geoJsonRef}
     data={countriesData}
     style={(feature) => countryStyle(feature)}
     onEachFeature={onEachCountry}
@@ -122,7 +124,9 @@ const Map = () => {
   const { isLoggedIn } = useContext(AuthContext);
   const { countriesWithPhotos } = useContext(CountriesContext);
   const [geoJsonKey, setGeoJsonKey] = useState(0);
-  const { colorMode } = useColorMode();
+  const geoJsonRef = useRef(null);
+  // Local day/night simulation — independent from any global theme.
+  const [mapMode, setMapMode] = useState('night');
   const navigate = useNavigate();
 
   // ✅ Zoom responsivo com fallback seguro
@@ -143,9 +147,9 @@ const Map = () => {
       isLoggedIn,
       isEffectActive,
       highlightIntensity,
-      colorMode
+      mapMode
     ),
-    [countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode]
+    [countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, mapMode]
   );
 
   // ✅ Estado do modal
@@ -188,10 +192,18 @@ const Map = () => {
     [countriesWithPhotos, isLoggedIn, navigate]
   );
 
-  // ✅ Atualiza GeoJSON quando há mudança
+  // ✅ Atualiza GeoJSON quando há mudança de dados/destaque (remonta a camada)
   useEffect(() => {
     setGeoJsonKey((prevKey) => prevKey + 1);
   }, [countriesWithPhotos, highlightedCountries]);
+
+  // ✅ Troca dia/noite: reaplica estilos no lugar (instantâneo, sem remontar)
+  useEffect(() => {
+    const layer = geoJsonRef.current;
+    if (layer?.setStyle) {
+      layer.setStyle((feature) => countryStyle(feature));
+    }
+  }, [mapMode, countryStyle]);
 
   // ✅ Configurações do mapa
   const mapConfig = useMemo(
@@ -209,15 +221,76 @@ const Map = () => {
   );
 
   // ✅ Estilos do oceano
-  const oceanStyles = useMemo(() => getOceanStyles(colorMode), [colorMode]);
+  const oceanStyles = useMemo(() => getOceanStyles(mapMode), [mapMode]);
+
+  const isNight = mapMode === 'night';
 
   return (
     <Box position="relative">
       <Box
         position="relative"
-        data-theme={colorMode}
+        data-theme={mapMode}
         h={{ base: '550px', sm: '650px', md: '800px', lg: '1000px', xl: '1000px' }}
       >
+        {/* ☀️🌙 Day / Night segmented toggle */}
+        <HStack
+          position="absolute"
+          top={{ base: 3, md: 4 }}
+          right={{ base: 3, md: 4 }}
+          zIndex={1000}
+          spacing={1}
+          p="4px"
+          borderRadius="full"
+          bg={isNight ? 'rgba(17,21,30,0.86)' : 'rgba(255,255,255,0.92)'}
+          border="1px solid"
+          borderColor={isNight ? 'rgba(122,224,210,0.30)' : 'rgba(90,140,170,0.30)'}
+          backdropFilter="blur(8px)"
+          boxShadow="0 10px 28px -16px rgba(0,0,0,0.7)"
+        >
+          <Box
+            as="button"
+            onClick={() => setMapMode('day')}
+            aria-label="Day map"
+            display="inline-flex"
+            alignItems="center"
+            gap="6px"
+            px={3.5}
+            py={1.5}
+            borderRadius="full"
+            fontFamily="'Spline Sans Mono', ui-monospace, monospace"
+            fontSize="11px"
+            fontWeight="700"
+            letterSpacing="0.08em"
+            transition="all .2s ease"
+            bg={!isNight ? '#F2D06B' : 'transparent'}
+            color={!isNight ? '#2A2008' : '#9AA0B0'}
+            _hover={!isNight ? {} : { color: '#ECE7DC' }}
+          >
+            <Icon as={FaSun} boxSize={3} /> DAY
+          </Box>
+          <Box
+            as="button"
+            onClick={() => setMapMode('night')}
+            aria-label="Night map"
+            display="inline-flex"
+            alignItems="center"
+            gap="6px"
+            px={3.5}
+            py={1.5}
+            borderRadius="full"
+            fontFamily="'Spline Sans Mono', ui-monospace, monospace"
+            fontSize="11px"
+            fontWeight="700"
+            letterSpacing="0.08em"
+            transition="all .2s ease"
+            bg={isNight ? '#3A4668' : 'transparent'}
+            color={isNight ? '#ECE7DC' : '#5E6B72'}
+            _hover={isNight ? {} : { color: '#2A2008' }}
+          >
+            <Icon as={FaMoon} boxSize={3} /> NIGHT
+          </Box>
+        </HStack>
+
         <MapContainerComponent {...mapConfig}>
           {/* ✅ Ajuste dinâmico de zoom */}
           <ResponsiveZoom zoom={mapConfig.zoom} />
@@ -229,6 +302,7 @@ const Map = () => {
 
           <CountriesGeoJSON
             geoJsonKey={geoJsonKey}
+            geoJsonRef={geoJsonRef}
             countryStyle={countryStyle}
             onEachCountry={onEachCountry}
           />

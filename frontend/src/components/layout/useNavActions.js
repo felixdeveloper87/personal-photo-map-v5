@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDisclosure, useToast, useColorMode } from '@chakra-ui/react';
+import { useDisclosure, useToast } from '@chakra-ui/react';
 import { AuthContext } from '../../context/AuthContext';
 import { CountriesContext } from '../../context/CountriesContext';
 
@@ -12,7 +12,6 @@ import { CountriesContext } from '../../context/CountriesContext';
 export function useNavActions() {
   const navigate = useNavigate();
   const toast = useToast();
-  const { colorMode, toggleColorMode } = useColorMode();
 
   const { isLoggedIn, fullname, isPremium, logout, togglePremiumStatus } = useContext(AuthContext);
   const { countriesWithPhotos, photoCount, countryCount } = useContext(CountriesContext);
@@ -96,8 +95,6 @@ export function useNavActions() {
     countriesWithPhotos,
     photoCount,
     countryCount,
-    colorMode,
-    toggleColorMode,
     profileModal,
     photoStorageModal,
     premiumModal,

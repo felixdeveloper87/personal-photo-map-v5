@@ -8,6 +8,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Devtools
 import theme from './theme';
 import '@fontsource/rock-salt';
 
+// Fixed dark cartographic identity — override any stored preference from older sessions.
+try { localStorage.setItem('chakra-ui-color-mode', 'dark'); } catch { /* ignore */ }
+
 
 // Configuring the React Query client with caching and stale time options
 const queryClient = new QueryClient({

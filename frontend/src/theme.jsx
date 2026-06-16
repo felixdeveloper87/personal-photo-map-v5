@@ -1,8 +1,9 @@
 // theme.js
 import { extendTheme } from '@chakra-ui/react';
 
+// Fixed dark cartographic identity — no user-facing theme switching.
 const config = {
-    initialColorMode: 'light',
+    initialColorMode: 'dark',
     useSystemColorMode: false,
 };
 
@@ -12,13 +13,13 @@ const fonts = {
 };
 
 const styles = {
-    global: (props) => ({
+    global: {
         body: {
-            bg: props.colorMode === 'light' ? 'white' : 'black',
-            color: props.colorMode === 'light' ? 'gray.900' : 'gray.100',
+            bg: '#0A0C11',
+            color: '#ECE7DC',
             fontFamily: 'body',
         },
-    }),
+    },
 };
 
 const components = {

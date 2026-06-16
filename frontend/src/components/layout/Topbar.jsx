@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { Box, Flex, HStack, Text, Icon, Button, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
-import { FaSearch, FaMoon, FaSun, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
+import { FaSearch, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 import { useLandingTokens } from '../features/landing/landingUI';
 import { SIDEBAR_WIDTH } from './Sidebar';
 
@@ -53,24 +53,6 @@ const Topbar = forwardRef(({ nav }, ref) => {
 
         {/* Right controls */}
         <HStack spacing={2}>
-          <Button
-            onClick={nav.toggleColorMode}
-            aria-label="Toggle theme"
-            h="40px"
-            w="40px"
-            minW="40px"
-            p={0}
-            borderRadius="12px"
-            bg="transparent"
-            border="1px solid"
-            borderColor={t.hairline}
-            color={t.textSoft}
-            transition="all .2s ease"
-            _hover={{ bg: t.surfaceSubtle, color: t.primary, borderColor: t.primary }}
-          >
-            <Icon as={nav.colorMode === 'light' ? FaMoon : FaSun} boxSize={4} />
-          </Button>
-
           <Menu placement="bottom-end" gutter={10} autoSelect={false}>
             <MenuButton
               as={Button}

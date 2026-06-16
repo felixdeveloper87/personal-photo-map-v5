@@ -12,7 +12,7 @@ import {
   Container,
   HStack,
 } from "@chakra-ui/react";
-import { FaClock, FaCrown, FaGlobe, FaImages, FaMoon, FaSearch, FaSignOutAlt, FaSun, FaUserCircle } from "react-icons/fa";
+import { FaClock, FaCrown, FaGlobe, FaImages, FaSearch, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 
 import { useHeaderStyles, useHeaderContainerStyles } from "../../../styles/headerStyles";
 
@@ -20,7 +20,6 @@ import HeaderLogo from "./HeaderLogo";
 import HeaderAuth from "./HeaderAuth";
 import SettingsMenu from "../SettingsMenu";
 import {
-  ThemeToggleButton,
   LogoutButton,
   MapButton,
   SearchButton,
@@ -173,7 +172,6 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
     { icon: FaClock, label: "Timeline", onClick: () => nav.navigate("/timeline") },
     { icon: FaUserCircle, label: "Profile", onClick: nav.profileModal.onOpen },
     { icon: FaImages, label: "Photos", onClick: nav.photoStorageModal.onOpen },
-    { icon: nav.colorMode === "light" ? FaMoon : FaSun, label: "Theme", onClick: nav.toggleColorMode },
     { icon: FaSignOutAlt, label: "Logout", onClick: nav.handleLogout, danger: true },
   ];
 
@@ -239,7 +237,6 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
             flex="0 0 auto"
             display={isLoggedIn && isCompact ? "none" : "flex"}
           >
-            <ThemeToggleButton colorMode={nav.colorMode} toggleColorMode={nav.toggleColorMode} styles={styles} size={buttonSize} />
             {!isLoggedIn ? (
               <HeaderAuth
                 styles={styles}

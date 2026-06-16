@@ -2,7 +2,7 @@ import React from "react";
 import { Button, useColorModeValue, HStack, Icon, Text, Box } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
-  FaMoon, FaSun, FaCrown, FaImages, FaGlobe, FaSignOutAlt,
+  FaCrown, FaImages, FaGlobe, FaSignOutAlt,
   FaClock, FaSearch, FaUserPlus, FaSignInAlt, FaUserCircle,
 } from "react-icons/fa";
 
@@ -136,17 +136,6 @@ const MaterialButton = ({
     </MotionButton>
   );
 };
-
-export const ThemeToggleButton = ({ colorMode, toggleColorMode, ...props }) => (
-  <MaterialButton
-    icon={colorMode === "light" ? FaMoon : FaSun}
-    tone="blue"
-    variant="tonal"
-    onClick={toggleColorMode}
-    aria-label="Toggle theme"
-    {...props}
-  />
-);
 
 export const PremiumButton       = ({ onClick, ...props }) => (
   <MaterialButton icon={FaCrown}      text="Premium"  tone="yellow"  onClick={onClick} {...props} />

@@ -23,7 +23,6 @@ export {
 
 // Header Buttons - Botões específicos do header
 export {
-    ThemeToggleButton,
     PremiumButton,
     PhotoStorageButton,
     UserProfileButton,
