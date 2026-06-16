@@ -6,20 +6,16 @@ import en from 'i18n-iso-countries/langs/en.json';
 import { motion } from 'framer-motion';
 import {
   Box,
-  Heading,
   Text,
   Avatar,
   Flex,
   VStack,
   HStack,
-  Badge,
   Icon,
   SimpleGrid,
   Circle,
-  Divider,
   IconButton,
   Tooltip,
-  Progress,
 } from '@chakra-ui/react';
 import {
   FaUser,
@@ -55,12 +51,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   const [continentCount, setContinentCount] = useState(0);
 
   const t = useLandingTokens();
+  const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+  const SERIF = "'Instrument Serif', Georgia, serif";
   const textColor = t.textSoft;
   const headingColor = t.text;
   const accentColor = t.primary;
   const borderColor = t.hairline;
   const cardBg = t.surface;
-  const premiumGradient = t.accent; // gold reserved for the premium highlight
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -161,7 +158,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 <Avatar
                   size="md"
                   name={fullname}
-                  bg={isPremium ? premiumGradient : accentColor}
+                  bg={isPremium ? t.accent : accentColor}
                   color="white"
                   ring="3px"
                   ringColor={isPremium ? "yellow.400" : accentColor}
@@ -169,7 +166,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 {isPremium && (
                   <Circle
                     size="24px"
-                    bg={premiumGradient}
+                    bg={t.accent}
                     position="absolute"
                     bottom="-2px"
                     right="-2px"
@@ -182,25 +179,25 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
               <VStack align="start" spacing={1}>
                 <HStack>
-                  <Heading size="md" color={headingColor}>
+                  <Text fontFamily={SERIF} fontSize="xl" fontWeight="400" color={headingColor} lineHeight="1.1">
                     {fullname}
-                  </Heading>
+                  </Text>
                   {isPremium && (
-                    <Badge
-                      px={2.5}
-                      py={1}
+                    <Box
+                      px={2}
+                      py={0.5}
                       borderRadius="full"
-                      fontSize="xs"
-                      fontWeight="bold"
-                      bg={premiumGradient}
-                      color="white"
+                      bg="rgba(235,181,114,0.14)"
+                      border="1px solid rgba(235,181,114,0.32)"
                       display="flex"
                       alignItems="center"
-                      gap={1}
+                      gap="4px"
                     >
-                      <Icon as={FaStar} w={3} h={3} />
-                      PREMIUM
-                    </Badge>
+                      <Icon as={FaStar} w={2.5} h={2.5} color={t.primary} />
+                      <Text fontFamily={MONO} fontSize="9px" fontWeight="700" color={t.primary} letterSpacing="0.10em">
+                        PREMIUM
+                      </Text>
+                    </Box>
                   )}
                 </HStack>
                 <HStack spacing={2}>
@@ -225,10 +222,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
         {/* Statistics */}
         <Box>
-          <Heading size="sm" mb={4} color={headingColor}>
-            <Icon as={FaTrophy} mr={2} color={t.accent} />
-            Travel Statistics
-          </Heading>
+          <HStack mb={4} spacing={2}>
+            <Icon as={FaTrophy} color={t.accent} boxSize={4} />
+            <Text fontFamily={MONO} fontSize="11px" fontWeight="700" color={t.textMuted} textTransform="uppercase" letterSpacing="0.08em">
+              Travel Statistics
+            </Text>
+          </HStack>
           <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={3}>
             {[
               { label: "Photos", value: userStats.totalPhotos, icon: FaCamera },
@@ -255,8 +254,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 <Box display="inline-flex" p={2} borderRadius="10px" bg={t.primarySoftBg} color={t.primary} mb={2}>
                   <Icon as={stat.icon} w={4} h={4} />
                 </Box>
-                <Text fontSize="lg" fontWeight="bold" color={headingColor}>{stat.value}</Text>
-                <Text fontSize="sm" color={textColor}>{stat.label}</Text>
+                <Text fontFamily={MONO} fontSize="lg" fontWeight="700" color={headingColor} lineHeight="1">{stat.value}</Text>
+                <Text fontFamily={MONO} fontSize="10px" color={textColor} textTransform="uppercase" letterSpacing="0.06em" mt={1}>{stat.label}</Text>
               </Box>
             ))}
           </SimpleGrid>
@@ -264,10 +263,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
         {/* Countries */}
         <Box>
-          <Heading size="sm" mb={4} color={headingColor}>
-            <Icon as={FaFlag} mr={2} color={t.primary} />
-            Countries Explored
-          </Heading>
+          <HStack mb={4} spacing={2}>
+            <Icon as={FaFlag} color={t.primary} boxSize={4} />
+            <Text fontFamily={MONO} fontSize="11px" fontWeight="700" color={t.textMuted} textTransform="uppercase" letterSpacing="0.08em">
+              Countries Explored
+            </Text>
+          </HStack>
           <Box
             p={4}
             borderRadius="lg"
@@ -278,13 +279,17 @@ const UserProfileModal = ({ isOpen, onClose }) => {
           >
             {countryNamesList.length > 0 ? (
               <>
-                <Progress
-                  value={(countryNamesList.length / 195) * 100}
-                  colorScheme="blue"
-                  size="md"
-                  borderRadius="full"
-                  mb={3}
-                />
+                {/* Countries progress bar — amber fill, atlas style */}
+                <Box w="full" h="6px" borderRadius="full" bg={t.primarySoftBg} overflow="hidden" mb={3}>
+                  <Box
+                    h="full"
+                    w={`${Math.min((countryNamesList.length / 195) * 100, 100)}%`}
+                    borderRadius="full"
+                    bg={t.primary}
+                    boxShadow="0 0 8px rgba(235,181,114,0.5)"
+                    transition="width .6s ease"
+                  />
+                </Box>
                 <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={2}>
                   {countryNamesList.slice(0, 12).map((c, i) => (
                     <MotionBox

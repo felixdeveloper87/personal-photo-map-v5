@@ -1,21 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Progress,
-  useColorModeValue,
-  Badge,
-  Icon,
-  Spinner,
-  useToast
+  Box, Text, VStack, HStack, Icon, Spinner
 } from "@chakra-ui/react";
 import {
   HiCloudArrowUp as HiCloud,
-  HiArrowUpTray as HiUpload,
   HiExclamationTriangle,
-  HiArrowPath as HiSync
+  HiArrowPath as HiSync,
+  HiPhoto,
 } from "react-icons/hi2";
 import BaseModal from "./BaseModal";
 import ModalButton from "./ModalButton";
@@ -23,6 +14,10 @@ import { AuthContext } from "../../context/AuthContext";
 import { CountriesContext } from "../../context/CountriesContext";
 import { buildApiUrl } from "../../utils/apiConfig";
 import { useQuery } from "@tanstack/react-query";
+import { useLandingTokens } from "../features/landing/landingUI";
+import { useToast } from "@chakra-ui/react";
+
+const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
 
 const useStorageInfo = () => {
   const { isLoggedIn } = useContext(AuthContext);
@@ -33,155 +28,132 @@ const useStorageInfo = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token available');
 
-      let storageData = { usedBytes: 0 };
+      let usedBytes = 0;
       try {
-        const photosResponse = await fetch(buildApiUrl('/api/images/allPictures'), {
+        const res = await fetch(buildApiUrl('/api/images/allPictures'), {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (photosResponse.ok) {
-          const photos = await photosResponse.json();
-          storageData.usedBytes = photos.length * 2 * 1024 * 1024;
+        if (res.ok) {
+          const photos = await res.json();
+          usedBytes = photos.length * 2 * 1024 * 1024;
         }
-      } catch {
-        storageData.usedBytes = 0;
-      }
+      } catch { /* network error — keep 0 */ }
 
-      const usedGB = storageData.usedBytes / (1024 * 1024 * 1024);
+      const usedGB = usedBytes / (1024 * 1024 * 1024);
       const isPremium = localStorage.getItem('premium') === 'true';
       const totalGB = isPremium ? 100 : 5;
 
       return {
         used: parseFloat(usedGB.toFixed(2)),
         total: totalGB,
-        usedBytes: storageData.usedBytes,
-        lastUpdated: new Date().toISOString()
+        usedBytes,
+        lastUpdated: new Date().toISOString(),
       };
     },
     enabled: isLoggedIn,
     refetchInterval: 30000,
     staleTime: 10000,
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   });
 };
 
-const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
-  const textColor = useColorModeValue("gray.700", "white");
-  const borderColor = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)");
-  const bgCard = useColorModeValue("rgba(255,255,255,0.65)", "rgba(0,0,0,0.55)");
-  // Precompute warning colors to avoid calling hooks in conditional JSX
-  const warningBg = useColorModeValue("rgba(255,237,213,0.8)", "rgba(154,52,18,0.6)");
-  const warningBorderColor = useColorModeValue("orange.200", "orange.700");
-  const warningTitleColor = useColorModeValue("orange.700", "orange.200");
-  const warningTextColor = useColorModeValue("orange.600", "orange.300");
-  const toast = useToast();
-  // Theme values used throughout (precomputed to keep hooks order stable)
-  const cardShadow = useColorModeValue(
-    "0 1px 3px rgba(0,0,0,0.05)",
-    "0 1px 3px rgba(255,255,255,0.05)"
-  );
-  const cloudBg = useColorModeValue("blue.100", "blue.900");
-  const cloudColor = useColorModeValue("blue.600", "blue.400");
-  const muted600 = useColorModeValue("gray.600", "gray.400");
-  const muted500 = useColorModeValue("gray.500", "gray.400");
+const StorageBar = ({ pct, isNear, isAt }) => {
+  const fillColor = isAt ? '#E58A7B' : isNear ? '#EBB572' : '#6FD0C4';
+  const bgColor = isAt
+    ? 'rgba(229,138,123,0.12)'
+    : isNear
+    ? 'rgba(235,181,114,0.12)'
+    : 'rgba(111,208,196,0.12)';
 
+  return (
+    <Box w="full" h="8px" borderRadius="full" bg={bgColor} overflow="hidden">
+      <Box
+        h="full"
+        w={`${Math.min(pct, 100)}%`}
+        borderRadius="full"
+        bg={fillColor}
+        boxShadow={`0 0 8px ${fillColor}66`}
+        transition="width .6s ease"
+      />
+    </Box>
+  );
+};
+
+const Stat = ({ label, value, icon, t }) => (
+  <Box
+    flex={1}
+    p={4}
+    borderRadius="14px"
+    bg={t.surface}
+    border="1px solid"
+    borderColor={t.hairline}
+    textAlign="center"
+    transition="border-color .2s, transform .2s"
+    _hover={{ borderColor: t.hairlineStrong, transform: 'translateY(-2px)' }}
+  >
+    <Icon as={icon} boxSize={5} color={t.primary} mb={2} />
+    <Text fontFamily={MONO} fontSize="20px" fontWeight="700" color={t.text} lineHeight="1">
+      {value}
+    </Text>
+    <Text fontFamily={MONO} fontSize="10px" color={t.textMuted} letterSpacing="0.08em" mt={1} textTransform="uppercase">
+      {label}
+    </Text>
+  </Box>
+);
+
+const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
+  const t = useLandingTokens();
+  const toast = useToast();
   const { isLoggedIn, isPremium } = useContext(AuthContext);
   const { photoCount, refreshCountriesWithPhotos } = useContext(CountriesContext);
 
   const { data: storageData, isLoading, isError, error, refetch } = useStorageInfo();
 
-  const [localStorageData, setLocalStorageData] = useState({
-    used: 0, total: 5, photos: 0, isPremium: false
-  });
+  const [local, setLocal] = useState({ used: 0, total: 5, photos: 0, isPremium: false });
 
-  useEffect(() => {
-    if (storageData) {
-      setLocalStorageData(prev => ({ ...prev, used: storageData.used, total: storageData.total }));
-    }
-  }, [storageData]);
+  useEffect(() => { if (storageData) setLocal(p => ({ ...p, used: storageData.used, total: storageData.total })); }, [storageData]);
+  useEffect(() => { if (photoCount !== undefined) setLocal(p => ({ ...p, photos: photoCount })); }, [photoCount]);
+  useEffect(() => { if (isPremium !== undefined) setLocal(p => ({ ...p, isPremium, total: isPremium ? 100 : 5 })); }, [isPremium]);
 
-  useEffect(() => {
-    if (photoCount !== undefined) {
-      setLocalStorageData(prev => ({ ...prev, photos: photoCount }));
-    }
-  }, [photoCount]);
-
-  useEffect(() => {
-    if (isPremium !== undefined) {
-      setLocalStorageData(prev => ({ ...prev, isPremium, total: isPremium ? 100 : 5 }));
-    }
-  }, [isPremium]);
+  const pct = local.total > 0 ? (local.used / local.total) * 100 : 0;
+  const isNear = pct > 80;
+  const isAt = pct >= 100;
 
   const handleRefresh = async () => {
     try {
       await refetch();
       await refreshCountriesWithPhotos();
-      toast({
-        title: "Storage Updated",
-        description: "Storage information has been refreshed",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
+      toast({ title: 'Storage refreshed', status: 'success', duration: 2000, isClosable: true });
     } catch {
-      toast({
-        title: "Update Failed",
-        description: "Failed to refresh storage information",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      toast({ title: 'Refresh failed', status: 'error', duration: 3000, isClosable: true });
     }
   };
 
-  const usagePercentage = localStorageData.total > 0
-    ? (localStorageData.used / localStorageData.total) * 100
-    : 0;
-  const isNearLimit = usagePercentage > 80;
-  const isAtLimit = usagePercentage >= 100;
-
-  const getStorageColor = () => {
-    if (isAtLimit) return "red";
-    if (isNearLimit) return "orange";
-    return "green";
-  };
-
   const footer = (
-    <Box w="full">
-      <VStack spacing={2.5}>
-        {!localStorageData.isPremium && (
-          <ModalButton
-            variant="primary"
-            onClick={onUpgrade}
-            leftIcon={<Icon as={HiCloud} />}
-            w="full"
-          >
-            Upgrade Storage
-          </ModalButton>
-        )}
-        <ModalButton
-          variant="secondary"
-          onClick={handleRefresh}
-          leftIcon={<Icon as={HiSync} />}
-          w="full"
-          isLoading={isLoading}
-        >
-          Refresh Storage Info
+    <VStack spacing={2} w="full">
+      {!local.isPremium && (
+        <ModalButton variant="primary" onClick={onUpgrade} leftIcon={<Icon as={HiCloud} />} w="full">
+          Upgrade Storage
         </ModalButton>
-        <ModalButton variant="secondary" onClick={onClose} w="full">
-          Close
-        </ModalButton>
-      </VStack>
-    </Box>
+      )}
+      <ModalButton variant="secondary" onClick={handleRefresh} leftIcon={<Icon as={HiSync} />} w="full" isLoading={isLoading}>
+        Refresh
+      </ModalButton>
+      <ModalButton variant="secondary" onClick={onClose} w="full">
+        Close
+      </ModalButton>
+    </VStack>
   );
 
   if (isLoading) {
     return (
       <BaseModal isOpen={isOpen} onClose={onClose} title="Photo Storage" icon={HiCloud}>
-        <VStack py={8} spacing={4}>
-          <Spinner size="xl" color="blue.500" />
-          <Text fontSize="md">Loading storage information...</Text>
+        <VStack py={10} spacing={4}>
+          <Spinner size="xl" color={t.primary} thickness="3px" />
+          <Text fontFamily={MONO} fontSize="12px" color={t.textMuted} letterSpacing="0.06em">
+            Loading storage…
+          </Text>
         </VStack>
       </BaseModal>
     );
@@ -190,11 +162,12 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
   if (isError) {
     return (
       <BaseModal isOpen={isOpen} onClose={onClose} title="Photo Storage" icon={HiCloud}>
-        <VStack py={8} spacing={4}>
-          <Icon as={HiExclamationTriangle} color="red.500" boxSize={8} />
-          <Text color="red.500">Failed to load storage information</Text>
-          <Text fontSize="sm" color="gray.500">{error?.message}</Text>
-          <ModalButton variant="primary" onClick={handleRefresh} leftIcon={<HiSync />}>
+        <VStack py={10} spacing={4}>
+          <Box p={3} borderRadius="full" bg="rgba(229,138,123,0.12)" border="1px solid rgba(229,138,123,0.32)">
+            <Icon as={HiExclamationTriangle} color="#E58A7B" boxSize={7} />
+          </Box>
+          <Text fontFamily={MONO} fontSize="12px" color="#E58A7B">{error?.message || 'Failed to load storage'}</Text>
+          <ModalButton variant="primary" onClick={handleRefresh} leftIcon={<Icon as={HiSync} />}>
             Retry
           </ModalButton>
         </VStack>
@@ -213,107 +186,95 @@ const PhotoStorageModal = ({ isOpen, onClose, onUpgrade }) => {
     >
       <VStack spacing={5} align="stretch">
 
-        {/* Storage Summary */}
+        {/* Cloud hero */}
         <Box
-          p={5}
-          borderRadius="xl"
-          bg={bgCard}
-          backdropFilter="blur(8px)"
+          p={6}
+          borderRadius="16px"
+          bg={t.surface}
           border="1px solid"
-          borderColor={borderColor}
-          boxShadow={cardShadow}
+          borderColor={t.hairline}
           textAlign="center"
         >
-          <VStack spacing={3}>
+          <Box
+            display="inline-flex"
+            p={3}
+            borderRadius="full"
+            bg={t.accentSoftBg}
+            border="1px solid rgba(111,208,196,0.28)"
+            mb={3}
+          >
+            <Icon as={HiCloud} boxSize={7} color={t.accent} />
+          </Box>
+          <Text fontFamily={MONO} fontSize="11px" color={t.textMuted} letterSpacing="0.10em" textTransform="uppercase" mb={1}>
+            Storage Usage
+          </Text>
+          <Text fontFamily={MONO} fontSize="28px" fontWeight="700" color={t.text} lineHeight="1">
+            {local.used}
+            <Text as="span" fontSize="16px" color={t.textSoft}> / {local.total} GB</Text>
+          </Text>
+          {local.isPremium && (
             <Box
-              p={3}
+              display="inline-block"
+              mt={2}
+              px={3}
+              py={1}
               borderRadius="full"
-              bg={cloudBg}
-              color={cloudColor}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+              bg="rgba(235,181,114,0.12)"
+              border="1px solid rgba(235,181,114,0.28)"
             >
-              <Icon as={HiCloud} boxSize={6} />
+              <Text fontFamily={MONO} fontSize="10px" fontWeight="700" color={t.primary} letterSpacing="0.10em">
+                PREMIUM · 100 GB
+              </Text>
             </Box>
-            <Text fontSize="xl" fontWeight="bold" color={textColor}>
-              Storage Usage
-            </Text>
-            <Text fontSize="sm" color={muted600}>
-              {localStorageData.used} GB of {localStorageData.total} GB used
-            </Text>
-          </VStack>
+          )}
         </Box>
 
-        {/* Progress */}
-        <Box bg={bgCard} borderRadius="lg" border="1px solid" borderColor={borderColor} p={4} backdropFilter="blur(8px)">
-          <HStack justify="space-between" mb={2}>
-            <Text fontWeight="semibold" color={textColor}>Storage Used</Text>
-            <Text fontSize="sm" color={muted600}>
-              {usagePercentage.toFixed(1)}%
+        {/* Progress bar */}
+        <Box p={4} borderRadius="14px" bg={t.surface} border="1px solid" borderColor={t.hairline}>
+          <HStack justify="space-between" mb={3}>
+            <Text fontFamily={MONO} fontSize="11px" color={t.textMuted} textTransform="uppercase" letterSpacing="0.08em">
+              Used
+            </Text>
+            <Text fontFamily={MONO} fontSize="13px" fontWeight="700" color={isAt ? '#E58A7B' : isNear ? t.primary : t.accent}>
+              {pct.toFixed(1)}%
             </Text>
           </HStack>
-          <Progress
-            value={usagePercentage}
-            colorScheme={getStorageColor()}
-            borderRadius="full"
-            size="lg"
-          />
+          <StorageBar pct={pct} isNear={isNear} isAt={isAt} />
           <HStack justify="space-between" mt={2}>
-            <Text fontSize="xs" color={muted500}>
-              {localStorageData.used} GB used
-            </Text>
-            <Text fontSize="xs" color={muted500}>
-              {(localStorageData.total - localStorageData.used).toFixed(2)} GB free
-            </Text>
+            <Text fontFamily={MONO} fontSize="10px" color={t.textMuted}>{local.used} GB used</Text>
+            <Text fontFamily={MONO} fontSize="10px" color={t.textMuted}>{(local.total - local.used).toFixed(2)} GB free</Text>
           </HStack>
         </Box>
+
+        {/* Stats */}
+        <HStack spacing={3}>
+          <Stat label="Photos" value={local.photos} icon={HiPhoto} t={t} />
+          <Stat label="Plan" value={local.isPremium ? 'Premium' : 'Free'} icon={HiCloud} t={t} />
+        </HStack>
 
         {/* Warning */}
-        {(isNearLimit || isAtLimit) && (
+        {(isNear || isAt) && (
           <Box
             p={4}
-            borderRadius="lg"
-            bg={warningBg}
-            border="1px solid"
-            borderColor={warningBorderColor}
-            backdropFilter="blur(6px)"
+            borderRadius="14px"
+            bg="rgba(229,138,123,0.08)"
+            border="1px solid rgba(229,138,123,0.32)"
           >
             <HStack spacing={3}>
-              <Icon as={HiExclamationTriangle} color="orange.500" boxSize={5} />
+              <Icon as={HiExclamationTriangle} color="#E58A7B" boxSize={5} flexShrink={0} />
               <Box>
-                <Text fontWeight="bold" color={warningTitleColor}>
-                  {isAtLimit ? "Storage Full!" : "Storage Almost Full"}
+                <Text fontFamily={MONO} fontSize="12px" fontWeight="700" color="#E58A7B" mb={0.5}>
+                  {isAt ? 'Storage Full' : 'Almost Full'}
                 </Text>
-                <Text fontSize="sm" color={warningTextColor}>
-                  {isAtLimit
-                    ? "You cannot upload more photos. Please upgrade your storage plan."
-                    : "Consider upgrading your plan to avoid interruptions."}
+                <Text fontFamily={MONO} fontSize="11px" color="rgba(229,138,123,0.80)">
+                  {isAt
+                    ? 'Upgrade your plan to continue uploading photos.'
+                    : 'Consider upgrading before you run out of space.'}
                 </Text>
               </Box>
             </HStack>
           </Box>
         )}
-
-        {/* Stats */}
-        <Box
-          p={4}
-          borderRadius="lg"
-          bg={bgCard}
-          border="1px solid"
-          borderColor={borderColor}
-          backdropFilter="blur(8px)"
-        >
-          <HStack spacing={3}>
-            <Text fontWeight="semibold" color={textColor}>Photos Stored</Text>
-            <Text fontWeight="bold" border="1px solid" borderColor={borderColor} p={1} borderRadius="md">
-              {localStorageData.photos}
-            </Text>
-            <Text fontSize="sm" color={muted600}>
-              Total photos in your collection
-            </Text>
-          </HStack>
-        </Box>
 
       </VStack>
     </BaseModal>
