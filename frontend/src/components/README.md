@@ -25,12 +25,14 @@ src/components/
 │   │   └── LoadingState.jsx
 │   ├── landing/         # Componentes da landing page
 │   │   ├── HeroSection.jsx
-│   │   ├── FeaturesSection.jsx
-│   │   ├── BenefitsSection.jsx
+│   │   ├── BentoShowcase.jsx
+│   │   ├── ManifestoSection.jsx
+│   │   ├── MemoryGallerySection.jsx
 │   │   ├── HowItWorksSection.jsx
 │   │   ├── TestimonialsSection.jsx
 │   │   ├── CTASection.jsx
-│   │   └── FeatureCard.jsx
+│   │   ├── WorldGlobe.jsx
+│   │   └── landingUI.jsx
 │   ├── index.js         # Exportações dos componentes de features
 │   ├── photos/              # Feature de gerenciamento de fotos
 │   │   ├── index.js

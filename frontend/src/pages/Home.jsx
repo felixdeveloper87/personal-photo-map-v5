@@ -1,11 +1,13 @@
-import React, { useContext } from 'react';
-import { useDisclosure } from '@chakra-ui/react';
+import { useContext } from 'react';
+import { Box, useDisclosure } from '@chakra-ui/react';
 import { AuthContext } from '../context/AuthContext';
 import HeroSection from '../components/features/landing/HeroSection';
 import BentoShowcase from '../components/features/landing/BentoShowcase';
-import CTASection from '../components/features/landing/CTASection';
-import TestimonialsSection from '../components/features/landing/TestimonialsSection';
+import ManifestoSection from '../components/features/landing/ManifestoSection';
+import MemoryGallerySection from '../components/features/landing/MemoryGallerySection';
 import HowItWorksSection from '../components/features/landing/HowItWorksSection';
+import TestimonialsSection from '../components/features/landing/TestimonialsSection';
+import CTASection from '../components/features/landing/CTASection';
 import LoginModal from '../components/modals/LoginModal';
 import RegisterModal from '../components/modals/RegisterModal';
 
@@ -22,25 +24,16 @@ function Home() {
 
   return (
     <>
-      {/* Hero */}
-      <HeroSection
-        onOpenRegister={handleOpenRegister}
-        onOpenLogin={loginModal.onOpen}
-      />
+      <Box bg="#0A0C11" minH="100vh" fontFamily="'Schibsted Grotesk', Inter, sans-serif">
+        <HeroSection onOpenRegister={handleOpenRegister} onOpenLogin={loginModal.onOpen} />
+        <BentoShowcase />
+        <ManifestoSection />
+        <MemoryGallerySection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <CTASection onOpenRegister={handleOpenRegister} />
+      </Box>
 
-      {/* Product showcase — consolidated bento grid */}
-      <BentoShowcase />
-
-      {/* How It Works */}
-      <HowItWorksSection />
-
-      {/* Social proof */}
-      <TestimonialsSection />
-
-      {/* CTA */}
-      <CTASection onOpenRegister={handleOpenRegister} />
-
-      {/* Authentication Modals */}
       <LoginModal
         isOpen={loginModal.isOpen}
         onClose={loginModal.onClose}

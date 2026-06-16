@@ -1,30 +1,19 @@
-import React from 'react';
-import {
-  Box,
-  Button,
-  HStack,
-  VStack,
-  Heading,
-  Text,
-  Icon,
-  useColorModeValue,
-} from '@chakra-ui/react';
+/* eslint-disable react/prop-types */
+import { Box, Button, HStack, VStack, Heading, Text, Icon } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
-/**
- * Landing design system — "Refined Blue".
- * One brand colour used with intent, neutral surfaces, calm motion.
- * Everything on the landing pulls from here so the page stays consistent.
- */
-
 export const BRAND = {
-  primary: '#2563EB',
-  primaryHover: '#1D4ED8',
-  primaryActive: '#1E40AF',
-  accent: '#F59E0B', // reserved for rare highlights (e.g. rating stars)
+  bg: '#0A0C11',
+  bg2: '#0E1118',
+  primary: '#EBB572',
+  primaryHover: '#F1C98D',
+  primaryActive: '#D79A55',
+  accent: '#6FD0C4',
+  rose: '#E58A7B',
+  cream: '#ECE7DC',
+  muted: '#8B90A0',
 };
 
-// Calm, single motion language for the whole page.
 export const fadeInUp = {
   initial: { opacity: 0, y: 16 },
   whileInView: { opacity: 1, y: 0 },
@@ -36,41 +25,35 @@ export const MotionBox = motion.create(Box);
 
 export function useLandingTokens() {
   return {
+    bg: BRAND.bg,
+    bg2: BRAND.bg2,
     primary: BRAND.primary,
     primaryHover: BRAND.primaryHover,
+    primaryActive: BRAND.primaryActive,
     accent: BRAND.accent,
+    rose: BRAND.rose,
 
-    text: useColorModeValue('#0F172A', '#F8FAFC'),
-    textSoft: useColorModeValue('#475569', '#9FB0C8'),
-    textMuted: useColorModeValue('#64748B', '#6B7A90'),
+    text: BRAND.cream,
+    textSoft: '#B8B0A2',
+    textMuted: BRAND.muted,
 
-    bg: useColorModeValue('#FFFFFF', '#06070B'),
-    surface: useColorModeValue('#FFFFFF', '#0E1424'),
-    surfaceSubtle: useColorModeValue('#F8FAFC', '#0A0F1C'),
+    surface: 'rgba(20,24,33,0.74)',
+    surfaceSolid: '#11151E',
+    surfaceSubtle: '#0E1118',
 
-    hairline: useColorModeValue('#E5E7EB', 'rgba(255,255,255,0.08)'),
-    hairlineStrong: useColorModeValue('#D5DBE3', 'rgba(255,255,255,0.16)'),
+    hairline: 'rgba(236,231,220,0.10)',
+    hairlineStrong: 'rgba(235,181,114,0.32)',
 
-    primarySoftBg: useColorModeValue('rgba(37,99,235,0.06)', 'rgba(37,99,235,0.14)'),
-    primarySoftBorder: useColorModeValue('rgba(37,99,235,0.16)', 'rgba(37,99,235,0.32)'),
-    accentSoftBg: useColorModeValue('rgba(245,158,11,0.10)', 'rgba(245,158,11,0.16)'),
+    primarySoftBg: 'rgba(235,181,114,0.12)',
+    primarySoftBorder: 'rgba(235,181,114,0.28)',
+    accentSoftBg: 'rgba(111,208,196,0.12)',
 
-    shadowSm: useColorModeValue(
-      '0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.05)',
-      '0 1px 2px rgba(0,0,0,0.5)'
-    ),
-    shadowMd: useColorModeValue(
-      '0 8px 24px -10px rgba(15,23,42,0.12)',
-      '0 10px 28px -12px rgba(0,0,0,0.6)'
-    ),
-    shadowLg: useColorModeValue(
-      '0 24px 50px -20px rgba(15,23,42,0.20)',
-      '0 28px 60px -24px rgba(0,0,0,0.7)'
-    ),
+    shadowSm: '0 1px 2px rgba(0,0,0,0.36)',
+    shadowMd: '0 18px 44px -24px rgba(0,0,0,0.72)',
+    shadowLg: '0 34px 90px -38px rgba(0,0,0,0.88)',
   };
 }
 
-/** Small uppercase label with a leading rule — replaces the big gradient badges. */
 export const Eyebrow = ({ children, icon }) => {
   const t = useLandingTokens();
   return (
@@ -80,9 +63,10 @@ export const Eyebrow = ({ children, icon }) => {
       <Text
         fontSize="xs"
         fontWeight="700"
-        letterSpacing="0.14em"
+        letterSpacing="0"
         textTransform="uppercase"
         color={t.primary}
+        fontFamily="'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace"
       >
         {children}
       </Text>
@@ -96,7 +80,7 @@ export const SectionHeading = ({
   title,
   subtitle,
   align = 'center',
-  maxW = '720px',
+  maxW = '760px',
 }) => {
   const t = useLandingTokens();
   const isCenter = align === 'center';
@@ -111,16 +95,17 @@ export const SectionHeading = ({
       {eyebrow && <Eyebrow icon={eyebrowIcon}>{eyebrow}</Eyebrow>}
       <Heading
         as="h2"
-        fontWeight="800"
-        letterSpacing="-0.02em"
-        lineHeight="1.1"
-        fontSize={{ base: '1.75rem', md: '2.4rem', lg: '2.7rem' }}
+        fontFamily="'Instrument Serif', Georgia, serif"
+        fontWeight="400"
+        letterSpacing="0"
+        lineHeight="1.04"
+        fontSize={{ base: '2.2rem', md: '3.1rem', lg: '3.6rem' }}
         color={t.text}
       >
         {title}
       </Heading>
       {subtitle && (
-        <Text fontSize={{ base: 'md', md: 'lg' }} color={t.textSoft} lineHeight="1.7" maxW="620px">
+        <Text fontSize={{ base: 'md', md: 'lg' }} color={t.textSoft} lineHeight="1.7" maxW="660px">
           {subtitle}
         </Text>
       )}
@@ -128,7 +113,6 @@ export const SectionHeading = ({
   );
 };
 
-/** Neutral elevated card with a calm lift on hover. */
 export const SurfaceCard = ({ children, hover = true, p = 6, ...props }) => {
   const t = useLandingTokens();
   return (
@@ -136,7 +120,7 @@ export const SurfaceCard = ({ children, hover = true, p = 6, ...props }) => {
       bg={t.surface}
       border="1px solid"
       borderColor={t.hairline}
-      borderRadius="20px"
+      borderRadius="8px"
       boxShadow={t.shadowSm}
       p={p}
       transition="border-color .25s ease, box-shadow .25s ease, transform .25s ease"
@@ -155,10 +139,10 @@ export const SurfaceCard = ({ children, hover = true, p = 6, ...props }) => {
 const buttonVariants = (t) => ({
   primary: {
     bg: t.primary,
-    color: 'white',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.12)',
+    color: '#0A0C11',
+    boxShadow: '0 12px 32px rgba(235,181,114,0.18)',
     _hover: { bg: t.primaryHover, transform: 'translateY(-1px)', boxShadow: t.shadowMd },
-    _active: { transform: 'translateY(0)', bg: t.primary },
+    _active: { transform: 'translateY(0)', bg: t.primaryActive },
   },
   secondary: {
     bg: 'transparent',
@@ -182,7 +166,7 @@ export const LandingButton = ({ variant = 'primary', children, size = 'lg', ...p
   return (
     <Button
       fontWeight="600"
-      borderRadius="14px"
+      borderRadius="8px"
       letterSpacing="0"
       transition="all .2s ease"
       {...dims}

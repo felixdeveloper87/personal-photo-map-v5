@@ -1,3 +1,5 @@
+/* eslint-disable react/display-name */
+/* eslint-disable react/prop-types */
 import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
 import { MapContainer, GeoJSON, Rectangle, useMap } from 'react-leaflet';
 import { Box, useColorMode, useBreakpointValue } from '@chakra-ui/react';
@@ -127,8 +129,6 @@ const Map = () => {
   const initialZoom = useBreakpointValue({ base: 2, md: 2.0, lg: 2.5, xl: 3 }) ?? 2.6;
   const initialMinZoom = useBreakpointValue({ base: 1.8, md: 3.0 }) ?? 2.3;
 
-  const colors = useMemo(() => ({ primary: '#3B82F6', secondary: '#10B981' }), []);
-
   // ✅ Hook customizado para efeito de destaque
   const { highlightedCountries, isEffectActive, highlightIntensity } = useCountryHighlight(
     isLoggedIn,
@@ -136,9 +136,8 @@ const Map = () => {
   );
 
   // ✅ Estilos de país com memoização
-  const countryStyle = useCallback(
-    createCountryStyleBase(
-      colors,
+  const countryStyle = useMemo(
+    () => createCountryStyleBase(
       countriesWithPhotos,
       highlightedCountries,
       isLoggedIn,
@@ -146,7 +145,7 @@ const Map = () => {
       highlightIntensity,
       colorMode
     ),
-    [colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode]
+    [countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode]
   );
 
   // ✅ Estado do modal

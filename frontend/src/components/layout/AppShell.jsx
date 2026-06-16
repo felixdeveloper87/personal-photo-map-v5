@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Box, Flex, Spinner, useMediaQuery } from '@chakra-ui/react';
 import SmartHomeRoute from '../ui/SmartHomeRoute';
 import ProtectedRoute from '../ui/ProtectedRoute';
@@ -80,9 +80,11 @@ const AppRoutes = () => (
 
 const AppShell = () => {
   const nav = useNavActions();
+  const location = useLocation();
   const { headerHeight, headerRef } = useHeaderHeight();
   const [isDesktop] = useMediaQuery('(min-width: 992px)');
   const useDesktopShell = nav.isLoggedIn && isDesktop;
+  const isLandingHeader = location.pathname === '/' && !nav.isLoggedIn;
   const topOffset = useDesktopShell ? '64px' : `${headerHeight}px`;
 
   return (
@@ -96,7 +98,7 @@ const AppShell = () => {
           </>
         ) : (
           <Box as="header">
-            <Header ref={headerRef} nav={nav} />
+            <Header ref={headerRef} nav={nav} isLandingHeader={isLandingHeader} />
           </Box>
         )}
 

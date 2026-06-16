@@ -1,142 +1,213 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
+import { Box, Container, Grid, GridItem, HStack, Heading, Icon, Text, VStack } from '@chakra-ui/react';
 import {
-  Box, Container, Grid, GridItem, VStack, HStack, Heading, Text, Icon, useColorModeValue,
-} from '@chakra-ui/react';
-import {
-  HiMapPin, HiChartBarSquare, HiCalendarDays, HiVideoCamera, HiPlay,
-  HiCheckBadge, HiSparkles,
+  HiArrowUpTray,
+  HiChartBarSquare,
+  HiCheckBadge,
+  HiLockClosed,
+  HiMapPin,
+  HiPlay,
+  HiSparkles,
+  HiVideoCamera,
 } from 'react-icons/hi2';
-import Flag from 'react-world-flags';
-import MiniMap from './MiniMap';
-import { useLandingTokens, SectionHeading, MotionBox, fadeInUp } from './landingUI';
+import { MotionBox, SectionHeading, fadeInUp, useLandingTokens } from './landingUI';
 
-/* ----------------------------- small visuals ----------------------------- */
+const SAMPLE_PHOTO =
+  'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=700&q=80';
 
 const StatRow = ({ label, value, pct }) => {
   const t = useLandingTokens();
   return (
     <VStack align="stretch" spacing={1.5}>
       <HStack justify="space-between">
-        <Text fontSize="sm" color={t.textSoft} fontWeight="500">{label}</Text>
-        <Text fontSize="sm" color={t.text} fontWeight="700">{value}</Text>
+        <Text fontSize="sm" color={t.textSoft} fontWeight="500">
+          {label}
+        </Text>
+        <Text fontSize="sm" color={t.text} fontWeight="700">
+          {value}
+        </Text>
       </HStack>
-      <Box h="6px" borderRadius="full" bg={t.hairline} overflow="hidden">
-        <Box h="full" w={`${pct}%`} borderRadius="full" bg={t.primary} />
+      <Box h="6px" borderRadius="full" bg="rgba(236,231,220,0.08)" overflow="hidden">
+        <Box h="full" w={`${pct}%`} borderRadius="full" bg={t.accent} />
       </Box>
     </VStack>
   );
 };
 
-const MapPanel = () => {
+const UploadPanel = () => {
   const t = useLandingTokens();
   return (
-    <Box flex="1" borderRadius="16px" overflow="hidden" border="1px solid" borderColor={t.hairline} minH={{ base: '210px', lg: '250px' }}>
-      <MiniMap width="100%" height="100%" isStatic />
+    <Box position="relative" h="230px" borderRadius="8px" overflow="hidden" bg={t.bg2} border="1px solid" borderColor={t.hairline}>
+      <Box
+        position="absolute"
+        inset={0}
+        opacity={0.36}
+        backgroundImage="linear-gradient(rgba(236,231,220,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(236,231,220,0.07) 1px, transparent 1px)"
+        backgroundSize="52px 52px"
+      />
+      <Box
+        position="absolute"
+        left={{ base: 5, md: 7 }}
+        top={6}
+        w="118px"
+        h="154px"
+        borderRadius="6px"
+        bg="#ECE6D8"
+        p="7px"
+        transform="rotate(-5deg)"
+        boxShadow="0 18px 42px rgba(0,0,0,0.46)"
+      >
+        <Box as="img" src={SAMPLE_PHOTO} alt="Lisbon travel memory" w="full" h="112px" objectFit="cover" borderRadius="4px" />
+        <Text mt={2} color="#2F2921" fontSize="10px" fontWeight="800">
+          LISBON / 2024
+        </Text>
+      </Box>
+      <VStack
+        position="absolute"
+        right={{ base: 4, md: 7 }}
+        bottom={6}
+        align="start"
+        spacing={2}
+        bg="rgba(10,12,17,0.62)"
+        border="1px solid"
+        borderColor={t.hairline}
+        borderRadius="8px"
+        p={4}
+      >
+        <HStack spacing={2}>
+          <Icon as={HiCheckBadge} color={t.primary} boxSize={4} />
+          <Text color={t.text} fontWeight="700" fontSize="sm">
+            Metadata read
+          </Text>
+        </HStack>
+        <Text color={t.textSoft} fontSize="12px">
+          Year from EXIF or file date
+        </Text>
+        <Text color={t.primary} fontFamily="'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace" fontSize="11px">
+          GPS badge when available
+        </Text>
+      </VStack>
     </Box>
+  );
+};
+
+const CountryTimelinePanel = () => {
+  const t = useLandingTokens();
+  const rows = [
+    ['Portugal', '2024', 42, t.primary],
+    ['Japan', '2023', 31, t.accent],
+    ['Iceland', '2022', 18, t.rose],
+  ];
+  const max = 42;
+  return (
+    <VStack align="stretch" spacing={4} borderRadius="8px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} p={5}>
+      {rows.map(([country, year, count, color]) => (
+        <HStack key={country} spacing={3}>
+          <Box w="8px" h="8px" borderRadius="2px" bg={color} flexShrink={0} />
+          <Box minW="84px">
+            <Text color={t.text} fontSize="sm" fontWeight="700">
+              {country}
+            </Text>
+            <Text color={t.textMuted} fontSize="11px">
+              {year}
+            </Text>
+          </Box>
+          <Box flex="1" h="7px" borderRadius="full" bg="rgba(236,231,220,0.08)" overflow="hidden">
+            <Box h="full" w={`${(count / max) * 100}%`} bg={color} borderRadius="full" />
+          </Box>
+          <Text color={t.textSoft} fontSize="11px" minW="54px" textAlign="right">
+            {count} photos
+          </Text>
+        </HStack>
+      ))}
+    </VStack>
   );
 };
 
 const DataPanel = () => {
   const t = useLandingTokens();
   return (
-    <Box flex="1" borderRadius="16px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} p={5}>
-      <HStack justify="space-between" mb={4}>
-        <HStack spacing={2.5}>
-          <Box
-            w="34px"
-            h="34px"
-            borderRadius="9px"
-            bg={t.surface}
-            border="1px solid"
-            borderColor={t.hairline}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            overflow="hidden"
-          >
-            <Flag code="JP" fallback={<Text fontSize="11px" fontWeight="700" color={t.textSoft}>JP</Text>} style={{ width: 22, height: 16, borderRadius: 2, objectFit: 'cover' }} />
-          </Box>
-          <VStack align="start" spacing={0}>
-            <Text fontSize="sm" fontWeight="700" color={t.text}>Japan</Text>
-            <Text fontSize="11px" color={t.textMuted}>World Bank · 2023</Text>
-          </VStack>
-        </HStack>
-        <Icon as={HiCheckBadge} color={t.primary} boxSize={4} />
+    <VStack align="stretch" spacing={4} borderRadius="8px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} p={5}>
+      <HStack justify="space-between">
+        <VStack align="start" spacing={0}>
+          <Text color={t.text} fontSize="sm" fontWeight="700">
+            Japan
+          </Text>
+          <Text color={t.textMuted} fontSize="11px">
+            World Bank indicators
+          </Text>
+        </VStack>
+        <Text color={t.primary} fontFamily="'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace" fontSize="12px">
+          JP
+        </Text>
       </HStack>
-      <VStack align="stretch" spacing={3.5}>
-        <StatRow label="GDP per capita" value="$33,800" pct={62} />
-        <StatRow label="Life expectancy" value="84 yrs" pct={92} />
-        <StatRow label="Literacy rate" value="99%" pct={99} />
-      </VStack>
-    </Box>
-  );
-};
-
-const DatePanel = () => {
-  const t = useLandingTokens();
-  const rows = [['2024', 128], ['2023', 94], ['2022', 60]];
-  const max = 128;
-  return (
-    <Box flex="1" borderRadius="16px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} p={5} display="flex" alignItems="center">
-      <VStack align="stretch" spacing={3.5} w="full">
-        {rows.map(([year, count]) => (
-          <HStack key={year} spacing={3}>
-            <Text fontSize="xs" fontWeight="700" color={t.textSoft} w="34px">{year}</Text>
-            <Box flex="1" h="6px" bg={t.hairline} borderRadius="full" overflow="hidden">
-              <Box h="full" w={`${(count / max) * 100}%`} bg={t.primary} borderRadius="full" />
-            </Box>
-            <Text fontSize="11px" color={t.textMuted} w="62px" textAlign="right">{count} photos</Text>
-          </HStack>
-        ))}
-      </VStack>
-    </Box>
+      <StatRow label="Life expectancy" value="84 yrs" pct={92} />
+      <StatRow label="Internet users" value="85%" pct={85} />
+      <StatRow label="GDP per capita" value="$33.8k" pct={62} />
+    </VStack>
   );
 };
 
 const VideoPanel = () => {
   const t = useLandingTokens();
-  const frameBg = useColorModeValue('#0F172A', '#1E293B');
   return (
-    <Box flex="1" display="flex" alignItems="center" justifyContent="center" borderRadius="16px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} py={6}>
-      <Box position="relative" w="92px" h="132px" borderRadius="12px" bg={frameBg} overflow="hidden" boxShadow={t.shadowMd}>
-        <Box position="absolute" inset={0} bgGradient="linear(160deg, rgba(37,99,235,0.45), rgba(15,23,42,0.05))" />
+    <Box position="relative" h="174px" borderRadius="8px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} overflow="hidden">
+      <Box position="absolute" inset={0} bgGradient="linear(135deg, rgba(235,181,114,0.22), rgba(111,208,196,0.12), rgba(229,138,123,0.12))" />
+      <Box
+        position="absolute"
+        left="50%"
+        top="50%"
+        transform="translate(-50%, -50%)"
+        w="92px"
+        h="132px"
+        borderRadius="8px"
+        bg="rgba(10,12,17,0.78)"
+        border="1px solid"
+        borderColor={t.hairline}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        boxShadow={t.shadowMd}
+      >
         <Box
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-          w="36px"
-          h="36px"
+          w="42px"
+          h="42px"
           borderRadius="full"
-          bg="whiteAlpha.900"
+          bg={t.primary}
+          color={t.bg}
           display="flex"
           alignItems="center"
           justifyContent="center"
-          boxShadow="0 6px 16px rgba(0,0,0,0.35)"
         >
-          <Icon as={HiPlay} color="#0F172A" boxSize={4} ml="2px" />
+          <Icon as={HiPlay} boxSize={5} ml="2px" />
         </Box>
       </Box>
+      <HStack position="absolute" left={4} bottom={4} spacing={2}>
+        <Box w="7px" h="7px" borderRadius="full" bg={t.accent} />
+        <Text color={t.textSoft} fontSize="12px">
+          vertical or landscape export
+        </Text>
+      </HStack>
     </Box>
   );
 };
 
 const SourceChips = () => {
   const t = useLandingTokens();
-  const items = ['World Bank', 'UN Data', 'REST Countries'];
+  const items = ['World Bank', 'REST Countries', 'Local photo library'];
   return (
     <HStack spacing={2} flexWrap="wrap">
       {items.map((s) => (
         <HStack key={s} spacing={1.5} bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} borderRadius="full" px={2.5} py={1}>
           <Box w="5px" h="5px" borderRadius="full" bg={t.primary} />
-          <Text fontSize="11px" fontWeight="600" color={t.textSoft}>{s}</Text>
+          <Text fontSize="11px" fontWeight="600" color={t.textSoft}>
+            {s}
+          </Text>
         </HStack>
       ))}
     </HStack>
   );
 };
-
-/* ------------------------------ bento card ------------------------------- */
 
 const BentoCard = ({ colSpan, minH, eyebrow, icon, title, desc, visual, footer, delay }) => {
   const t = useLandingTokens();
@@ -151,24 +222,28 @@ const BentoCard = ({ colSpan, minH, eyebrow, icon, title, desc, visual, footer, 
           bg={t.surface}
           border="1px solid"
           borderColor={t.hairline}
-          borderRadius="20px"
+          borderRadius="8px"
           boxShadow={t.shadowSm}
-          p={{ base: 6, md: 7 }}
+          p={{ base: 5, md: 6 }}
           transition="border-color .25s ease, box-shadow .25s ease, transform .25s ease"
           _hover={{ borderColor: t.hairlineStrong, boxShadow: t.shadowMd, transform: 'translateY(-3px)' }}
         >
           {visual}
           <VStack align="start" spacing={2}>
             <HStack spacing={2.5}>
-              <Box display="inline-flex" p={2} borderRadius="10px" bg={t.primarySoftBg} color={t.primary}>
+              <Box display="inline-flex" p={2} borderRadius="8px" bg={t.primarySoftBg} color={t.primary}>
                 <Icon as={icon} boxSize={4} />
               </Box>
-              <Text fontSize="11px" fontWeight="700" letterSpacing="0.12em" textTransform="uppercase" color={t.textMuted}>
+              <Text fontSize="11px" fontWeight="700" letterSpacing="0" textTransform="uppercase" color={t.textMuted}>
                 {eyebrow}
               </Text>
             </HStack>
-            <Heading fontSize="xl" fontWeight="700" color={t.text} letterSpacing="-0.01em">{title}</Heading>
-            <Text fontSize="sm" color={t.textSoft} lineHeight="1.65">{desc}</Text>
+            <Heading fontSize="xl" fontWeight="700" color={t.text} letterSpacing="0">
+              {title}
+            </Heading>
+            <Text fontSize="sm" color={t.textSoft} lineHeight="1.65">
+              {desc}
+            </Text>
             {footer}
           </VStack>
         </VStack>
@@ -177,70 +252,70 @@ const BentoCard = ({ colSpan, minH, eyebrow, icon, title, desc, visual, footer, 
   );
 };
 
-/* ------------------------------- section --------------------------------- */
-
 const BentoShowcase = () => {
+  const t = useLandingTokens();
+
   return (
-    <Box as="section" py={{ base: 16, md: 24 }}>
+    <Box id="features" as="section" py={{ base: 16, md: 24 }} bg={t.bg} scrollMarginTop="110px">
       <Container maxW="container.xl">
         <VStack spacing={{ base: 12, md: 16 }} align="stretch">
           <MotionBox {...fadeInUp}>
             <SectionHeading
-              eyebrow="What you can do"
+              eyebrow="Product features"
               eyebrowIcon={HiSparkles}
-              title="Everything your journey needs, in one place"
-              subtitle="From the first upload to a shareable video — your photos, geography and real-world data, quietly connected."
+              title="A travel library that knows place, time and context"
+              subtitle="PhotoMap connects your uploaded images with country, year, map exploration, destination data and timeline video creation."
             />
           </MotionBox>
 
           <Grid templateColumns={{ base: '1fr', lg: 'repeat(12, 1fr)' }} gap={5}>
             <BentoCard
               colSpan={7}
-              minH="340px"
-              eyebrow="Map"
-              icon={HiMapPin}
-              title="Mapped by country"
-              desc="Every photo lands on an interactive world map, grouped by the place it was taken — your travels become a picture you can read at a glance."
-              visual={<MapPanel />}
+              minH="390px"
+              eyebrow="Upload"
+              icon={HiArrowUpTray}
+              title="Read metadata before upload"
+              desc="PhotoMap reads the year from EXIF or file data and shows whether GPS metadata exists before the images are saved."
+              visual={<UploadPanel />}
               delay={0}
             />
             <BentoCard
               colSpan={5}
-              minH="340px"
-              eyebrow="Data"
-              icon={HiChartBarSquare}
-              title="Real country data"
-              desc="Economic and social indicators for every destination, straight from the World Bank."
-              visual={<DataPanel />}
+              minH="390px"
+              eyebrow="Countries"
+              icon={HiMapPin}
+              title="Organized by country and year"
+              desc="Your photo library becomes easier to scan because each destination keeps its own chronological collection."
+              visual={<CountryTimelinePanel />}
               delay={0.08}
             />
             <BentoCard
               colSpan={4}
-              minH="260px"
-              eyebrow="Timeline"
-              icon={HiCalendarDays}
-              title="Organized by date"
-              desc="Your library sorts itself into a clean, chronological journey."
-              visual={<DatePanel />}
+              minH="300px"
+              eyebrow="Data"
+              icon={HiChartBarSquare}
+              title="Country insights"
+              desc="Explore economic, social and geographic indicators for the places connected to your photos."
+              visual={<DataPanel />}
               delay={0.04}
             />
             <BentoCard
               colSpan={4}
-              minH="260px"
+              minH="300px"
               eyebrow="Video"
               icon={HiVideoCamera}
-              title="Export social videos"
-              desc="Turn a trip into a polished clip for Reels, TikTok and Shorts."
+              title="Timeline video export"
+              desc="Turn a country gallery into a polished video with configurable duration, transitions, resolution and audio."
               visual={<VideoPanel />}
               delay={0.12}
             />
             <BentoCard
               colSpan={4}
-              minH="260px"
-              eyebrow="Coverage"
-              icon={HiCheckBadge}
-              title="Built on trusted sources"
-              desc="195+ countries with indicators refreshed continuously from authoritative databases."
+              minH="300px"
+              eyebrow="Privacy"
+              icon={HiLockClosed}
+              title="Built around your account"
+              desc="Uploads are tied to authenticated users, with country collections fetched only for the signed-in account."
               footer={<SourceChips />}
               delay={0.16}
             />

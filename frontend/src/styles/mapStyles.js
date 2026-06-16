@@ -1,12 +1,4 @@
-/*
- * Arquivo de Funções JavaScript para Estilos de Mapa
- * Funções para selecionar países de destaque, obter estilos do oceano
- * e criar estilos para os países, com cache para otimizar o desempenho.
- */
-
-// Estilos estáticos para evitar recriações
 const STATIC_COLORS = {
-  // Cores de países destacados - estáticas para melhor performance
   summerColors: {
     light: [
       { fill: '#FCD34D', border: '#F59E0B', shadow: '#FEF3C7', name: 'sun-yellow' },
@@ -16,7 +8,7 @@ const STATIC_COLORS = {
       { fill: '#EC4899', border: '#DB2777', shadow: '#F9A8D4', name: 'summer-pink' },
       { fill: '#8B5CF6', border: '#7C3AED', shadow: '#A78BFA', name: 'violet-sunset' },
       { fill: '#EF4444', border: '#DC2626', shadow: '#F87171', name: 'sunset-red' },
-      { fill: '#14B8A6', border: '#0D9488', shadow: '#5EEAD4', name: 'teal-ocean' }
+      { fill: '#14B8A6', border: '#0D9488', shadow: '#5EEAD4', name: 'teal-ocean' },
     ],
     dark: [
       { fill: '#6366F1', border: '#4F46E5', shadow: '#8B5CF6', name: 'indigo' },
@@ -26,46 +18,42 @@ const STATIC_COLORS = {
       { fill: '#8B5CF6', border: '#7C3AED', shadow: '#A78BFA', name: 'violet' },
       { fill: '#06B6D4', border: '#0891B2', shadow: '#67E8F9', name: 'cyan' },
       { fill: '#F97316', border: '#EA580C', shadow: '#FDBA74', name: 'orange' },
-      { fill: '#EC4899', border: '#DB2777', shadow: '#F9A8D4', name: 'pink' }
-    ]
-  }
+      { fill: '#EC4899', border: '#DB2777', shadow: '#F9A8D4', name: 'pink' },
+    ],
+  },
 };
 
-// Cache para estilos de países - evita recriação
 const countryStyleCache = new Map();
+const oceanStylesCache = new Map();
 
-// Função para selecionar países de destaque
 export const selectHighlightCountries = (countriesWithPhotos) => {
   const maxCountries = 3;
+
   if (countriesWithPhotos.length > 0) {
     return countriesWithPhotos
       .slice(0, maxCountries)
-      .map(country => country.countryId)
+      .map((country) => country.countryId)
       .sort(() => Math.random() - 0.5);
-  } else {
-    const fallbackCountries = [
-      'us', 'br', 'gb', 'fr', 'de', 'it', 'es', 'jp', 'ca', 'au',
-      'mx', 'ar', 'za', 'in', 'cn', 'ru', 'kr', 'th', 've', 'co'
-    ];
-
-    return fallbackCountries
-      .sort(() => Math.random() - 0.5)
-      .slice(0, maxCountries);
   }
+
+  const fallbackCountries = [
+    'us', 'br', 'gb', 'fr', 'de', 'it', 'es', 'jp', 'ca', 'au',
+    'mx', 'ar', 'za', 'in', 'cn', 'ru', 'kr', 'th', 've', 'co',
+  ];
+
+  return fallbackCountries
+    .sort(() => Math.random() - 0.5)
+    .slice(0, maxCountries);
 };
 
-// Função para obter a cor do oceano baseada no tema - otimizada
 export const getOceanColor = (colorMode) => {
   return colorMode === 'dark' ? 'transparent' : '#B3E5FC';
 };
 
-// Função para obter a opacidade do oceano baseada no tema - otimizada
 export const getOceanOpacity = (colorMode) => {
   return colorMode === 'dark' ? 0 : 0.4;
 };
 
-// Função centralizada para obter todos os estilos do oceano - memoizada
-const oceanStylesCache = new Map();
 export const getOceanStyles = (colorMode) => {
   if (oceanStylesCache.has(colorMode)) {
     return oceanStylesCache.get(colorMode);
@@ -76,16 +64,21 @@ export const getOceanStyles = (colorMode) => {
     opacity: getOceanOpacity(colorMode),
     background: getOceanColor(colorMode),
     fillColor: getOceanColor(colorMode),
-    fillOpacity: getOceanOpacity(colorMode)
+    fillOpacity: getOceanOpacity(colorMode),
   };
 
   oceanStylesCache.set(colorMode, styles);
   return styles;
 };
 
-// Função base para criar estilos de países - otimizada com cache
-export const createCountryStyleBase = (colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode) => {
-  // Chave única para o cache
+export const createCountryStyleBase = (
+  countriesWithPhotos,
+  highlightedCountries,
+  isLoggedIn,
+  isEffectActive,
+  highlightIntensity,
+  colorMode
+) => {
   const cacheKey = `${isLoggedIn}-${isEffectActive}-${highlightIntensity}-${colorMode}-${countriesWithPhotos.length}-${highlightedCountries.length}`;
 
   if (countryStyleCache.has(cacheKey)) {
@@ -93,28 +86,41 @@ export const createCountryStyleBase = (colors, countriesWithPhotos, highlightedC
   }
 
   const styleFunction = (feature) => {
-    return createCountryStyle(colors)(feature, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode);
+    return createCountryStyle()(
+      feature,
+      countriesWithPhotos,
+      highlightedCountries,
+      isLoggedIn,
+      isEffectActive,
+      highlightIntensity,
+      colorMode
+    );
   };
 
   countryStyleCache.set(cacheKey, styleFunction);
   return styleFunction;
 };
 
-// Função principal para criar estilos de países - otimizada
-export const createCountryStyle = (colors) => {
-  return (feature, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity = 1, colorMode = 'light') => {
+export const createCountryStyle = () => {
+  return (
+    feature,
+    countriesWithPhotos,
+    highlightedCountries,
+    isLoggedIn,
+    isEffectActive,
+    highlightIntensity = 1,
+    colorMode = 'light'
+  ) => {
     const countryId = feature.properties.iso_a2.toLowerCase();
     const hasPhotos = countriesWithPhotos.some((country) => country.countryId === countryId);
     const isHighlighted = highlightedCountries.includes(countryId);
 
-    // Highlighted countries for non-logged users - cores de verão
     if (!isLoggedIn && isEffectActive && isHighlighted) {
       const randomColor = Math.random();
       const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
       const colorIndex = Math.floor(randomColor * colorSets.length);
       const colorSet = colorSets[colorIndex];
-
-      const opacity = 0.6 + (highlightIntensity * 0.2);
+      const opacity = 0.6 + highlightIntensity * 0.2;
 
       return {
         fillColor: colorSet.fill,
@@ -127,7 +133,6 @@ export const createCountryStyle = (colors) => {
       };
     }
 
-    // Countries with photos (estado padrão para logados) - ESTÁTICO, sem piscar
     if (isLoggedIn && hasPhotos) {
       return {
         fillColor: colorMode === 'dark' ? '#3B82F6' : '#FCD34D',
@@ -139,7 +144,6 @@ export const createCountryStyle = (colors) => {
       };
     }
 
-    // Default style - IGUAL para usuários logados e não logados
     return {
       fillColor: colorMode === 'dark' ? '#4B5563' : '#E5E7EB',
       weight: 1.5,
@@ -150,24 +154,3 @@ export const createCountryStyle = (colors) => {
     };
   };
 };
-
-// Função específica para MiniMap - mais eficiente para usuários não logados
-const miniMapStyleCache = new Map();
-export const createMiniMapStyle = (colorMode) => {
-  if (miniMapStyleCache.has(colorMode)) {
-    return miniMapStyleCache.get(colorMode);
-  }
-
-  const styleFunction = (feature) => ({
-    fillColor: colorMode === 'dark' ? '#4B5563' : '#E5E7EB',
-    weight: 1.25,
-    color: '#94A3B8',
-    fillOpacity: 0.7,
-    transition: 'all 0.15s ease',
-    className: 'country-gradient-gray',
-  });
-
-  miniMapStyleCache.set(colorMode, styleFunction);
-  return styleFunction;
-};
-

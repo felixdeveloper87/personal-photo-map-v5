@@ -1,7 +1,12 @@
-import React, { forwardRef } from "react";
+/* eslint-disable react/prop-types */
+import { forwardRef } from "react";
 import {
   Box,
+  Button,
   Flex,
+  Icon,
+  Link,
+  Text,
   useMediaQuery,
   useBreakpointValue,
   Container,
@@ -23,7 +28,13 @@ import {
   PremiumButton,
 } from "../../ui/buttons/HeaderButtons";
 
-const Header = forwardRef(({ nav }, ref) => {
+const LANDING_NAV = [
+  { label: "Features", href: "#features" },
+  { label: "Gallery", href: "#gallery" },
+  { label: "Workflow", href: "#workflow" },
+];
+
+const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
   const styles = useHeaderStyles();
   const containerStyles = useHeaderContainerStyles();
   const [isCompact] = useMediaQuery("(max-width: 1100px)");
@@ -40,6 +51,120 @@ const Header = forwardRef(({ nav }, ref) => {
   const centerMaxW = useBreakpointValue({
     lg: "800px", xl: "960px", "2xl": "1140px",
   });
+
+  if (isLandingHeader) {
+    return (
+      <Box
+        ref={ref}
+        as="header"
+        w="100%"
+        position="fixed"
+        top={{ base: "10px", md: "16px" }}
+        left="0"
+        right="0"
+        zIndex={1000}
+        px={{ base: 3, md: 6 }}
+      >
+        <Container maxW="container.xl" px={0}>
+          <Flex
+            align="center"
+            justify="space-between"
+            gap={{ base: 3, md: 6 }}
+            bg="rgba(14,17,24,0.72)"
+            border="1px solid"
+            borderColor="rgba(236,231,220,0.12)"
+            boxShadow="0 18px 54px rgba(0,0,0,0.38)"
+            backdropFilter="blur(18px)"
+            borderRadius={{ base: "12px", md: "999px" }}
+            px={{ base: 3, sm: 4, md: 5 }}
+            py={{ base: 2.5, md: 3 }}
+          >
+            <Flex
+              align="center"
+              gap={2.5}
+              minW="max-content"
+              cursor="pointer"
+              onClick={() => nav.navigate("/")}
+              role="group"
+            >
+              <Box
+                w="10px"
+                h="10px"
+                borderRadius="50% 50% 50% 0"
+                bg="#EBB572"
+                transform="rotate(-45deg)"
+                boxShadow="0 0 18px rgba(235,181,114,0.45)"
+              />
+              <Text
+                fontFamily="'Instrument Serif', Georgia, serif"
+                fontSize={{ base: "21px", md: "24px" }}
+                lineHeight="1"
+                color="#ECE7DC"
+                whiteSpace="nowrap"
+              >
+                Photo<Text as="span" color="#EBB572" fontStyle="italic">Map</Text>
+              </Text>
+            </Flex>
+
+            <HStack
+              as="nav"
+              spacing={{ base: 3, lg: 6 }}
+              display={{ base: "none", md: "flex" }}
+              flex="1"
+              justify="center"
+            >
+              {LANDING_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  color="#8B90A0"
+                  fontSize="13px"
+                  fontWeight="600"
+                  textDecoration="none"
+                  _hover={{ color: "#ECE7DC", textDecoration: "none" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </HStack>
+
+            <HStack spacing={{ base: 2, md: 3 }} minW="max-content">
+              <Button
+                onClick={nav.loginModal.onOpen}
+                variant="ghost"
+                h={{ base: "34px", md: "38px" }}
+                px={{ base: 3, md: 4 }}
+                borderRadius="8px"
+                color="#ECE7DC"
+                fontSize="13px"
+                fontWeight="600"
+                bg="transparent"
+                _hover={{ bg: "rgba(236,231,220,0.07)", color: "#EBB572" }}
+                _active={{ bg: "rgba(236,231,220,0.10)" }}
+              >
+                Log in
+              </Button>
+              <Button
+                onClick={nav.registerModal.onOpen}
+                h={{ base: "34px", md: "38px" }}
+                px={{ base: 3.5, md: 5 }}
+                borderRadius="8px"
+                bg="#EBB572"
+                color="#0A0C11"
+                fontSize="13px"
+                fontWeight="700"
+                rightIcon={<Icon as={FaGlobe} boxSize={3.5} display={{ base: "none", sm: "block" }} />}
+                _hover={{ bg: "#F1C98D", transform: "translateY(-1px)", boxShadow: "0 14px 34px rgba(235,181,114,0.22)" }}
+                _active={{ bg: "#D79A55", transform: "translateY(0)" }}
+              >
+                Create map
+              </Button>
+            </HStack>
+          </Flex>
+        </Container>
+      </Box>
+    );
+  }
 
   const mobileMenuItems = [
     { icon: FaCrown, label: "Premium", onClick: nav.premiumModal.onOpen },
