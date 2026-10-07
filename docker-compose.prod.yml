@@ -37,6 +37,9 @@ services:
       context: ./backend/photo-map
       dockerfile: Dockerfile
     container_name: photomap-backend-prod
+    # Override the image's start.sh, which hardcodes -Xmx2g and ignores JAVA_OPTS
+    command: ["sh", "-c", "exec java $$JAVA_OPTS -jar app.jar"]
+    mem_limit: 700m
     env_file:
       - env.prod
     ports:
@@ -69,7 +72,8 @@ services:
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
       
       # Java optimization for production (reduced for 1.8GB VPS + Cloudinary offloads processing)
-      - JAVA_OPTS=-Xmx512m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:MaxMetaspaceSize=128m
+      - JAVA_OPTS=-Xms64m -Xmx320m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - SPRING_PROFILES_ACTIVE=low-memory
     volumes:
       - ./storage:/photomap/storage
     depends_on:
