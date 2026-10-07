@@ -15,6 +15,11 @@ target/
 .DS_Store
 Thumbs.db
 
+# User uploads and server-side artifacts (never commit/clean these)
+storage/uploads/
+*.bak
+*.deb
+
 # Environment files (except examples)
 env*
 !env.example
