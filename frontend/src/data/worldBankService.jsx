@@ -241,13 +241,7 @@ const getRankingForYear = async (indicatorCode, isoCode, year) => {
       const codes = extractCountryCodes(entry);
       return codes.length > 0; // Apenas incluir se tiver pelo menos um código de país real
     });
-    
-    // Debug: contar quantas entradas foram filtradas
-    const filteredCount = allEntries.length - entries.length;
-    if (filteredCount > 0) {
-      console.log(`📊 Filtradas ${filteredCount} regiões agregadas de ${allEntries.length} entradas. Países reais: ${entries.length}`);
-    }
-    
+        
     if (!entries.length) {
       return null;
     }
@@ -283,16 +277,10 @@ const getRankingForYear = async (indicatorCode, isoCode, year) => {
     for (const iso of isoVariations) {
       rank = ranks[iso];
       if (rank) {
-        console.log(`✅ Ranking encontrado para ${isoCode} usando código ${iso}: posição ${rank}/${total}`);
         break;
       }
     }
     
-    if (!rank) {
-      // Debug: ver quais códigos estão disponíveis
-      const availableCodes = Object.keys(ranks).slice(0, 20);
-      console.log(`❌ Ranking não encontrado para ${isoCode}. Tentou: ${isoVariations.join(', ')}. Primeiros códigos disponíveis:`, availableCodes);
-    }
     
     return rank ? { rank, total, year } : null;
   } catch (error) {
@@ -447,33 +435,15 @@ export const fetchWorldBankIndicators = async (isoCode) => {
   // Primeiro tenta buscar do backend (que tem cache e rankings)
   try {
     const backendUrl = buildApiUrl(`/api/countries/${isoCode}/info`);
-    console.log(`🌐 [WorldBank] Tentando buscar indicadores do backend: ${backendUrl}`);
-    const fetchStartTime = performance.now();
     const backendResponse = await fetch(backendUrl);
     
     if (backendResponse.ok) {
       const backendData = await backendResponse.json();
-      const fetchDuration = (performance.now() - fetchStartTime).toFixed(0);
       
       // Se demorou mais de 3 segundos, provavelmente foi buscar dados novos (não cache)
-      // World Bank pode demorar mais porque busca muitos indicadores e calcula rankings
-      const isFromCache = fetchDuration < 3000;
       
-      const initialIndicatorsCount = Object.keys(backendData).filter(k => 
-        ['gdp', 'gdpGrowth', 'lifeExpectancy', 'gniPerCapita', 'internetUsers'].includes(k)
-      ).length;
       
-      console.log(`${isFromCache ? '✅' : '⏳'} [WorldBank] Dados obtidos do BACKEND ${isFromCache ? '(cache)' : '(buscando dados novos - pode demorar 10-30s)'}:`, {
-        countryId: isoCode,
-        indicatorsFound: initialIndicatorsCount,
-        hasRankings: !!(backendData.gdpRank || backendData.lifeExpectancyRank),
-        source: isFromCache ? 'backend-cache' : 'backend-fresh-fetch',
-        duration: `${fetchDuration}ms`
-      });
       
-      if (!isFromCache) {
-        console.log(`⏳ [WorldBank] Aguarde... O backend está buscando dados do World Bank e calculando rankings. Isso pode levar 10-30 segundos na primeira vez.`);
-      }
       
       // Converter dados do backend para o formato esperado pelo frontend
       const formatted = {};
@@ -759,16 +729,7 @@ export const fetchWorldBankIndicators = async (isoCode) => {
         }
       }
       
-      const indicatorsCount = Object.keys(formatted).length;
-      const rankingsCount = Object.keys(formatted.rankings || {}).length;
-      // Reutilizar isFromCache já calculado acima
       
-      console.log(`📊 [WorldBank] Dados formatados do backend:`, {
-        indicators: indicatorsCount,
-        rankings: rankingsCount,
-        source: isFromCache ? 'backend-cache' : 'backend-fresh-fetch',
-        note: isFromCache ? 'Dados do cache (rápido!)' : 'Dados recém-buscados (salvos no cache para próxima vez)'
-      });
       return formatted;
     } else {
       console.warn(`⚠️ [WorldBank] Backend retornou status ${backendResponse.status}. Tentando World Bank API diretamente...`);
@@ -778,7 +739,6 @@ export const fetchWorldBankIndicators = async (isoCode) => {
   }
 
   // Fallback para World Bank API direta
-  console.log(`🌐 [WorldBank] Buscando indicadores diretamente da World Bank API para: ${isoCode}`);
   const indicators = {
     gdp: "NY.GDP.MKTP.CD",
     lifeExpectancy: "SP.DYN.LE00.IN",
@@ -872,12 +832,6 @@ export const fetchWorldBankIndicators = async (isoCode) => {
     }
   }
   
-  console.log(`✅ [WorldBank] Dados obtidos da WORLD BANK API (fallback):`, {
-    countryId: isoCode,
-    indicators: Object.keys(formatted).length,
-    rankings: Object.keys(formatted.rankings).length,
-    source: 'worldbank-api-direct'
-  });
   
   return formatted;
 };

@@ -82,22 +82,16 @@ export const getMediaRecorderOptions = (videoBitsPerSecond = 8000000) => {
   // Tentar codecs MP4 primeiro para compatibilidade móvel
   if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac')) {
     options.mimeType = 'video/mp4;codecs=h264,aac';
-    console.log('✅ Usando codec MP4: h264,aac');
   } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2')) {
     options.mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
-    console.log('✅ Usando codec MP4: avc1.42E01E,mp4a.40.2');
   } else if (MediaRecorder.isTypeSupported('video/mp4')) {
     options.mimeType = 'video/mp4';
-    console.log('✅ Usando codec MP4 básico');
   } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
     options.mimeType = 'video/webm;codecs=vp9,opus';
-    console.log('⚠️ Fallback para WebM: vp9,opus');
   } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
     options.mimeType = 'video/webm;codecs=vp8,opus';
-    console.log('⚠️ Fallback para WebM: vp8,opus');
   } else if (MediaRecorder.isTypeSupported('video/webm')) {
     options.mimeType = 'video/webm';
-    console.log('⚠️ Fallback para WebM básico');
   }
   
   return options;
@@ -118,7 +112,6 @@ export const initializeFFmpeg = async () => {
     workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
   });
   
-  console.log('FFmpeg loaded successfully');
   return ffmpeg;
 };
 
@@ -131,25 +124,20 @@ export const initializeFFmpeg = async () => {
  */
 export const convertWebMToMP4 = async (webmBlob, ffmpeg, onProgress) => {
   if (!ffmpeg) {
-    console.log('FFmpeg not loaded, returning original WebM');
     return webmBlob;
   }
 
   try {
-    console.log('📁 Escrevendo arquivo WebM para FFmpeg...');
     await ffmpeg.writeFile('input.webm', await fetchFile(webmBlob));
-    console.log('✅ Arquivo WebM escrito com sucesso');
     
     // Set up progress tracking
     if (onProgress) {
       ffmpeg.on('progress', ({ progress }) => {
         const percent = Math.round(progress * 100);
         onProgress(percent);
-        console.log('🔄 Progresso FFmpeg:', percent + '%');
       });
     }
 
-    console.log('🎬 Iniciando conversão FFmpeg para MP4...');
     await ffmpeg.exec([
       '-i', 'input.webm',
       '-c:v', 'libx264',          // H.264 codec for maximum compatibility
@@ -162,24 +150,16 @@ export const convertWebMToMP4 = async (webmBlob, ffmpeg, onProgress) => {
       '-avoid_negative_ts', 'make_zero', // Evitar problemas de timestamp
       'output.mp4'
     ]);
-    console.log('✅ Conversão FFmpeg concluída');
 
     // Read the converted file
     const mp4Data = await ffmpeg.readFile('output.mp4');
     const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
     
-    console.log('📊 Comparação de arquivos:', {
-      webmSize: webmBlob.size,
-      mp4Size: mp4Blob.size,
-      webmSizeMB: (webmBlob.size / 1024 / 1024).toFixed(2) + ' MB',
-      mp4SizeMB: (mp4Blob.size / 1024 / 1024).toFixed(2) + ' MB'
-    });
 
     // Clean up
     await ffmpeg.deleteFile('input.webm');
     await ffmpeg.deleteFile('output.mp4');
 
-    console.log('✅ Video converted to MP4 successfully');
     return mp4Blob;
 
   } catch (error) {

@@ -130,13 +130,6 @@ const CountryDetails = () => {
     return () => clearInterval(interval);
   }, [weatherData?.timezone]);
 
-  // Debug indicators data
-  useEffect(() => {
-    if (indicatorsData) {
-      console.log('Economic/Social indicators loaded for', countryId, indicatorsData);
-    }
-  }, [indicatorsData, countryId]);
-
   if (countryLoading) return <LoadingState mutedTextColor={t.textSoft} />;
   if (countryError) return null;
 

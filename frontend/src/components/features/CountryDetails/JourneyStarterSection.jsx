@@ -79,16 +79,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
 
         // Se não encontrar, usa Wikipedia como fallback (apenas em inglês)
         if (!data || !data.summary) {
-          console.log('⚠️ [Summary] AI curiosities not available yet, using Wikipedia as temporary fallback...');
-          console.log('💡 [Tip] The backend will generate AI text on the next request. This may take 5-10 seconds.');
           data = await fetchWikipediaData(countryId);
-        }
-
-        // Log para debug
-        if (data?.source === 'ai') {
-          console.log(`✅ [Summary] Using AI-generated curiosities (OpenAI GPT, lang: ${selectedLanguage})`);
-        } else if (data?.source === 'wikipedia') {
-          console.log('📚 [Summary] Using Wikipedia summary (temporary fallback - AI will generate on next request)');
         }
 
         setWikipediaData(data);

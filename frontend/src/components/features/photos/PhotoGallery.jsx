@@ -699,7 +699,6 @@ const PhotoGallery = memo(function PhotoGallery({
                       fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
                       onLoad={() => {
                         handleImageLoad(image.id);
-                        console.log('✅ Image loaded successfully:', image.url);
                       }}
                       onError={(e) => console.error('❌ Image failed to load:', image.url, e)}
                       sx={{

@@ -24,12 +24,6 @@ import VideoSettings from './VideoSettings';
 const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) => {
   const { isLoggedIn } = useContext(AuthContext);
   
-  // Log básico apenas uma vez
-  React.useEffect(() => {
-    if (images?.length > 0) {
-      console.log('🎬 VideoGenerator iniciado:', `${images.length} imagens carregadas`, contextInfo);
-    }
-  }, [images?.length, contextInfo]);
   const {
     canvasRef,
     videoRef,

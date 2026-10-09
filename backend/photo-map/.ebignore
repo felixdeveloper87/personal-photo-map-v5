@@ -1,8 +1,0 @@
-.idea/
-.git/
-node_modules/
-*.log
-*.zip
-*.iml
-*.pem
-.DS_Store

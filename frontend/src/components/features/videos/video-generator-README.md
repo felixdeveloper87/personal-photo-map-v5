@@ -21,8 +21,7 @@ TimelineVideoGenerator.jsx (1809 linhas) ❌
 
 📂 components/features/
 ├── TimelineVideoGeneratorRefactored.jsx  # Componente principal (limpo)
-├── VideoSettings.jsx             # Componente de configurações
-└── TimelineVideoGenerator.jsx    # Original (manter como backup)
+└── VideoSettings.jsx             # Componente de configurações
 ```
 
 ## 🔧 Separação por Responsabilidade
@@ -92,54 +91,6 @@ TimelineVideoGenerator.jsx (1809 linhas) ❌
 - Imports mais eficientes
 - Code splitting melhorado
 - Bundle size otimizado
-
-## 🔄 Como Migrar
-
-### Para usar a versão refatorada:
-
-1. **Substituir import:**
-```jsx
-// Antes
-import TimelineVideoGenerator from './TimelineVideoGenerator';
-
-// Depois
-import TimelineVideoGenerator from './TimelineVideoGeneratorRefactored';
-```
-
-2. **API permanece a mesma:**
-```jsx
-<TimelineVideoGenerator 
-  images={images} 
-  onClose={onClose} 
-/>
-```
-
-### Para adicionar novas transições:
-
-1. **Adicionar em `transitionEngine.js`:**
-```js
-const drawMyNewTransition = (ctx, img, canvas, progress) => {
-  // Implementar nova transição
-};
-
-// Adicionar no switch case de drawImageWithTransition
-```
-
-2. **Adicionar em `VideoSettings.jsx`:**
-```jsx
-<option value="myNewTransition">🆕 My New Transition</option>
-```
-
-### Para adicionar novos formatos de export:
-
-1. **Adicionar em `videoUtils.js`:**
-```js
-export const convertToNewFormat = async (blob) => {
-  // Implementar conversão
-};
-```
-
-2. **Usar no hook `useVideoGenerator.js`**
 
 ## 🧪 Testes Recomendados
 

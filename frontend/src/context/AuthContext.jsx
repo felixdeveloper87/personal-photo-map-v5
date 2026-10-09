@@ -332,7 +332,6 @@ export const AuthProvider = ({ children }) => {
         ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/premium`
         : '/api/auth/users/premium';
 
-      console.log('🚀 Calling togglePremiumStatus:', { url, premiumStatus, hasToken: !!token });
 
       const response = await fetch(url, {
         method: 'PUT',
@@ -343,7 +342,6 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ premium: premiumStatus }),
       });
 
-      console.log('🔍 Premium toggle response status:', response.status);
       
       if (!response.ok) {
         let errorText = '';

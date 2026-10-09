@@ -23,3 +23,7 @@ storage/uploads/
 # Environment files (except examples)
 env*
 !env.example
+
+# IDE / OS leftovers
+.idea/
+*.lnk

@@ -93,23 +93,10 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     
     if (settings.musicSource === 'upload' && audioFile) {
       // Processar arquivo carregado
-      console.log('Processando arquivo de upload:', {
-        fileName: audioFile.name,
-        fileSize: audioFile.size,
-        fileType: audioFile.type,
-        lastModified: audioFile.lastModified
-      });
       
       const arrayBuffer = await audioFile.arrayBuffer();
-      console.log('ArrayBuffer criado, tamanho:', arrayBuffer.byteLength);
       
       const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      console.log('Web Audio API funcionou! Áudio decodificado:', {
-        duration: originalAudioBuffer.duration,
-        sampleRate: originalAudioBuffer.sampleRate,
-        channels: originalAudioBuffer.numberOfChannels,
-        length: originalAudioBuffer.length
-      });
       
       // Ajustar duração do áudio com margem de segurança para tempo de processamento
       const safetyMargin = Math.max(5, videoDuration * 0.2); // Pelo menos 5s ou 20% da duração do vídeo
@@ -125,16 +112,6 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       const musicStartTime = settings.musicStartTime || 0;
       const startOffset = Math.floor(musicStartTime * audioContext.sampleRate);
       
-      console.log('🎵 Sincronização de áudio:', {
-        duracaoVideoTeorica: `${videoDuration}s`,
-        margemSeguranca: `${safetyMargin.toFixed(1)}s`,
-        duracaoAudioOriginal: `${originalAudioBuffer.duration.toFixed(2)}s`,
-        duracaoAudioAjustada: `${targetDuration}s`,
-        diferenca: `${(originalAudioBuffer.duration - targetDuration).toFixed(2)}s`,
-        acao: originalAudioBuffer.duration >= targetDuration ? 'CORTAR' : 'REPETIR',
-        musicStartTime: `${musicStartTime}s`,
-        startOffset: `${startOffset} samples`
-      });
       
       for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
         const originalData = originalAudioBuffer.getChannelData(channel);
@@ -142,7 +119,6 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         
         if (originalAudioBuffer.duration >= targetDuration) {
           // Áudio mais longo que necessário - cortar início e fim
-          console.log('Áudio mais longo que necessário - cortando início e aplicando fade out...');
           const fadeOutDuration = 2; // 2 segundos de fade out
           const fadeOutStart = targetLength - (fadeOutDuration * audioContext.sampleRate);
           
@@ -161,7 +137,6 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
           }
         } else {
           // Áudio mais curto que necessário - repetir com corte de início
-          console.log('Áudio mais curto que necessário - repetindo com corte de início...');
           for (let i = 0; i < targetLength; i++) {
             // Calcular posição no áudio original (com corte de início)
             const adjustedIndex = i + startOffset;
@@ -190,7 +165,6 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       
     } else if (settings.musicSource === 'preset') {
       // Gerar música preset
-      console.log('Gerando música preset:', settings.selectedPresetMusic);
       const safetyMargin = Math.max(5, videoDuration * 0.2); // Pelo menos 5s ou 20% da duração do vídeo
       const targetDuration = videoDuration + safetyMargin;
       const musicStartTime = settings.musicStartTime || 0;
@@ -220,14 +194,7 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         }
       }
       
-      console.log('🎵 Música preset cortada:', {
-        duracaoOriginal: `${totalDuration}s`,
-        duracaoFinal: `${targetDuration}s`,
-        tempoCortado: `${musicStartTime}s`,
-        offset: `${startOffset} samples`
-      });
     } else {
-      console.log('Nenhuma fonte de áudio configurada');
       return null;
     }
     
@@ -246,14 +213,6 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     audioSource.connect(gainNode);
     gainNode.connect(mediaStreamDestination);
     
-    console.log('Áudio conectado:', {
-      bufferDuration: audioBuffer.duration,
-      videoDuration: videoDuration,
-      safetyMargin: 2,
-      sampleRate: audioBuffer.sampleRate,
-      channels: audioBuffer.numberOfChannels,
-      streamTracks: mediaStreamDestination.stream.getAudioTracks().length
-    });
     
     return {
       audioSource,

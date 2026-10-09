@@ -66,7 +66,6 @@ const fetchAllPictures = async (retryCount = 0) => {
       return [];
     }
 
-    console.log('📸 Fotos carregadas do backend:', data.length);
 
     const mappedImages = data.map((image, index) => {
       // Extrair ano do filePath se year estiver undefined
@@ -89,7 +88,6 @@ const fetchAllPictures = async (retryCount = 0) => {
       };
     });
 
-    console.log('✅ Imagens processadas para vídeo:', mappedImages.length);
     return mappedImages;
 
   } catch (error) {

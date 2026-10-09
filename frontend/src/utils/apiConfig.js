@@ -44,15 +44,12 @@ export const buildApiUrl = (endpoint) => {
 export const buildImageUrl = (filePath) => {
   // If filePath is empty or null, return empty strings
   if (!filePath) {
-    console.log('❌ buildImageUrl: filePath is empty');
     return '';
   }
   
-  console.log('🔍 buildImageUrl input:', filePath);
   
   // If it's already a full URL (S3 or local storage), return as is
   if (filePath.includes('http')) {
-    console.log('✅ buildImageUrl: Already full URL:', filePath);
     return filePath;
   }
   
@@ -60,7 +57,6 @@ export const buildImageUrl = (filePath) => {
   if (filePath.startsWith('/api/')) {
     const baseUrl = getApiBaseUrl();
     const result = baseUrl ? `${baseUrl}${filePath}` : filePath;
-    console.log('✅ buildImageUrl: API path with base URL:', result);
     return result;
   }
   
@@ -69,14 +65,12 @@ export const buildImageUrl = (filePath) => {
     const baseUrl = getApiBaseUrl();
     const uploadsPath = '/api/images/uploads/';
     const result = baseUrl ? `${baseUrl}${uploadsPath}${filePath}` : `${uploadsPath}${filePath}`;
-    console.log('✅ buildImageUrl: Filename with uploads path:', result);
     return result;
   }
   
   // Otherwise, build with API base URL
   const baseUrl = getApiBaseUrl();
   const result = baseUrl ? `${baseUrl}${filePath}` : filePath;
-  console.log('✅ buildImageUrl: Final result:', result);
   return result;
 };
 
@@ -87,10 +81,8 @@ export const buildImageUrl = (filePath) => {
  */
 export const testImageAccess = async (imageUrl) => {
   try {
-    console.log('🔍 Testing image access:', imageUrl);
     const response = await fetch(imageUrl, { method: 'HEAD' });
     const isAccessible = response.ok;
-    console.log(`${isAccessible ? '✅' : '❌'} Image accessibility test:`, imageUrl, 'Status:', response.status);
     return isAccessible;
   } catch (error) {
     console.error('❌ Image accessibility test failed:', imageUrl, error);

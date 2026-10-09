@@ -14,24 +14,11 @@ export const fetchCountryData = async (countryId) => {
   // Primeiro tenta buscar do backend (que tem cache)
   try {
     const backendUrl = buildApiUrl(`/api/countries/${countryId}/info/basic`);
-    console.log(`🌐 [CountryData] Tentando buscar dados básicos do backend: ${backendUrl}`);
-    const fetchStartTime = performance.now();
     const backendResponse = await fetch(backendUrl);
     
     if (backendResponse.ok) {
       const backendData = await backendResponse.json();
-      const fetchDuration = (performance.now() - fetchStartTime).toFixed(0);
       
-      // Se demorou mais de 2 segundos, provavelmente foi buscar dados novos (não cache)
-      const isFromCache = fetchDuration < 2000;
-      
-      console.log(`${isFromCache ? '✅' : '⏳'} [CountryData] Dados obtidos do BACKEND ${isFromCache ? '(cache)' : '(buscando dados novos - pode demorar)'}:`, {
-        countryId,
-        capital: backendData.capital,
-        language: backendData.officialLanguage,
-        source: isFromCache ? 'backend-cache' : 'backend-fresh-fetch',
-        duration: `${fetchDuration}ms`
-      });
       // O backend retorna os dados no formato que precisamos
       return {
         officialLanguage: backendData.officialLanguage || 'N/A',
@@ -64,11 +51,6 @@ export const fetchCountryData = async (countryId) => {
     const result = await geoDbResponse.json();
     const country = result.data;
     
-    console.log(`✅ [CountryData] Dados obtidos do GEODB API (fallback final):`, {
-      countryId,
-      capital: country.capital,
-      source: 'geodb-api'
-    });
 
     return {
       officialLanguage: 'N/A',
@@ -154,13 +136,10 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
   // Verificar cache
   const cacheKey = `${text.substring(0, 50)}_${targetLang}`;
   if (translationCache.has(cacheKey)) {
-    console.log(`📦 [Translation] Using cached translation for: ${targetLang}`);
     return translationCache.get(cacheKey);
   }
 
   try {
-    console.log(`🌐 [Translation] Translating to ${targetLang}...`);
-    console.log(`📏 [Translation] Text length: ${text.length} characters`);
     
     // MyMemory tem limite de 500 caracteres por requisição (após encoding da URL)
     // Usar 400 caracteres para ter margem de segurança com o encoding
@@ -168,7 +147,6 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
     
     // Sempre dividir em chunks se o texto for maior que o limite
     if (text.length > MAX_CHARS_PER_REQUEST) {
-      console.log(`📝 [Translation] Text too long (${text.length} chars), splitting into chunks (max ${MAX_CHARS_PER_REQUEST} chars per chunk)...`);
       
       // Dividir o texto em chunks menores
       const chunks = [];
@@ -203,13 +181,11 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
             continue;
           }
           chunks.push(chunk);
-          console.log(`📦 [Translation] Chunk ${chunks.length}: ${chunk.length} chars`);
         }
         
         startIndex = endIndex;
       }
       
-      console.log(`📦 [Translation] Split into ${chunks.length} chunks (total: ${text.length} chars)`);
       
       // Validar todos os chunks antes de traduzir
       for (let i = 0; i < chunks.length; i++) {
@@ -222,7 +198,6 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
       // Traduzir cada chunk sequencialmente
       const translatedChunks = [];
       for (let i = 0; i < chunks.length; i++) {
-        console.log(`🔄 [Translation] Translating chunk ${i + 1}/${chunks.length} (${chunks[i].length} chars)...`);
         const translatedChunk = await translateSingleChunk(chunks[i], targetLang, onLimitExceeded);
         if (translatedChunk === null) {
           // Se falhar, retornar texto original
@@ -238,15 +213,12 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
       
       const translated = translatedChunks.join('\n\n');
       translationCache.set(cacheKey, translated);
-      console.log(`✅ [Translation] Translation completed for: ${targetLang} (${chunks.length} chunks, ${translated.length} chars)`);
       return translated;
     } else {
       // Texto pequeno, traduzir diretamente
-      console.log(`📝 [Translation] Text is small enough (${text.length} chars), translating directly...`);
       const translated = await translateSingleChunk(text, targetLang, onLimitExceeded);
       if (translated !== null) {
         translationCache.set(cacheKey, translated);
-        console.log(`✅ [Translation] Translation completed for: ${targetLang}`);
         return translated;
       }
       return text;
@@ -268,7 +240,6 @@ const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
     
     // Usar MyMemory Translation API (gratuita, com limite de 10000 caracteres/dia)
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
-    console.log(`🌐 [Translation] Sending chunk to API: ${text.length} chars`);
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -283,7 +254,6 @@ const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
     }
     
     const data = await response.json();
-    console.log(`📥 [Translation] API response status: ${data.responseStatus}`, data);
     
     // Verificar se o limite de caracteres por requisição foi excedido (403)
     if (data.responseStatus === 403 || (data.responseDetails && data.responseDetails.includes('QUERY LENGTH LIMIT EXCEEDED'))) {
@@ -323,7 +293,6 @@ const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
           !translated.includes('MYMEMORY WARNING') &&
           !translated.includes('DAILY QUERY LIMIT EXCEEDED') &&
           !translated.includes('QUERY LIMIT EXCEEDED')) {
-        console.log(`✅ [Translation] Chunk translated successfully (${translated.length} chars)`);
         return translated;
       } else {
         console.warn(`⚠️ [Translation] Invalid translation response (contains warning):`, translated.substring(0, 100));
@@ -353,7 +322,6 @@ export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExc
     // Sempre buscar em inglês do backend
     const endpoint = `/api/countries/${countryId}/info?includeCuriosities=true`;
     const backendUrl = buildApiUrl(endpoint);
-    console.log(`🤖 [AI Curiosities] Fetching English text from backend: ${backendUrl}`);
     
     const response = await fetch(backendUrl);
     
@@ -370,11 +338,9 @@ export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExc
       
       // Se o idioma solicitado não for inglês, traduzir no frontend
       if (lang && lang !== 'en') {
-        console.log(`🌐 [Translation] Translating text to ${lang} in frontend...`);
         finalText = await translateText(data.curiosities, lang, onLimitExceeded);
       }
       
-      console.log(`✅ [AI Curiosities] Text ready for ${countryId} (lang: ${lang || 'en'}, ${finalText.length} characters)`);
       
       return {
         summary: finalText,
@@ -384,7 +350,6 @@ export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExc
       };
     }
     
-    console.log(`⚠️ [AI Curiosities] Not available yet for ${countryId}. The backend will generate it on next request (may take 5-10 seconds).`);
     return null;
   } catch (error) {
     console.warn('❌ [AI Curiosities] Error fetching from backend:', error);
@@ -402,7 +367,6 @@ export const fetchWikipediaData = async (countryId) => {
       return null;
     }
 
-    console.log(`📚 [Wikipedia] Fetching fallback data for: ${countryName}`);
 
     // Buscar dados da Wikipedia usando a API pública
     const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName)}`;

@@ -79,7 +79,6 @@ export const useImageCache = () => {
         await cache.delete(item.key);
       }
       
-      console.log(`🗑️ Cache trimmed: kept ${toKeep.length}, deleted ${toDelete.length}`);
       await estimateCacheSize();
       
     } catch (error) {
@@ -94,7 +93,6 @@ export const useImageCache = () => {
       const cachedResponse = await cache.match(url);
       
       if (cachedResponse) {
-        console.log('✅ Image loaded from cache:', url);
         return cachedResponse.blob();
       }
       
@@ -120,12 +118,10 @@ export const useImageCache = () => {
       const response = await fetch(url);
       if (response.ok) {
         await cache.put(url, response.clone());
-        console.log('💾 Image cached:', url);
         
         // Verificar tamanho do cache
         const { size } = await estimateCacheSize();
         if (size > MAX_CACHE_SIZE) {
-          console.log('⚠️ Cache exceeded limit, trimming...');
           await trimCache();
         }
       }
@@ -139,7 +135,6 @@ export const useImageCache = () => {
     try {
       const deleted = await caches.delete(CACHE_NAME);
       if (deleted) {
-        console.log('🗑️ Cache cleared');
         setCacheSize(0);
         setCacheCount(0);
       }

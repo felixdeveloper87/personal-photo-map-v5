@@ -63,7 +63,6 @@ export const useVideoGenerator = () => {
    */
   const convertToMP4 = useCallback(async (webmBlob) => {
     if (!ffmpegRef.current || !ffmpegLoaded) {
-      console.log('FFmpeg not loaded, returning original WebM');
       return webmBlob;
     }
 
@@ -101,12 +100,6 @@ export const useVideoGenerator = () => {
    * Função principal para gerar o vídeo
    */
   const generateVideo = useCallback(async (images, settings, audioFile, videoTitle = '') => {
-    // Log detalhado para debug
-    console.log('🎬 Gerando vídeo:', `${images.length} imagens`, `${images.length * settings.duration}s de duração`);
-    console.log('🎬 Imagens recebidas:', images);
-    console.log('🎬 Configurações:', settings);
-    console.log('🎬 Título do vídeo:', videoTitle);
-    
     if (!images || images.length === 0) {
       console.error('❌ Nenhuma imagem disponível para gerar vídeo');
       toast({
@@ -138,22 +131,13 @@ export const useVideoGenerator = () => {
       // Calcular duração total do vídeo (incluindo frame de título se fornecido)
       const titleDuration = videoTitle ? 1.5 : 0; // 1.5 segundos para o títuloo
       const totalVideoDuration = (images.length * settings.duration) + titleDuration;
-      console.log('📊 Cálculo de duração:', {
-        numberOfImages: images.length,
-        durationPerImage: settings.duration,
-        titleDuration: titleDuration,
-        totalExpectedDuration: totalVideoDuration,
-        fps: settings.fps
-      });
       
       // Pré-carregar todas as imagens para evitar timeouts
-      console.log('🖼️ Pré-carregando imagens...');
       const preloadedImages = [];
       for (let i = 0; i < images.length; i++) {
         try {
           const img = await loadImage(images[i].url, 3000); // Timeout de 3s para pré-carregamento
           preloadedImages.push(img);
-          console.log(`✅ Imagem ${i + 1}/${images.length} carregada`);
         } catch (error) {
           console.warn(`⚠️ Falha ao carregar imagem ${i + 1}:`, error);
           // Criar imagem placeholder se falhar
@@ -163,21 +147,12 @@ export const useVideoGenerator = () => {
           preloadedImages.push(placeholder);
         }
       }
-      console.log('✅ Pré-carregamento concluído:', preloadedImages.length, 'imagens');
 
       // Configurar áudio se habilitado
       let audioSetup = null;
       if (settings.musicEnabled && settings.musicSource !== 'none') {
-        console.log('Configurando áudio:', {
-          musicSource: settings.musicSource,
-          musicVolume: settings.musicVolume,
-          hasAudioFile: !!audioFile,
-          audioFileName: audioFile?.name,
-          videoDuration: totalVideoDuration
-        });
         
         audioSetup = await setupAudioForRecording(audioFile, totalVideoDuration, settings);
-        console.log('Áudio configurado:', !!audioSetup);
       }
       
       // Configurar MediaRecorder com FPS fixo
@@ -196,20 +171,7 @@ export const useVideoGenerator = () => {
       const mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions);
       mediaRecorderRef.current = mediaRecorder;
 
-      // Debug: Verificar se o stream tem tracks válidos
-      console.log('🎬 Stream tracks:', {
-        videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length,
-        videoTrackActive: stream.getVideoTracks()[0]?.readyState,
-        audioTrackActive: stream.getAudioTracks()[0]?.readyState
-      });
-
       mediaRecorder.ondataavailable = (event) => {
-        console.log('📦 Data available:', {
-          size: event.data.size,
-          type: event.data.type,
-          timecode: event.timecode
-        });
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
         } else {
@@ -218,20 +180,12 @@ export const useVideoGenerator = () => {
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('🎞️ MediaRecorder onstop chamado');
-        console.log('📦 Chunks gravados:', recordedChunksRef.current.length);
-        console.log('📏 Tamanho dos chunks:', recordedChunksRef.current.map(chunk => chunk.size));
         
         // Detectar o tipo de vídeo baseado no mimeType usado
         const isMP4 = mediaRecorderOptions.mimeType && mediaRecorderOptions.mimeType.includes('mp4');
         const videoType = isMP4 ? 'video/mp4' : 'video/webm';
         
         const videoBlob = new Blob(recordedChunksRef.current, { type: videoType });
-        console.log(`🎥 ${isMP4 ? 'MP4' : 'WebM'} blob criado:`, {
-          size: videoBlob.size,
-          type: videoBlob.type,
-          sizeInMB: (videoBlob.size / 1024 / 1024).toFixed(2) + ' MB'
-        });
         
         const videoUrl = URL.createObjectURL(videoBlob);
         setVideoUrl(videoUrl);
@@ -250,7 +204,6 @@ export const useVideoGenerator = () => {
           try {
             // Carregar FFmpeg apenas se necessário
             if (!ffmpegLoaded) {
-              console.log('🔄 Carregando FFmpeg para conversão...');
               await loadFFmpeg();
             }
             
@@ -306,38 +259,24 @@ export const useVideoGenerator = () => {
           return (a.fileName || '').localeCompare(b.fileName || '');
         });
       });
-      
-      // Log da ordem cronológica das imagens
-      console.log('📅 Ordem cronológica do vídeo:');
-      years.forEach(year => {
-        console.log(`  ${year}:`, imagesByYear[year].map(img => img.fileName || 'sem-nome').join(', '));
-      });
-      
+            
       // Marcar tempo de início da geração
-      const generationStartTime = Date.now();
-      console.log('Iniciando geração em:', generationStartTime);
       
       // Aguardar um pouco para o canvas ser processadoo
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Iniciar gravação
-      console.log('🎬 Iniciando gravação do MediaRecorder...');
       mediaRecorder.start();
-      console.log('📹 MediaRecorder state after start:', mediaRecorder.state);
       
       // Aguardar um pouco para o MediaRecorder estabilizar
       await new Promise(resolve => setTimeout(resolve, 200));
       
       // Iniciar áudio se configurado
-      let audioStartTime = null;
       if (audioSetup) {
         try {
           if (audioSetup.audioSource) {
             const contextStartTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
-            console.log('Iniciando audioSource (BufferSource) com startTime:', contextStartTime);
             audioSetup.audioSource.start(contextStartTime);
-            audioStartTime = Date.now();
-            console.log('AudioSource (BufferSource) iniciado com sucesso em:', audioStartTime);
           }
         } catch (error) {
           console.error('Erro ao iniciar áudio:', error);
@@ -352,7 +291,6 @@ export const useVideoGenerator = () => {
 
       // Renderizar frame de título primeiro (se fornecido)
       if (videoTitle && titleFrames > 0) {
-        console.log('🎬 Renderizando frame de título:', videoTitle);
         await new Promise((resolve) => {
           const startTime = performance.now();
           const targetDuration = titleDuration * 1000; // Duração em ms
@@ -497,17 +435,7 @@ export const useVideoGenerator = () => {
                   settings.imageFitMode || 'fill',
                   settings.smartCrop || 'center'
                 );
-                
-                // Log apenas da primeira imagem para confirmar que dados estão chegando
-                if (frameCount === 0 && globalImageIndex === 0) {
-                  console.log(`📷 Primeira imagem confirmada:`, {
-                    fileName: image.fileName,
-                    year: image.year,
-                    countryId: image.countryId,
-                    showCountryName: settings.showCountryName || true
-                  });
-                }
-                
+                                
                 // Adicionar texto overlay (agora async por causa do logo)
                 await addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
                   showYearText: settings.showYearText,
@@ -555,34 +483,16 @@ export const useVideoGenerator = () => {
       // Finalizar gravação
       setProgress(100);
       
-      const generationEndTime = Date.now();
-      const totalGenerationTime = (generationEndTime - generationStartTime) / 1000;
       
-      console.log('✅ Processamento completo:', {
-        totalGenerationTime: totalGenerationTime,
-        expectedDuration: totalVideoDuration,
-        processedImages: globalImageIndex,
-        totalFrames: totalFrames,
-        processedFrames: currentFrame,
-        frameRatio: `${currentFrame}/${totalFrames} (${(currentFrame/totalFrames*100).toFixed(1)}%)`
-      });
       
       // Aguardar finalização - tempo maior para garantir que todos os frames sejam processados
-      console.log('⏳ Aguardando finalização da gravação...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Verificar estado do MediaRecorder antes de parar
-      console.log('🎬 Estado do MediaRecorder antes de parar:', {
-        state: mediaRecorder.state,
-        mimeType: mediaRecorder.mimeType,
-        videoBitsPerSecond: mediaRecorder.videoBitsPerSecond,
-        audioBitsPerSecond: mediaRecorder.audioBitsPerSecond
-      });
       
       // Parar o áudio
       if (audioSetup && audioSetup.audioSource) {
         try {
-          console.log('Parando audioSource (BufferSource)...');
           audioSetup.audioSource.stop();
         } catch (error) {
           console.warn('Erro ao parar áudio:', error);
@@ -590,10 +500,8 @@ export const useVideoGenerator = () => {
       }
       
       // Parar a gravação
-      console.log('🛑 Parando MediaRecorder...');
       mediaRecorder.stop();
       
-      console.log('🎬 Gravação finalizada com áudio:', !!audioSetup);
 
     } catch (error) {
       console.error('Erro ao gerar vídeo:', error);
