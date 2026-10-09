@@ -20,8 +20,9 @@ RUN if [ "$BUILD_ENV" = "development" ]; then \
         export MAVEN_OPTS="-Xmx2g"; \
     fi
 
-# Build the JAR file
-RUN mvn clean package -DskipTests $MAVEN_OPTS
+# Build the JAR file (o cache do ~/.m2 persiste entre builds: dependências não são baixadas de novo)
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn clean package -DskipTests -Dmaven.test.skip=true $MAVEN_OPTS
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
