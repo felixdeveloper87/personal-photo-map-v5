@@ -6,6 +6,7 @@ import com.personalphotomap.repository.CountryInfoRepository;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,6 +16,9 @@ import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,7 +48,12 @@ public class CountryInfoService {
     private final CountryCuriositiesService curiositiesService;
     private final CacheManager cacheManager;
     private final ExecutorService worldBankExecutor;
-    
+
+    @Value("${restcountries.api.key:}")
+    private String restCountriesApiKey;
+
+    private static final String REST_COUNTRIES_URL = "https://api.restcountries.com/countries/v5/codes.alpha_2/";
+
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
     private static final int ECONOMIC_DATA_CACHE_HOURS = 24 * 7; // 7 dias (dados econômicos atualizam mensalmente)
@@ -892,7 +901,20 @@ public class CountryInfoService {
                         logger.debug("Failed to fetch demographics for cached country {}: {}", upperCountryId, e.getMessage());
                     }
                 }
-                
+
+                // Se não tem dados básicos (ex: RestCountries estava fora), tenta buscar
+                if (!hasBasicInfo(info)) {
+                    logger.info("Cache valid but missing basic info for: {}, attempting to fetch...", upperCountryId);
+                    try {
+                        fetchBasicInfoFromRestCountries(upperCountryId, info);
+                        if (hasBasicInfo(info)) {
+                            needsSave = true;
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Failed to fetch basic info for cached country {}: {}", upperCountryId, e.getMessage());
+                    }
+                }
+
                 // Se não tem HDI, tenta buscar
                 if (info.getHdi() == null) {
                     logger.debug("Cache valid but missing HDI data for: {}, attempting to fetch...", upperCountryId);
@@ -1015,17 +1037,11 @@ public class CountryInfoService {
         try {
             // Buscar dados básicos do RestCountries
             logger.debug("Fetching basic info from RestCountries for: {}", countryId);
-            String url = "https://restcountries.com/v3.1/alpha/" + countryId;
-            Object response = restTemplate.getForObject(url, Object.class);
-            
-            if (response instanceof List) {
-                List<Map<String, Object>> dataList = (List<Map<String, Object>>) response;
-                if (!dataList.isEmpty()) {
-                    Map<String, Object> countryData = dataList.get(0);
-                    extractBasicInfo(countryData, info);
-                }
+            Map<String, Object> countryData = fetchRestCountriesData(countryId);
+            if (countryData != null) {
+                extractBasicInfo(countryData, info);
             }
-            
+
         } catch (Exception e) {
             logger.error("Error fetching country data for {}: {}", countryId, e.getMessage(), e);
             // Continuar mesmo se RestCountries falhar
@@ -1056,25 +1072,45 @@ public class CountryInfoService {
     @SuppressWarnings("unchecked")
     private void fetchBasicInfoFromRestCountries(String countryId, CountryInfo info) {
         logger.info("Fetching basic-only country info from RestCountries for: {}", countryId);
-        String url = "https://restcountries.com/v3.1/alpha/" + countryId;
-        Object response = restTemplate.getForObject(url, Object.class);
-
-        if (response instanceof List) {
-            List<Map<String, Object>> dataList = (List<Map<String, Object>>) response;
-            if (!dataList.isEmpty()) {
-                extractBasicInfo(dataList.get(0), info);
-            }
+        Map<String, Object> countryData = fetchRestCountriesData(countryId);
+        if (countryData != null) {
+            extractBasicInfo(countryData, info);
         }
     }
 
+    /**
+     * Fetches a single country object from RestCountries API v5 (requires API key).
+     * Response shape: { "data": { "objects": [ {...country...} ] } }
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fetchRestCountriesData(String countryId) {
+        if (restCountriesApiKey == null || restCountriesApiKey.isBlank()) {
+            logger.warn("REST_COUNTRIES_API_KEY not configured - skipping RestCountries fetch for {}", countryId);
+            return null;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(restCountriesApiKey);
+        Map<String, Object> response = restTemplate.exchange(
+            REST_COUNTRIES_URL + countryId.toUpperCase(), HttpMethod.GET, new HttpEntity<>(headers), Map.class
+        ).getBody();
+
+        if (response == null) {
+            return null;
+        }
+        Map<String, Object> data = (Map<String, Object>) response.get("data");
+        if (data == null) {
+            return null;
+        }
+        List<Map<String, Object>> objects = (List<Map<String, Object>>) data.get("objects");
+        return (objects == null || objects.isEmpty()) ? null : objects.get(0);
+    }
+
+    // Campos que só vêm do RestCountries (World Bank pode preencher população/coordenadas)
     private boolean hasBasicInfo(CountryInfo info) {
         return info.getCapital() != null
             || info.getOfficialLanguage() != null
-            || info.getCurrency() != null
-            || info.getNativeName() != null
-            || info.getPopulation() != null
-            || info.getLatitude() != null
-            || info.getLongitude() != null;
+            || info.getCurrency() != null;
     }
     
     /**
@@ -1084,76 +1120,83 @@ public class CountryInfoService {
     private void extractBasicInfo(Map<String, Object> countryData, CountryInfo info) {
         try {
             // Nome nativo
-            Map<String, Object> name = (Map<String, Object>) countryData.get("name");
-            if (name != null) {
-                Map<String, Object> nativeName = (Map<String, Object>) name.get("nativeName");
+            Map<String, Object> names = (Map<String, Object>) countryData.get("names");
+            if (names != null) {
+                Map<String, Object> nativeName = (Map<String, Object>) names.get("native");
                 if (nativeName != null && !nativeName.isEmpty()) {
                     Object firstNative = nativeName.values().iterator().next();
                     if (firstNative instanceof Map) {
-                        Map<String, Object> nativeMap = (Map<String, Object>) firstNative;
-                        Object common = nativeMap.get("common");
+                        Object common = ((Map<String, Object>) firstNative).get("common");
                         if (common != null) {
                             info.setNativeName(common.toString());
                         }
                     }
                 }
                 if (info.getNativeName() == null) {
-                    Object common = name.get("common");
+                    Object common = names.get("common");
                     if (common != null) {
                         info.setNativeName(common.toString());
                     }
                 }
             }
-            
+
             // Idioma oficial
-            Map<String, Object> languages = (Map<String, Object>) countryData.get("languages");
+            List<Map<String, Object>> languages = (List<Map<String, Object>>) countryData.get("languages");
             if (languages != null && !languages.isEmpty()) {
-                Object firstLang = languages.values().iterator().next();
-                if (firstLang != null) {
-                    info.setOfficialLanguage(firstLang.toString());
+                Object langName = languages.get(0).get("name");
+                if (langName != null) {
+                    info.setOfficialLanguage(langName.toString());
                 }
             }
-            
+
             // Moeda
-            Map<String, Object> currencies = (Map<String, Object>) countryData.get("currencies");
+            List<Map<String, Object>> currencies = (List<Map<String, Object>>) countryData.get("currencies");
             if (currencies != null && !currencies.isEmpty()) {
-                String currencyKey = currencies.keySet().iterator().next();
-                info.setCurrency(currencyKey);
-                Map<String, Object> currencyData = (Map<String, Object>) currencies.get(currencyKey);
-                if (currencyData != null) {
-                    Object currencyName = currencyData.get("name");
-                    if (currencyName != null) {
-                        info.setCurrencyName(currencyName.toString());
-                    }
+                Map<String, Object> currencyData = currencies.get(0);
+                Object code = currencyData.get("code");
+                if (code != null) {
+                    info.setCurrency(code.toString());
+                }
+                Object currencyName = currencyData.get("name");
+                if (currencyName != null) {
+                    info.setCurrencyName(currencyName.toString());
                 }
             }
-            
-            // Capital
-            List<String> capitals = (List<String>) countryData.get("capital");
+
+            // Capital (preferir a marcada como primary)
+            List<Map<String, Object>> capitals = (List<Map<String, Object>>) countryData.get("capitals");
             if (capitals != null && !capitals.isEmpty()) {
-                info.setCapital(capitals.get(0));
+                Map<String, Object> capital = capitals.stream()
+                    .filter(c -> c.get("attributes") instanceof Map
+                        && Boolean.TRUE.equals(((Map<String, Object>) c.get("attributes")).get("primary")))
+                    .findFirst()
+                    .orElse(capitals.get(0));
+                Object capitalName = capital.get("name");
+                if (capitalName != null) {
+                    info.setCapital(capitalName.toString());
+                }
             }
-            
+
             // População
             Object population = countryData.get("population");
-            if (population != null) {
-                if (population instanceof Number) {
-                    info.setPopulation(((Number) population).longValue());
-                }
+            if (population instanceof Number) {
+                info.setPopulation(((Number) population).longValue());
             }
-            
+
             // Coordenadas
-            List<Number> latlng = (List<Number>) countryData.get("latlng");
-            if (latlng != null && latlng.size() >= 2) {
-                info.setLatitude(latlng.get(0).doubleValue());
-                info.setLongitude(latlng.get(1).doubleValue());
+            Map<String, Object> coordinates = (Map<String, Object>) countryData.get("coordinates");
+            if (coordinates != null
+                && coordinates.get("lat") instanceof Number
+                && coordinates.get("lng") instanceof Number) {
+                info.setLatitude(((Number) coordinates.get("lat")).doubleValue());
+                info.setLongitude(((Number) coordinates.get("lng")).doubleValue());
             }
-            
+
         } catch (Exception e) {
             logger.error("Error extracting basic info: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * Fetches World Bank data for a country and populates the CountryInfo object.
      * 

@@ -60,6 +60,9 @@ services:
       # OpenAI API (for generating country curiosities)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       
+      # REST Countries API v5
+      - REST_COUNTRIES_API_KEY=${REST_COUNTRIES_API_KEY:-}
+      
       # Java optimization for dev
       - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
     volumes:

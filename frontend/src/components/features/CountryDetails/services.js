@@ -44,78 +44,45 @@ export const fetchCountryData = async (countryId) => {
         longitude: backendData.longitude || null,
       };
     } else {
-      console.warn(`⚠️ [CountryData] Backend retornou status ${backendResponse.status}. Tentando RestCountries...`);
+      console.warn(`⚠️ [CountryData] Backend retornou status ${backendResponse.status}. Tentando GeoDB...`);
     }
   } catch (backendError) {
-    console.warn('⚠️ [CountryData] Backend API failed. Trying RestCountries...', backendError);
+    console.warn('⚠️ [CountryData] Backend API failed. Trying GeoDB...', backendError);
   }
   
-  // Fallback para RestCountries
+  // Fallback para GeoDB (RestCountries v5 exige API key, por isso só é chamada pelo backend)
   try {
-    console.log(`🌐 [CountryData] Buscando dados básicos do RestCountries API para: ${countryId}`);
-    const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryId}`);
-    if (!response.ok) throw new Error('Primary API failed');
-    const data = await response.json();
-    const countryData = data[0];
-
-    const nativeNameObj = countryData.name.nativeName;
-    const firstLangKey = nativeNameObj ? Object.keys(nativeNameObj)[0] : null;
-    const nativeName = firstLangKey ? nativeNameObj[firstLangKey].common : countryData.name.common;
-
-    console.log(`✅ [CountryData] Dados obtidos do RESTCOUNTRIES API (fallback):`, {
+    const geoDbUrl = `https://wft-geo-db.p.rapidapi.com/v1/geo/countries/${countryId.toUpperCase()}`;
+    const geoDbResponse = await fetch(geoDbUrl, {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': 'daf418934fmshf85c3a6a3375a4dp11c91ejsnd32ae998c868',
+        'X-RapidAPI-Host': 'wft-geo-db.p.rapidapi.com',
+      },
+    });
+    if (!geoDbResponse.ok) throw new Error('GeoDB API also failed');
+    const result = await geoDbResponse.json();
+    const country = result.data;
+    
+    console.log(`✅ [CountryData] Dados obtidos do GEODB API (fallback final):`, {
       countryId,
-      capital: countryData.capital?.[0],
-      language: Object.values(countryData.languages || {})[0],
-      source: 'restcountries-api'
+      capital: country.capital,
+      source: 'geodb-api'
     });
 
     return {
-      officialLanguage: Object.values(countryData.languages || {})[0] || 'N/A',
-      currency: Object.keys(countryData.currencies || {})[0] || 'N/A',
-      currencyName: countryData.currencies
-        ? Object.values(countryData.currencies)[0].name
-        : 'Unknown Currency',
-      capital: countryData.capital ? countryData.capital[0] : 'N/A',
-      population: countryData.population || 0,
-      nativeName: nativeName,
-      latitude: countryData.latlng ? countryData.latlng[0] : null,
-      longitude: countryData.latlng ? countryData.latlng[1] : null,
+      officialLanguage: 'N/A',
+      currency: 'N/A',
+      currencyName: 'Unknown Currency',
+      capital: country.capital || 'N/A',
+      population: country.population || 0,
+      nativeName: countries.getName(countryId.toUpperCase(), 'en') || countryId.toUpperCase(),
+      latitude: country.latitude || null,
+      longitude: country.longitude || null,
     };
-  } catch (error) {
-    console.warn('⚠️ [CountryData] RestCountries API failed. Trying GeoDB API...', error);
-    try {
-      const geoDbUrl = `https://wft-geo-db.p.rapidapi.com/v1/geo/countries/${countryId.toUpperCase()}`;
-      const geoDbResponse = await fetch(geoDbUrl, {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': 'daf418934fmshf85c3a6a3375a4dp11c91ejsnd32ae998c868',
-          'X-RapidAPI-Host': 'wft-geo-db.p.rapidapi.com',
-        },
-      });
-      if (!geoDbResponse.ok) throw new Error('GeoDB API also failed');
-      const result = await geoDbResponse.json();
-      const country = result.data;
-      
-      console.log(`✅ [CountryData] Dados obtidos do GEODB API (fallback final):`, {
-        countryId,
-        capital: country.capital,
-        source: 'geodb-api'
-      });
-
-      return {
-        officialLanguage: 'N/A',
-        currency: 'N/A',
-        currencyName: 'Unknown Currency',
-        capital: country.capital || 'N/A',
-        population: country.population || 0,
-        nativeName: countries.getName(countryId.toUpperCase(), 'en') || countryId.toUpperCase(),
-        latitude: country.latitude || null,
-        longitude: country.longitude || null,
-      };
-    } catch (fallbackError) {
-      console.error('❌ [CountryData] All APIs failed:', fallbackError);
-      throw new Error('Unable to fetch country data from any API');
-    }
+  } catch (fallbackError) {
+    console.error('❌ [CountryData] All APIs failed:', fallbackError);
+    throw new Error('Unable to fetch country data from any API');
   }
 };
 

@@ -65,6 +65,9 @@ services:
       # OpenAI API (for generating country curiosities)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       
+      # REST Countries API v5
+      - REST_COUNTRIES_API_KEY=${REST_COUNTRIES_API_KEY}
+      
       # Cloudinary configuration (external image processing)
       - CLOUDINARY_ENABLED=${CLOUDINARY_ENABLED:-true}
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
