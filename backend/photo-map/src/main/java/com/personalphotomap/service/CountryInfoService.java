@@ -54,6 +54,11 @@ public class CountryInfoService {
 
     private static final String REST_COUNTRIES_URL = "https://api.restcountries.com/countries/v5/codes.alpha_2/";
 
+    // Última tentativa de rebuscar indicadores faltando por país (evita refetch a cada request
+    // para países que realmente não têm dados no World Bank)
+    private final Map<String, LocalDateTime> missingIndicatorsRetryAt = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int MISSING_INDICATORS_RETRY_HOURS = 6;
+
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
     private static final int ECONOMIC_DATA_CACHE_HOURS = 24 * 7; // 7 dias (dados econômicos atualizam mensalmente)
@@ -915,6 +920,11 @@ public class CountryInfoService {
                     }
                 }
 
+                // Se faltam indicadores principais do World Bank (ex: falha temporária no fetch), tenta buscar
+                if (refetchMissingWorldBankIndicators(upperCountryId, info)) {
+                    needsSave = true;
+                }
+
                 // Se não tem HDI, tenta buscar
                 if (info.getHdi() == null) {
                     logger.debug("Cache valid but missing HDI data for: {}, attempting to fetch...", upperCountryId);
@@ -1386,8 +1396,15 @@ public class CountryInfoService {
                 iso3, indicatorCode
             );
             
-            Object response = restTemplate.getForObject(url, Object.class);
-            
+            Object response;
+            try {
+                response = restTemplate.getForObject(url, Object.class);
+            } catch (Exception firstError) {
+                // World Bank falha de forma intermitente: uma nova tentativa antes de desistir
+                logger.debug("Retrying World Bank indicator {} for {}: {}", indicatorCode, iso3, firstError.getMessage());
+                response = restTemplate.getForObject(url, Object.class);
+            }
+
             if (response instanceof List && ((List<?>) response).size() > 1) {
                 List<Map<String, Object>> data = (List<Map<String, Object>>) ((List<?>) response).get(1);
                 
@@ -1413,7 +1430,59 @@ public class CountryInfoService {
         
         return null;
     }
-    
+
+    /**
+     * Re-fetches the main World Bank indicators that are missing from a cached country
+     * (e.g. because the original fetch failed). Throttled per country.
+     *
+     * @return true if any indicator was filled
+     */
+    private boolean refetchMissingWorldBankIndicators(String countryId, CountryInfo info) {
+        Map<String, Double> mainIndicators = new HashMap<>();
+        mainIndicators.put("gdp", info.getGdp());
+        mainIndicators.put("gdpPerCapitaCurrent", info.getGdpPerCapitaCurrent());
+        mainIndicators.put("lifeExpectancy", info.getLifeExpectancy());
+        mainIndicators.put("internetUsers", info.getInternetUsers());
+
+        List<String> missing = mainIndicators.entrySet().stream()
+            .filter(e -> e.getValue() == null)
+            .map(Map.Entry::getKey)
+            .toList();
+        String iso3 = ISO2_TO_ISO3.get(countryId);
+        if (missing.isEmpty() || iso3 == null) {
+            return false;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime retryAt = missingIndicatorsRetryAt.get(countryId);
+        if (retryAt != null && retryAt.isAfter(now)) {
+            return false;
+        }
+        missingIndicatorsRetryAt.put(countryId, now.plusHours(MISSING_INDICATORS_RETRY_HOURS));
+
+        logger.info("Cache valid but missing World Bank indicators {} for: {}, attempting to fetch...", missing, countryId);
+        boolean updated = false;
+        for (String key : missing) {
+            String indicatorCode = WORLD_BANK_INDICATORS.get(key);
+            Map<String, Object> indicatorData = fetchWorldBankIndicator(iso3, indicatorCode);
+            if (indicatorData == null) {
+                continue;
+            }
+            extractWorldBankData(key, indicatorData, info);
+            updated = true;
+
+            String year = (String) indicatorData.get("date");
+            if (year != null && PRIORITY_RANKING_INDICATORS.contains(key)) {
+                try {
+                    calculateAndSetRanking(countryId, iso3, indicatorCode, key, year, info);
+                } catch (Exception e) {
+                    logger.debug("Error calculating ranking for {}/{}: {}", countryId, key, e.getMessage());
+                }
+            }
+        }
+        return updated;
+    }
+
     /**
      * Extracts and sets World Bank data into CountryInfo object.
      * 
