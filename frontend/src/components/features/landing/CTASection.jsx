@@ -4,14 +4,14 @@ import { Box, Container, HStack, Heading, Text, VStack } from '@chakra-ui/react'
 import { HiArrowRight, HiGlobeAlt } from 'react-icons/hi2';
 import { Accent, Eyebrow, LandingButton, MONO, MotionBox, SERIF, fadeInUp, useLandingTokens } from './landingUI';
 
-const PERKS = ['Country collections', 'Year-aware uploads', 'Timeline films'];
+const PERKS = ['Country collections', 'Timeline films', 'Private to your account'];
 
 const CTASection = ({ onOpenRegister }) => {
   const navigate = useNavigate();
   const t = useLandingTokens();
 
   return (
-    <Box as="section" py={{ base: 16, md: 28 }} bg={t.bg}>
+    <Box as="section" py={{ base: 10, md: 20 }} bg={t.bg}>
       <Container maxW="container.xl">
         <MotionBox {...fadeInUp}>
           <Box
@@ -22,7 +22,7 @@ const CTASection = ({ onOpenRegister }) => {
             borderColor="rgba(235,181,114,0.22)"
             boxShadow="0 60px 120px -60px rgba(0,0,0,0.9)"
             px={{ base: 6, md: 14 }}
-            py={{ base: 20, md: 28 }}
+            py={{ base: 14, md: 22 }}
           >
             {/* Photo backdrop */}
             <Box

@@ -55,7 +55,7 @@ const HeroSection = ({ onOpenRegister }) => {
       display="flex"
       alignItems="center"
       pt={{ base: 32, lg: 36 }}
-      pb={{ base: 16, lg: 20 }}
+      pb={{ base: 8, lg: 16 }}
       sx={{
         '@keyframes heroFloat': {
           '0%, 100%': { transform: 'translateY(0) rotate(var(--r))' },
@@ -139,7 +139,7 @@ const HeroSection = ({ onOpenRegister }) => {
               </HStack>
             </MotionBox>
 
-            <MotionBox {...reveal(0.32)} w="full" pt={{ base: 2, md: 4 }}>
+            <MotionBox {...reveal(0.32)} w="full" pt={{ base: 2, md: 4 }} display={{ base: 'none', sm: 'block' }}>
               <Grid
                 templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }}
                 maxW="560px"

@@ -115,7 +115,7 @@ const MemoryGallerySection = () => {
     <Box
       id="gallery"
       as="section"
-      py={{ base: 20, md: 32 }}
+      py={{ base: 14, md: 24 }}
       overflow="hidden"
       bg={t.bg}
       scrollMarginTop="110px"
@@ -134,7 +134,7 @@ const MemoryGallerySection = () => {
         '.gallery-row:hover': { animationPlayState: 'paused' },
       }}
     >
-      <Container maxW="container.xl" mb={{ base: 10, md: 14 }}>
+      <Container maxW="container.xl" mb={{ base: 8, md: 12 }}>
         <MotionBox {...fadeInUp}>
           <SectionHeading
             eyebrow="Places become memory"
@@ -154,7 +154,9 @@ const MemoryGallerySection = () => {
         }}
       >
         <GalleryRow items={rowA} />
-        <GalleryRow items={rowB} reverse />
+        <Box display={{ base: 'none', md: 'block' }}>
+          <GalleryRow items={rowB} reverse />
+        </Box>
       </VStack>
     </Box>
   );

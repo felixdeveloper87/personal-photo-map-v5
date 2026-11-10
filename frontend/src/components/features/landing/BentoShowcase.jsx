@@ -1,19 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Box, Container, Grid, GridItem, HStack, Heading, Icon, Text, VStack } from '@chakra-ui/react';
-import {
-  HiArrowUpTray,
-  HiChartBarSquare,
-  HiCheckBadge,
-  HiLockClosed,
-  HiMapPin,
-  HiPlay,
-  HiSparkles,
-  HiVideoCamera,
-} from 'react-icons/hi2';
+import { HiChartBarSquare, HiMapPin, HiPlay, HiSparkles, HiVideoCamera } from 'react-icons/hi2';
 import { Accent, GlowCard, MONO, MotionBox, SERIF, SectionHeading, fadeInUp, useLandingTokens } from './landingUI';
-
-const SAMPLE_PHOTO =
-  'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=700&q=80';
 
 const StatRow = ({ label, value, pct }) => {
   const t = useLandingTokens();
@@ -31,63 +19,6 @@ const StatRow = ({ label, value, pct }) => {
         <Box h="full" w={`${pct}%`} borderRadius="full" bg={t.accent} />
       </Box>
     </VStack>
-  );
-};
-
-const UploadPanel = () => {
-  const t = useLandingTokens();
-  return (
-    <Box position="relative" h="230px" borderRadius="14px" overflow="hidden" bg={t.bg2} border="1px solid" borderColor={t.hairline}>
-      <Box
-        position="absolute"
-        inset={0}
-        opacity={0.36}
-        backgroundImage="linear-gradient(rgba(236,231,220,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(236,231,220,0.07) 1px, transparent 1px)"
-        backgroundSize="52px 52px"
-      />
-      <Box
-        position="absolute"
-        left={{ base: 5, md: 7 }}
-        top={6}
-        w="118px"
-        h="154px"
-        borderRadius="4px"
-        bg="#ECE6D8"
-        p="7px"
-        transform="rotate(-5deg)"
-        boxShadow="0 18px 42px rgba(0,0,0,0.46)"
-      >
-        <Box as="img" src={SAMPLE_PHOTO} alt="Lisbon travel memory" w="full" h="112px" objectFit="cover" borderRadius="4px" />
-        <Text mt={2} color="#2F2921" fontSize="10px" fontWeight="800">
-          LISBON / 2024
-        </Text>
-      </Box>
-      <VStack
-        position="absolute"
-        right={{ base: 4, md: 7 }}
-        bottom={6}
-        align="start"
-        spacing={2}
-        bg="rgba(10,12,17,0.62)"
-        border="1px solid"
-        borderColor={t.hairline}
-        borderRadius="14px"
-        p={4}
-      >
-        <HStack spacing={2}>
-          <Icon as={HiCheckBadge} color={t.primary} boxSize={4} />
-          <Text color={t.text} fontWeight="700" fontSize="sm">
-            Metadata read
-          </Text>
-        </HStack>
-        <Text color={t.textSoft} fontSize="12px">
-          Year from EXIF or file date
-        </Text>
-        <Text color={t.primary} fontFamily="'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace" fontSize="11px">
-          GPS badge when available
-        </Text>
-      </VStack>
-    </Box>
   );
 };
 
@@ -193,53 +124,12 @@ const VideoPanel = () => {
   );
 };
 
-const PrivacyPanel = () => {
-  const t = useLandingTokens();
-  const rows = [
-    ['Portugal', 'Only you'],
-    ['Japan', 'Only you'],
-  ];
-  return (
-    <Box position="relative" h="174px" borderRadius="14px" bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} overflow="hidden" display="flex" alignItems="center" justifyContent="center">
-      <Box position="absolute" w="220px" h="220px" borderRadius="full" background="radial-gradient(circle, rgba(235,181,114,0.16), transparent 65%)" />
-      <VStack spacing={2.5} w="78%" position="relative">
-        {rows.map(([country, who]) => (
-          <HStack key={country} w="full" justify="space-between" px={3.5} py={2.5} borderRadius="10px" bg="rgba(10,12,17,0.7)" border="1px solid" borderColor={t.hairline}>
-            <HStack spacing={2.5}>
-              <Icon as={HiLockClosed} boxSize={3.5} color={t.primary} />
-              <Text color={t.text} fontSize="sm" fontWeight="600">{country}</Text>
-            </HStack>
-            <Text color={t.textMuted} fontSize="11px" fontFamily={MONO}>{who}</Text>
-          </HStack>
-        ))}
-      </VStack>
-    </Box>
-  );
-};
-
-const SourceChips = () => {
-  const t = useLandingTokens();
-  const items = ['World Bank', 'REST Countries', 'Local photo library'];
-  return (
-    <HStack spacing={2} flexWrap="wrap">
-      {items.map((s) => (
-        <HStack key={s} spacing={1.5} bg={t.surfaceSubtle} border="1px solid" borderColor={t.hairline} borderRadius="full" px={2.5} py={1}>
-          <Box w="5px" h="5px" borderRadius="full" bg={t.primary} />
-          <Text fontSize="11px" fontWeight="600" color={t.textSoft}>
-            {s}
-          </Text>
-        </HStack>
-      ))}
-    </HStack>
-  );
-};
-
-const BentoCard = ({ colSpan, minH, eyebrow, icon, title, desc, visual, footer, delay }) => {
+const BentoCard = ({ eyebrow, icon, title, desc, visual, footer, delay }) => {
   const t = useLandingTokens();
   return (
-    <GridItem colSpan={{ base: 1, lg: colSpan }}>
+    <GridItem>
       <MotionBox {...fadeInUp} transition={{ ...fadeInUp.transition, delay }} h="full">
-        <GlowCard h="full" minH={{ lg: minH }} p={{ base: 5, md: 6 }}>
+        <GlowCard h="full" p={{ base: 5, md: 6 }}>
           <VStack align="stretch" spacing={6} h="full">
             {visual}
             <VStack align="start" spacing={2.5} mt="auto">
@@ -268,9 +158,9 @@ const BentoShowcase = () => {
   const t = useLandingTokens();
 
   return (
-    <Box id="features" as="section" py={{ base: 20, md: 32 }} bg={t.bg} scrollMarginTop="110px">
+    <Box id="features" as="section" py={{ base: 14, md: 24 }} bg={t.bg} scrollMarginTop="110px">
       <Container maxW="container.xl">
-        <VStack spacing={{ base: 12, md: 16 }} align="stretch">
+        <VStack spacing={{ base: 10, md: 14 }} align="stretch">
           <MotionBox {...fadeInUp}>
             <SectionHeading
               eyebrow="What it does"
@@ -280,56 +170,29 @@ const BentoShowcase = () => {
             />
           </MotionBox>
 
-          <Grid templateColumns={{ base: '1fr', lg: 'repeat(12, 1fr)' }} gap={5}>
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={5}>
             <BentoCard
-              colSpan={7}
-              minH="390px"
-              eyebrow="Upload"
-              icon={HiArrowUpTray}
-              title="Read metadata before upload"
-              desc="PhotoMap reads the year from EXIF or file data and shows whether GPS metadata exists before the images are saved."
-              visual={<UploadPanel />}
-              delay={0}
-            />
-            <BentoCard
-              colSpan={5}
-              minH="390px"
               eyebrow="Countries"
               icon={HiMapPin}
               title="Organized by country and year"
-              desc="Your photo library becomes easier to scan because each destination keeps its own chronological collection."
+              desc="Upload your photos and the year is read from EXIF or file data. Every destination keeps its own timeline."
               visual={<CountryTimelinePanel />}
+              delay={0}
+            />
+            <BentoCard
+              eyebrow="Insights"
+              icon={HiChartBarSquare}
+              title="Real context for every place"
+              desc="Economic, social and geographic indicators for the countries behind your photos."
+              visual={<DataPanel />}
               delay={0.08}
             />
             <BentoCard
-              colSpan={4}
-              minH="300px"
-              eyebrow="Data"
-              icon={HiChartBarSquare}
-              title="Country insights"
-              desc="Explore economic, social and geographic indicators for the places connected to your photos."
-              visual={<DataPanel />}
-              delay={0.04}
-            />
-            <BentoCard
-              colSpan={4}
-              minH="300px"
               eyebrow="Video"
               icon={HiVideoCamera}
-              title="Timeline video export"
-              desc="Turn a country gallery into a polished video with configurable duration, transitions, resolution and audio."
+              title="Every trip, a film"
+              desc="Turn a country gallery into a vertical or landscape video with transitions and audio."
               visual={<VideoPanel />}
-              delay={0.12}
-            />
-            <BentoCard
-              colSpan={4}
-              minH="300px"
-              eyebrow="Privacy"
-              icon={HiLockClosed}
-              title="Built around your account"
-              desc="Uploads are tied to authenticated users, with country collections fetched only for the signed-in account."
-              visual={<PrivacyPanel />}
-              footer={<SourceChips />}
               delay={0.16}
             />
           </Grid>

@@ -30,7 +30,6 @@ import {
 const LANDING_NAV = [
   { label: "Features", href: "#features" },
   { label: "Gallery", href: "#gallery" },
-  { label: "Workflow", href: "#workflow" },
 ];
 
 const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {

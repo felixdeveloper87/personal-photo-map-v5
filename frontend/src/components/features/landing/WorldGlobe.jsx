@@ -287,7 +287,7 @@ const WorldGlobe = () => {
   }, [rings, t]);
 
   return (
-    <Box position="relative" minH={{ base: '360px', md: '500px', lg: '620px' }} w="full">
+    <Box position="relative" minH={{ base: '300px', md: '500px', lg: '620px' }} w="full">
       <Box
         ref={canvasRef}
         as="canvas"

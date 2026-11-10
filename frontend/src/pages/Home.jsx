@@ -3,10 +3,7 @@ import { Box, useDisclosure } from '@chakra-ui/react';
 import { AuthContext } from '../context/AuthContext';
 import HeroSection from '../components/features/landing/HeroSection';
 import BentoShowcase from '../components/features/landing/BentoShowcase';
-import ManifestoSection from '../components/features/landing/ManifestoSection';
 import MemoryGallerySection from '../components/features/landing/MemoryGallerySection';
-import HowItWorksSection from '../components/features/landing/HowItWorksSection';
-import TestimonialsSection from '../components/features/landing/TestimonialsSection';
 import CTASection from '../components/features/landing/CTASection';
 import { Grain } from '../components/features/landing/landingUI';
 import LoginModal from '../components/modals/LoginModal';
@@ -29,10 +26,7 @@ function Home() {
         <Grain />
         <HeroSection onOpenRegister={handleOpenRegister} onOpenLogin={loginModal.onOpen} />
         <BentoShowcase />
-        <ManifestoSection />
         <MemoryGallerySection />
-        <HowItWorksSection />
-        <TestimonialsSection />
         <CTASection onOpenRegister={handleOpenRegister} />
       </Box>
 
