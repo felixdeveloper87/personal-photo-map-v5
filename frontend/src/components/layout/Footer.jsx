@@ -34,9 +34,11 @@ const Footer = () => {
             maxW="340px"
             textAlign={{ base: 'center', md: 'left' }}
           >
-            <Text fontFamily="heading" fontSize="2xl" fontWeight="900" letterSpacing="-0.02em" lineHeight="1">
-              <Box as="span" color={t.text}>Photo</Box>
-              <Box as="span" color={t.primary}>map</Box>
+            <Text fontFamily="'Instrument Serif', Georgia, serif" fontSize="30px" lineHeight="1" color={t.text}>
+              Photo
+              <Box as="span" color={t.primary} fontStyle="italic">
+                Map
+              </Box>
             </Text>
             <Text fontSize="sm" color={t.textSoft} lineHeight="1.7">
               Travel photos that teach you the world — mapped by country and enriched with
@@ -105,7 +107,7 @@ const Footer = () => {
           gap={3}
         >
           <Text fontSize="sm" color={t.textMuted}>
-            © {new Date().getFullYear()} Photomap. All rights reserved.
+            © {new Date().getFullYear()} PhotoMap. All rights reserved.
           </Text>
           <HStack spacing={1.5} color={t.textMuted}>
             <Text fontSize="sm">Made with</Text>

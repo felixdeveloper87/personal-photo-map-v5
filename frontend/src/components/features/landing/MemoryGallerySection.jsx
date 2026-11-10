@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Box, Container, HStack, Text, VStack } from '@chakra-ui/react';
 import { HiMapPin } from 'react-icons/hi2';
-import { SectionHeading, MotionBox, fadeInUp, useLandingTokens } from './landingUI';
+import { Accent, SERIF, SectionHeading, MotionBox, fadeInUp, useLandingTokens } from './landingUI';
 
 const CITY_PHOTOS = [
   { city: 'Lisbon',       country: 'Portugal',              meta: '38.7223 N / 9.1393 W',   src: '/cities/lisbon.jpg' },
@@ -35,14 +35,14 @@ const PhotoCard = ({ item, rotate = -2 }) => {
       flex="0 0 auto"
       w={{ base: '238px', md: '292px' }}
       h={{ base: '316px', md: '374px' }}
-      borderRadius="8px"
+      borderRadius="18px"
       overflow="hidden"
       position="relative"
       bg={t.surface}
       border="1px solid"
       borderColor={t.hairline}
       transform={`translate3d(0, 0, 0) rotate(${rotate}deg)`}
-      boxShadow="0 14px 30px rgba(0,0,0,0.24)"
+      boxShadow="0 30px 60px -30px rgba(0,0,0,0.8)"
       contain="layout paint"
       sx={{
         backfaceVisibility: 'hidden',
@@ -66,7 +66,7 @@ const PhotoCard = ({ item, rotate = -2 }) => {
         bgGradient="linear(to-t, rgba(5,8,12,0.86), rgba(5,8,12,0.18) 52%, transparent)"
       />
       <VStack position="absolute" left={4} right={4} bottom={4} align="start" spacing={1}>
-        <Text color={t.text} fontSize={{ base: 'lg', md: 'xl' }} fontWeight="700">
+        <Text color={t.text} fontSize={{ base: '1.6rem', md: '1.9rem' }} fontFamily={SERIF} lineHeight="1">
           {item.city}
         </Text>
         <Text color={t.textSoft} fontSize="sm">
@@ -115,7 +115,7 @@ const MemoryGallerySection = () => {
     <Box
       id="gallery"
       as="section"
-      py={{ base: 16, md: 24 }}
+      py={{ base: 20, md: 32 }}
       overflow="hidden"
       bg={t.bg}
       scrollMarginTop="110px"
@@ -139,13 +139,20 @@ const MemoryGallerySection = () => {
           <SectionHeading
             eyebrow="Places become memory"
             eyebrowIcon={HiMapPin}
-            title="Real cities, real photos, mapped back to your journey"
+            title={<>Every city becomes <Accent>a memory</Accent></>}
             subtitle="These example places become your own trips once photos are uploaded, grouped by country and organized by year."
           />
         </MotionBox>
       </Container>
 
-      <VStack spacing={{ base: 5, md: 7 }} align="stretch">
+      <VStack
+        spacing={{ base: 5, md: 7 }}
+        align="stretch"
+        sx={{
+          maskImage: 'linear-gradient(90deg, transparent, black 12%, black 88%, transparent)',
+          WebkitMaskImage: 'linear-gradient(90deg, transparent, black 12%, black 88%, transparent)',
+        }}
+      >
         <GalleryRow items={rowA} />
         <GalleryRow items={rowB} reverse />
       </VStack>

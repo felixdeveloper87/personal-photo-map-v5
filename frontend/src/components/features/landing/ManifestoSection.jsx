@@ -1,66 +1,75 @@
-import { Box, Container, Grid, HStack, Text, VStack } from '@chakra-ui/react';
-import { HiCamera, HiCalendarDays, HiGlobeAlt, HiLockClosed, HiMapPin } from 'react-icons/hi2';
-import { Eyebrow, MotionBox, fadeInUp, useLandingTokens } from './landingUI';
+import { Box, Container, HStack, Text, VStack } from '@chakra-ui/react';
+import { Accent, Eyebrow, MONO, MotionBox, SERIF, fadeInUp, useLandingTokens } from './landingUI';
 
-const POINTS = [
-  { icon: HiMapPin, label: 'Grouped by country' },
-  { icon: HiCalendarDays, label: 'Organized by year' },
-  { icon: HiGlobeAlt, label: 'Backed by country data' },
-  { icon: HiLockClosed, label: 'Your account, your photos' },
-];
+const POINTS = ['Grouped by country', 'Organized by year', 'Backed by real data', 'Private to your account'];
 
 const ManifestoSection = () => {
   const t = useLandingTokens();
 
   return (
-    <Box as="section" py={{ base: 16, md: 24 }} bg={t.bg2} borderY="1px solid" borderColor={t.hairline}>
-      <Container maxW="container.xl">
-        <Grid templateColumns={{ base: '1fr', lg: '0.9fr 1.1fr' }} gap={{ base: 10, lg: 16 }} alignItems="center">
+    <Box
+      as="section"
+      position="relative"
+      overflow="hidden"
+      py={{ base: 24, md: 36 }}
+      bg={t.bg2}
+      borderY="1px solid"
+      borderColor={t.hairline}
+    >
+      <Box
+        aria-hidden
+        position="absolute"
+        inset={0}
+        pointerEvents="none"
+        background="radial-gradient(800px 360px at 50% 50%, rgba(235,181,114,0.07), transparent 70%)"
+      />
+      <Container maxW="container.lg" position="relative">
+        <VStack spacing={{ base: 10, md: 12 }} textAlign="center">
           <MotionBox {...fadeInUp}>
-            <VStack align="start" spacing={6}>
-              <Eyebrow icon={HiCamera}>Manifesto</Eyebrow>
-              <Text
-                as="h2"
-                color={t.text}
-                fontFamily="'Instrument Serif', Georgia, serif"
-                fontSize={{ base: '2.4rem', md: '3.6rem', lg: '4.4rem' }}
-                lineHeight="0.98"
-                letterSpacing="0"
-              >
-                A private atlas for the places you remember.
-              </Text>
-            </VStack>
+            <Eyebrow>Manifesto</Eyebrow>
           </MotionBox>
 
-          <MotionBox {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.08 }}>
-            <VStack align="stretch" spacing={8}>
-              <Text color={t.textSoft} fontSize={{ base: 'lg', md: 'xl' }} lineHeight="1.8">
-                A camera roll is hard to read after a few thousand photos. PhotoMap turns it into a
-                travel atlas: upload the images, keep the date detected from metadata or file data,
-                place them in the country they belong to, and explore that destination with real
-                economic, social and geographic context.
-              </Text>
-              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap={3}>
-                {POINTS.map((point) => (
-                  <HStack
-                    key={point.label}
-                    spacing={3}
-                    p={4}
-                    bg={t.surface}
-                    border="1px solid"
-                    borderColor={t.hairline}
-                    borderRadius="8px"
-                  >
-                    <Box as={point.icon} color={t.primary} boxSize={5} flexShrink={0} />
-                    <Text color={t.text} fontWeight="600" fontSize="sm">
-                      {point.label}
-                    </Text>
-                  </HStack>
-                ))}
-              </Grid>
-            </VStack>
+          <MotionBox {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.06 }}>
+            <Text
+              as="h2"
+              color={t.text}
+              fontFamily={SERIF}
+              fontSize={{ base: '2.4rem', md: '3.8rem', lg: '4.6rem' }}
+              lineHeight="1.02"
+              letterSpacing="-0.015em"
+            >
+              A camera roll forgets. <br />
+              An atlas <Accent>remembers</Accent>.
+            </Text>
           </MotionBox>
-        </Grid>
+
+          <MotionBox {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.12 }}>
+            <Text color={t.textSoft} fontSize={{ base: 'lg', md: 'xl' }} lineHeight="1.8" maxW="680px" mx="auto">
+              After a few thousand photos, the trips blur together. PhotoMap gives each image back its
+              place and its year, and puts every destination in context, with its economy, its people
+              and its geography.
+            </Text>
+          </MotionBox>
+
+          <MotionBox {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.18 }}>
+            <HStack spacing={{ base: 3, md: 5 }} flexWrap="wrap" justify="center" rowGap={3}>
+              {POINTS.map((point, i) => (
+                <HStack key={point} spacing={{ base: 3, md: 5 }}>
+                  {i > 0 && <Box w="4px" h="4px" borderRadius="full" bg={t.primary} opacity={0.6} />}
+                  <Text
+                    color={t.textMuted}
+                    fontSize="12px"
+                    fontFamily={MONO}
+                    letterSpacing="0.1em"
+                    textTransform="uppercase"
+                  >
+                    {point}
+                  </Text>
+                </HStack>
+              ))}
+            </HStack>
+          </MotionBox>
+        </VStack>
       </Container>
     </Box>
   );

@@ -8,6 +8,7 @@ import MemoryGallerySection from '../components/features/landing/MemoryGallerySe
 import HowItWorksSection from '../components/features/landing/HowItWorksSection';
 import TestimonialsSection from '../components/features/landing/TestimonialsSection';
 import CTASection from '../components/features/landing/CTASection';
+import { Grain } from '../components/features/landing/landingUI';
 import LoginModal from '../components/modals/LoginModal';
 import RegisterModal from '../components/modals/RegisterModal';
 
@@ -25,6 +26,7 @@ function Home() {
   return (
     <>
       <Box bg="#0A0C11" minH="100vh" fontFamily="'Schibsted Grotesk', Inter, sans-serif">
+        <Grain />
         <HeroSection onOpenRegister={handleOpenRegister} onOpenLogin={loginModal.onOpen} />
         <BentoShowcase />
         <ManifestoSection />
