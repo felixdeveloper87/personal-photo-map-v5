@@ -6,7 +6,7 @@ ARG BUILD_ENV=production
 ARG VITE_BACKEND_URL=http://localhost:8092
 
 # Development stage
-FROM node:18-alpine AS development
+FROM node:22-alpine AS development
 WORKDIR /app
 
 # Copy package files
@@ -28,7 +28,7 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Production build stage
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 # Copy package files

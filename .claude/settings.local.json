@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; npm --prefix frontend run build 2>&1 | Select-Object -Last 40)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; npm --prefix frontend run build 2>&1 | Select-String -Pattern \"built in|error|Error|ERROR\" | Select-Object -Last 15)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; npm --prefix frontend run build 2>&1 | Select-String -Pattern \"built in|error|Error|ERROR|Could not|not found|failed\" | Select-Object -Last 20)",
+      "PowerShell(Remove-Job -Name vitedev -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Set-Location 'C:\\\\Users\\\\Leandro\\\\Desktop\\\\photomapV5\\\\frontend'; $env:NODE_OPTIONS=\"--max-old-space-size=4096\"; npm run build 2>&1 | Select-String -Pattern \"built in|error|Error|ERROR|not defined|Could not resolve|failed\" | Select-Object -Last 20)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}
