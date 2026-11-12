@@ -86,14 +86,15 @@ export const fetchWeatherData = async (capital, countryCode) => {
   };
 };
 
-export const fetchExchangeRate = async (currency) => {
+// Returns every conversion rate relative to USD; cross rates are derived client-side
+// so the user can pick their own base currency without another request.
+export const fetchExchangeRates = async () => {
   const response = await fetch(
-    `https://v6.exchangerate-api.com/v6/c70ba82c951cf6c5b6757ff5/latest/GBP`
+    `https://v6.exchangerate-api.com/v6/c70ba82c951cf6c5b6757ff5/latest/USD`
   );
   if (!response.ok) throw new Error('Exchange rate not found');
   const data = await response.json();
-  const rate = data.conversion_rates?.[currency];
-  return rate ? Number(rate).toFixed(2) : null;
+  return data.conversion_rates || {};
 };
 
 export const fetchFactbookData = async (countryId) => {

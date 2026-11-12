@@ -24,7 +24,7 @@ import {
 import {
   FaDollarSign, FaChartLine, FaBalanceScale, FaHandHoldingUsd,
   FaPercent, FaUsers, FaHeartbeat, FaWifi, FaCity, FaBook,
-  FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaPoundSign, FaAward,
+  FaSun, FaThermometerHalf, FaBolt, FaHospital, FaGlobe, FaMapMarkedAlt, FaExchangeAlt, FaAward,
   FaPrayingHands, FaUserFriends,
 } from 'react-icons/fa';
 import { fetchFullRanking } from '../../../data/worldBankService';
@@ -42,7 +42,7 @@ const TONES = {
 };
 const TONE_CYCLE = ['amber', 'teal', 'rose'];
 
-export default function IndicatorsModal({ indicatorsData, weatherData, exchangeRate, countryInfo }) {
+export default function IndicatorsModal({ indicatorsData, weatherData, exchange }) {
   const t = useLandingTokens();
   const [activeTab, setActiveTab] = useState('economic');
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false);
@@ -144,7 +144,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchangeR
     },
     { icon: FaBalanceScale, label: 'Public Debt (% GDP)', key: 'debtToGDP', value: indicatorsData?.debtToGDP?.value || 'N/A', year: indicatorsData?.debtToGDP?.year, rank: withRank('debtToGDP') },
     { icon: FaPercent, label: 'Inflation (CPI)', key: 'inflationCPI', value: indicatorsData?.inflationCPI?.value || 'N/A', year: indicatorsData?.inflationCPI?.year, rank: withRank('inflationCPI') },
-    { icon: FaPoundSign, label: 'Exchange Rate', key: 'exchangeRate', value: exchangeRate ? `£1 = ${exchangeRate} ${countryInfo?.currency || 'USD'}` : 'N/A', rank: null },
+    { icon: FaExchangeAlt, label: 'Exchange Rate', key: 'exchangeRate', value: exchange?.label || 'N/A', rank: null },
   ];
 
   const socialData = [
