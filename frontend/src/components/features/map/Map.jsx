@@ -231,15 +231,20 @@ const Map = () => {
         position="relative"
         data-theme={mapMode}
         h={{ base: '550px', sm: '650px', md: '800px', lg: '1000px', xl: '1000px' }}
+        // New stacking context: keeps the toggle and Leaflet's own z-indexes (controls use 1000)
+        // inside the map, so the fixed header and its dropdown menu always paint above them.
+        sx={{ isolation: 'isolate' }}
       >
-        {/* ☀️🌙 Day / Night segmented toggle */}
+        {/* ☀️🌙 Day / Night segmented toggle (icon-only) */}
         <HStack
+          role="group"
+          aria-label="Map theme"
           position="absolute"
           top={{ base: 3, md: 4 }}
           right={{ base: 3, md: 4 }}
           zIndex={1000}
-          spacing={1}
-          p="4px"
+          spacing={0.5}
+          p="3px"
           borderRadius="full"
           bg={isNight ? 'rgba(17,21,30,0.86)' : 'rgba(255,255,255,0.92)'}
           border="1px solid"
@@ -247,48 +252,35 @@ const Map = () => {
           backdropFilter="blur(8px)"
           boxShadow="0 10px 28px -16px rgba(0,0,0,0.7)"
         >
-          <Box
-            as="button"
-            onClick={() => setMapMode('day')}
-            aria-label="Day map"
-            display="inline-flex"
-            alignItems="center"
-            gap="6px"
-            px={3.5}
-            py={1.5}
-            borderRadius="full"
-            fontFamily="'Spline Sans Mono', ui-monospace, monospace"
-            fontSize="11px"
-            fontWeight="700"
-            letterSpacing="0.08em"
-            transition="all .2s ease"
-            bg={!isNight ? '#F2D06B' : 'transparent'}
-            color={!isNight ? '#2A2008' : '#9AA0B0'}
-            _hover={!isNight ? {} : { color: '#ECE7DC' }}
-          >
-            <Icon as={FaSun} boxSize={3} /> DAY
-          </Box>
-          <Box
-            as="button"
-            onClick={() => setMapMode('night')}
-            aria-label="Night map"
-            display="inline-flex"
-            alignItems="center"
-            gap="6px"
-            px={3.5}
-            py={1.5}
-            borderRadius="full"
-            fontFamily="'Spline Sans Mono', ui-monospace, monospace"
-            fontSize="11px"
-            fontWeight="700"
-            letterSpacing="0.08em"
-            transition="all .2s ease"
-            bg={isNight ? '#3A4668' : 'transparent'}
-            color={isNight ? '#ECE7DC' : '#5E6B72'}
-            _hover={isNight ? {} : { color: '#2A2008' }}
-          >
-            <Icon as={FaMoon} boxSize={3} /> NIGHT
-          </Box>
+          {[
+            { mode: 'day', icon: FaSun, label: 'Day map', activeBg: '#F2D06B', activeColor: '#2A2008' },
+            { mode: 'night', icon: FaMoon, label: 'Night map', activeBg: '#3A4668', activeColor: '#ECE7DC' },
+          ].map(({ mode, icon, label, activeBg, activeColor }) => {
+            const active = mapMode === mode;
+            return (
+              <Box
+                key={mode}
+                as="button"
+                type="button"
+                onClick={() => setMapMode(mode)}
+                aria-label={label}
+                aria-pressed={active}
+                title={label}
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                w={{ base: '30px', md: '32px' }}
+                h={{ base: '30px', md: '32px' }}
+                borderRadius="full"
+                transition="all .2s ease"
+                bg={active ? activeBg : 'transparent'}
+                color={active ? activeColor : isNight ? '#9AA0B0' : '#5E6B72'}
+                _hover={active ? {} : { color: isNight ? '#ECE7DC' : '#2A2008' }}
+              >
+                <Icon as={icon} boxSize={3.5} />
+              </Box>
+            );
+          })}
         </HStack>
 
         <MapContainerComponent {...mapConfig}>
