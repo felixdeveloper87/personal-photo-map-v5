@@ -2,11 +2,13 @@ package com.personalphotomap.controller;
 
 import com.personalphotomap.model.CountryInfo;
 import com.personalphotomap.service.CountryInfoService;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller responsible for handling country information operations.
@@ -63,7 +65,39 @@ public class CountryInfoController {
                 .body(Map.of("error", "Failed to fetch country information: " + e.getMessage()));
         }
     }
-    
+
+    /**
+     * Gets only the AI-generated curiosities text (English) for a country.
+     * Dedicated, lightweight endpoint: skips RestCountries / World Bank / demographics / HDI,
+     * so a cached answer is a single DB read. Generates via OpenAI on first request.
+     *
+     * @param countryId ISO2 country code
+     * @return 200 with {countryId, curiosities, source} or 404 when not available
+     */
+    @GetMapping("/{countryId}/curiosities")
+    public ResponseEntity<?> getCuriosities(@PathVariable String countryId) {
+        if (countryId == null || !countryId.matches("(?i)[a-z]{2}")) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Invalid country ID. Must be a 2-character ISO2 code."));
+        }
+        try {
+            String curiosities = countryInfoService.getCuriosities(countryId);
+            if (curiosities == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Curiosities not available for: " + countryId));
+            }
+            return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())
+                .body(Map.of(
+                    "countryId", countryId.toUpperCase(),
+                    "curiosities", curiosities,
+                    "source", "ai"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to fetch curiosities: " + e.getMessage()));
+        }
+    }
+
     /**
      * Gets only basic country information (capital, language, currency, coordinates).
      * Faster endpoint when only basic info is needed.

@@ -59,6 +59,18 @@ public class CountryInfoService {
     private final Map<String, LocalDateTime> missingIndicatorsRetryAt = new java.util.concurrent.ConcurrentHashMap<>();
     private static final int MISSING_INDICATORS_RETRY_HOURS = 6;
 
+    // Mesmo backoff para outros dados opcionais (demografia, HDI, básicos). Chave: "<ISO2>:<tipo>".
+    // Sem isso, países que simplesmente não têm esses dados disparavam chamadas externas a cada visita.
+    private final Map<String, LocalDateTime> optionalDataRetryAt = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int OPTIONAL_DATA_RETRY_HOURS = 6;
+
+    // Curiosidades (OpenAI): deduplica gerações simultâneas do mesmo país e evita
+    // martelar a API quando ela falha (ex.: sem API key, rate limit).
+    private final Map<String, CompletableFuture<String>> curiositiesInFlight = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<String, LocalDateTime> curiositiesRetryAt = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int CURIOSITIES_FAILURE_RETRY_MINUTES = 30;
+    private static final int CURIOSITIES_WAIT_SECONDS = 30;
+
     // Tempos de cache (em horas)
     private static final int BASIC_INFO_CACHE_HOURS = 24 * 30; // 30 dias (capital, idioma mudam raramente)
     private static final int ECONOMIC_DATA_CACHE_HOURS = 24 * 7; // 7 dias (dados econômicos atualizam mensalmente)
@@ -783,6 +795,100 @@ public class CountryInfoService {
     public void shutdown() {
         worldBankExecutor.shutdown();
     }
+
+    /**
+     * True if an optional fetch for this country/kind may run now; records the attempt.
+     * Prevents re-hitting external APIs on every request for data that does not exist.
+     */
+    private boolean shouldAttemptOptionalFetch(String countryId, String kind) {
+        String key = countryId + ":" + kind;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime retryAt = optionalDataRetryAt.get(key);
+        if (retryAt != null && retryAt.isAfter(now)) {
+            return false;
+        }
+        optionalDataRetryAt.put(key, now.plusHours(OPTIONAL_DATA_RETRY_HOURS));
+        return true;
+    }
+
+    /**
+     * Returns the AI curiosities text for a country (English), generating it if needed.
+     *
+     * Unlike {@link #getCountryInfo(String, String, boolean)} this does NOT touch RestCountries,
+     * World Bank, demographics or HDI — generation only needs the country code — so a cache hit
+     * is a single DB read and a miss costs only the OpenAI call.
+     *
+     * @return the text, or null when unavailable (generation failed or is in failure backoff)
+     */
+    public String getCuriosities(String countryId) {
+        String upperCountryId = countryId.toUpperCase();
+
+        Optional<CountryInfo> cached = repository.findByCountryId(upperCountryId);
+        if (cached.isPresent() && hasText(cached.get().getCuriosities())) {
+            return cached.get().getCuriosities();
+        }
+
+        LocalDateTime retryAt = curiositiesRetryAt.get(upperCountryId);
+        if (retryAt != null && retryAt.isAfter(LocalDateTime.now())) {
+            logger.debug("[Curiosities] In failure backoff for {}", upperCountryId);
+            return null;
+        }
+
+        // Only one generation per country at a time; concurrent requests wait for it.
+        CompletableFuture<String> mine = new CompletableFuture<>();
+        CompletableFuture<String> existing = curiositiesInFlight.putIfAbsent(upperCountryId, mine);
+        if (existing != null) {
+            try {
+                return existing.get(CURIOSITIES_WAIT_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        long startTime = System.currentTimeMillis();
+        String result = null;
+        try {
+            CountryInfo source = cached.orElseGet(() -> {
+                CountryInfo minimal = new CountryInfo();
+                minimal.setCountryId(upperCountryId);
+                return minimal;
+            });
+            String text = curiositiesService.generateCuriosities(source);
+            if (hasText(text)) {
+                saveCuriosities(upperCountryId, text);
+                curiositiesRetryAt.remove(upperCountryId);
+                result = text;
+                logger.info("✅ [Curiosities] Generated for {} in {}ms", upperCountryId, System.currentTimeMillis() - startTime);
+            } else {
+                curiositiesRetryAt.put(upperCountryId, LocalDateTime.now().plusMinutes(CURIOSITIES_FAILURE_RETRY_MINUTES));
+                logger.warn("⚠️ [Curiosities] Empty result for {} (took {}ms)", upperCountryId, System.currentTimeMillis() - startTime);
+            }
+        } catch (Exception e) {
+            curiositiesRetryAt.put(upperCountryId, LocalDateTime.now().plusMinutes(CURIOSITIES_FAILURE_RETRY_MINUTES));
+            logger.error("❌ [Curiosities] Failed for {}: {}", upperCountryId, e.getMessage());
+        } finally {
+            mine.complete(result);
+            curiositiesInFlight.remove(upperCountryId, mine);
+        }
+        return result;
+    }
+
+    /** Persists curiosities on the latest DB row (re-read to avoid clobbering concurrent updates). */
+    private void saveCuriosities(String upperCountryId, String text) {
+        try {
+            CountryInfo row = repository.findByCountryId(upperCountryId)
+                .orElseGet(() -> getBasicCountryInfo(upperCountryId));
+            row.setCuriosities(text);
+            row.setCuriositiesLastUpdated(LocalDateTime.now());
+            repository.save(row);
+        } catch (Exception e) {
+            logger.warn("Failed to save curiosities for {}: {}", upperCountryId, e.getMessage());
+        }
+    }
+
+    private static boolean hasText(String s) {
+        return s != null && !s.trim().isEmpty();
+    }
     
     /**
      * Gets country information, using cache when available.
@@ -894,7 +1000,7 @@ public class CountryInfoService {
                 }
                 
                 // Se não tem dados demográficos (religião/grupos étnicos), tenta buscar
-                if (info.getReligion() == null || info.getEthnicGroups() == null) {
+                if ((info.getReligion() == null || info.getEthnicGroups() == null) && shouldAttemptOptionalFetch(upperCountryId, "demographics")) {
                     logger.debug("Cache valid but missing demographics data for: {}, attempting to fetch...", upperCountryId);
                     try {
                         fetchDemographicsData(upperCountryId, info);
@@ -908,7 +1014,7 @@ public class CountryInfoService {
                 }
 
                 // Se não tem dados básicos (ex: RestCountries estava fora), tenta buscar
-                if (!hasBasicInfo(info)) {
+                if (!hasBasicInfo(info) && shouldAttemptOptionalFetch(upperCountryId, "basic")) {
                     logger.info("Cache valid but missing basic info for: {}, attempting to fetch...", upperCountryId);
                     try {
                         fetchBasicInfoFromRestCountries(upperCountryId, info);
@@ -926,7 +1032,7 @@ public class CountryInfoService {
                 }
 
                 // Se não tem HDI, tenta buscar
-                if (info.getHdi() == null) {
+                if (info.getHdi() == null && shouldAttemptOptionalFetch(upperCountryId, "hdi")) {
                     logger.debug("Cache valid but missing HDI data for: {}, attempting to fetch...", upperCountryId);
                     try {
                         fetchHDIData(upperCountryId, info);

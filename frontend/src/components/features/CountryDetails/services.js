@@ -129,7 +129,7 @@ export const fetchFactbookData = async (countryId) => {
 const translationCache = new Map();
 
 // Função para traduzir texto usando API gratuita (MyMemory Translation)
-const translateText = async (text, targetLang, onLimitExceeded) => {
+export const translateText = async (text, targetLang, onLimitExceeded) => {
   if (!text || targetLang === 'en') {
     return text;
   }
@@ -196,22 +196,27 @@ const translateText = async (text, targetLang, onLimitExceeded) => {
         }
       }
       
-      // Traduzir cada chunk sequencialmente
-      const translatedChunks = [];
-      for (let i = 0; i < chunks.length; i++) {
-        const translatedChunk = await translateSingleChunk(chunks[i], targetLang, onLimitExceeded);
-        if (translatedChunk === null) {
-          // Se falhar, retornar texto original
-          console.warn(`⚠️ [Translation] Chunk ${i + 1} translation failed, returning original text`);
-          return text;
+      // Traduzir chunks em paralelo com concorrência limitada (antes: sequencial + 200ms de espera
+      // entre cada um, o que somava vários segundos em textos longos)
+      const CONCURRENCY = 4;
+      const translatedChunks = new Array(chunks.length);
+      let nextIndex = 0;
+      let failed = false;
+      const worker = async () => {
+        while (!failed && nextIndex < chunks.length) {
+          const i = nextIndex++;
+          const translatedChunk = await translateSingleChunk(chunks[i], targetLang, onLimitExceeded);
+          if (translatedChunk === null) {
+            console.warn(`⚠️ [Translation] Chunk ${i + 1} translation failed, returning original text`);
+            failed = true;
+            return;
+          }
+          translatedChunks[i] = translatedChunk;
         }
-        translatedChunks.push(translatedChunk);
-        // Pequeno delay entre requisições para evitar rate limiting
-        if (i < chunks.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-      
+      };
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, chunks.length) }, worker));
+      if (failed) return text;
+
       const translated = translatedChunks.join('\n\n');
       translationCache.set(cacheKey, translated);
       return translated;
@@ -316,82 +321,57 @@ const translateSingleChunk = async (text, targetLang, onLimitExceeded) => {
   }
 };
 
-// Função para buscar curiosidades geradas por IA do backend
-// VERSION: 3.0 - Frontend translation support
-export const fetchCountryCuriosities = async (countryId, lang = 'en', onLimitExceeded = null) => {
-  try {
-    // Sempre buscar em inglês do backend
-    const endpoint = `/api/countries/${countryId}/info?includeCuriosities=true`;
-    const backendUrl = buildApiUrl(endpoint);
-    
-    const response = await fetch(backendUrl);
-    
-    if (!response.ok) {
-      console.warn(`⚠️ [AI Curiosities] Backend API error for ${countryId}: ${response.status} ${response.statusText}`);
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    // Retornar curiosidades se existirem
-    if (data.curiosities && data.curiosities.trim().length > 0) {
-      let finalText = data.curiosities;
-      
-      // Se o idioma solicitado não for inglês, traduzir no frontend
-      if (lang && lang !== 'en') {
-        finalText = await translateText(data.curiosities, lang, onLimitExceeded);
-      }
-      
-      
-      return {
-        summary: finalText,
-        content_urls: null,
-        culture: 'Cultural heritage information available',
-        source: 'ai' // Flag para identificar origem
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.warn('❌ [AI Curiosities] Error fetching from backend:', error);
-    return null;
-  }
+// Curiosidades geradas por IA (sempre em inglês) — endpoint dedicado e leve do backend.
+// Retorna null quando não houver (404) para o componente cair no resumo da Wikipedia.
+export const fetchCountryCuriosities = async (countryId, { signal } = {}) => {
+  const response = await fetch(buildApiUrl(`/api/countries/${countryId}/curiosities`), { signal });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Curiosities request failed: ${response.status}`);
+  const data = await response.json();
+  return data?.curiosities?.trim() ? { summary: data.curiosities, content_urls: null, source: 'ai' } : null;
 };
 
-// Função para buscar dados da Wikipedia (fallback, caso curiosidades não estejam disponíveis)
-export const fetchWikipediaData = async (countryId) => {
-  try {
-    // Obter o nome do país para buscar na Wikipedia
-    const countryName = countries.getName(countryId.toUpperCase(), 'en');
-    if (!countryName) {
-      console.warn(`Country name not found for ID: ${countryId}`);
-      return null;
-    }
+// Descobre o título do artigo na Wikipedia do idioma pedido via langlinks da Wikipedia em inglês.
+const resolveWikipediaTitle = async (englishTitle, lang, signal) => {
+  if (lang === 'en') return englishTitle;
+  const url =
+    'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=langlinks' +
+    `&lllang=${encodeURIComponent(lang)}&titles=${encodeURIComponent(englishTitle)}`;
+  const response = await fetch(url, { signal });
+  if (!response.ok) return null;
+  const data = await response.json();
+  const page = Object.values(data?.query?.pages || {})[0];
+  return page?.langlinks?.[0]?.['*'] || null;
+};
 
+// Resumo da Wikipedia no idioma escolhido (rápido, ~200-400ms). Usado como texto imediato
+// enquanto a IA/tradução não chegam, e como fallback quando a IA não está disponível.
+// Se não existir artigo naquele idioma, cai para o inglês.
+export const fetchWikipediaData = async (countryId, lang = 'en', { signal } = {}) => {
+  const englishTitle = countries.getName(countryId.toUpperCase(), 'en');
+  if (!englishTitle) return null;
 
-    // Buscar dados da Wikipedia usando a API pública
-    const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName)}`;
-    const response = await fetch(searchUrl);
-    
-    if (!response.ok) {
-      console.warn(`Wikipedia API error for ${countryName}: ${response.status} ${response.statusText}`);
-      return null;
-    }
-    
+  const fetchSummary = async (wikiLang, title) => {
+    const response = await fetch(
+      `https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      { signal }
+    );
+    if (!response.ok) return null;
     const data = await response.json();
-    
-    // Extrair resumo e URLs
-    const summary = data.extract || null;
-    const contentUrls = data.content_urls || null;
-    
-    return {
-      summary,
-      content_urls: contentUrls,
-      culture: 'Cultural heritage information available',
-      source: 'wikipedia' // Flag para identificar origem
-    };
-  } catch (error) {
-    console.warn('Wikipedia API error:', error);
-    return null;
+    return data.extract
+      ? { summary: data.extract, content_urls: data.content_urls || null, source: 'wikipedia', lang: wikiLang }
+      : null;
+  };
+
+  if (lang !== 'en') {
+    try {
+      const localTitle = await resolveWikipediaTitle(englishTitle, lang, signal);
+      const localized = localTitle ? await fetchSummary(lang, localTitle) : null;
+      if (localized) return localized;
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      console.warn(`Wikipedia (${lang}) lookup failed, falling back to English:`, error);
+    }
   }
+  return fetchSummary('en', englishTitle);
 };

@@ -1,4 +1,4 @@
-import React, { memo, useId, useCallback, useState, useEffect } from 'react';
+import { memo, useId, useCallback, useState } from 'react';
 import {
   Box,
   Text,
@@ -16,7 +16,8 @@ import {
 import { FaRocket } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
-import { fetchCountryCuriosities, fetchWikipediaData } from './services';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCountryCuriosities, fetchWikipediaData, translateText } from './services';
 import { getName } from 'i18n-iso-countries';
 import { useLandingTokens } from '../landing/landingUI';
 
@@ -44,54 +45,74 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   const toast = useToast();
   const t = useLandingTokens();
 
-  // States
-  const [wikipediaData, setWikipediaData] = useState(null);
-  const [isLoadingWikipedia, setIsLoadingWikipedia] = useState(false);
-  const [wikipediaError, setWikipediaError] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const countryName = getName(countryId?.toUpperCase(), 'en') || countryId?.toUpperCase() || 'this country';
 
   const descId = useId();
 
-  // Fetch curiosities (AI-generated) or Wikipedia fallback
-  useEffect(() => {
-    const loadCountryInfo = async () => {
-      if (!countryId) return;
-      setIsLoadingWikipedia(true);
-      setWikipediaError(null);
+  // Toast only once even though translation chunks run in parallel.
+  const handleLimitExceeded = useCallback(() => {
+    const id = 'translation-limit';
+    if (toast.isActive(id)) return;
+    toast({
+      id,
+      title: 'Limite de tradução excedido',
+      description: 'O limite diário de 10.000 caracteres foi atingido. O texto será exibido em inglês. Tente novamente amanhã.',
+      status: 'warning',
+      duration: 8000,
+      isClosable: true,
+      position: 'top',
+    });
+  }, [toast]);
 
-      try {
-        // Callback para quando o limite de tradução for excedido
-        const handleLimitExceeded = () => {
-          toast({
-            title: 'Limite de tradução excedido',
-            description: 'O limite diário de 10.000 caracteres foi atingido. O texto será exibido em inglês. Tente novamente amanhã.',
-            status: 'warning',
-            duration: 8000,
-            isClosable: true,
-            position: 'top',
-          });
-        };
+  // 1) AI guide (English) from the dedicated backend endpoint — may take a while on first visit.
+  const curiositiesQuery = useQuery({
+    queryKey: ['curiosities', countryId],
+    queryFn: ({ signal }) => fetchCountryCuriosities(countryId, { signal }),
+    enabled: !!countryId,
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+    retry: 1,
+  });
+  const aiData = curiositiesQuery.data;
 
-        // Primeiro tenta buscar curiosidades geradas por IA do backend (sempre em inglês)
-        let data = await fetchCountryCuriosities(countryId, selectedLanguage, handleLimitExceeded);
+  // 2) Wikipedia summary in the selected language — fast, fetched in parallel and shown
+  //    immediately while the AI text (or its translation) is still on its way.
+  const wikiQuery = useQuery({
+    queryKey: ['wikiSummary', countryId, selectedLanguage],
+    queryFn: ({ signal }) => fetchWikipediaData(countryId, selectedLanguage, { signal }),
+    enabled: !!countryId,
+    staleTime: 24 * 60 * 60 * 1000,
+    retry: 1,
+  });
 
-        // Se não encontrar, usa Wikipedia como fallback (apenas em inglês)
-        if (!data || !data.summary) {
-          data = await fetchWikipediaData(countryId);
-        }
+  // 3) Translation of the AI text — cached per language, so switching back is instant
+  //    and changing language never re-hits the backend.
+  const translationQuery = useQuery({
+    queryKey: ['curiositiesTranslation', countryId, selectedLanguage],
+    queryFn: () => translateText(aiData.summary, selectedLanguage, handleLimitExceeded),
+    enabled: !!aiData?.summary && selectedLanguage !== 'en',
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+    retry: false,
+  });
 
-        setWikipediaData(data);
-      } catch (error) {
-        console.warn('Erro ao carregar informações do país:', error);
-        setWikipediaError('Unable to load country information');
-      } finally {
-        setIsLoadingWikipedia(false);
-      }
-    };
-    loadCountryInfo();
-  }, [countryId, selectedLanguage, toast]);
+  // Best text available right now: translated/English AI guide > Wikipedia > untranslated AI.
+  let wikipediaData = null;
+  if (aiData?.summary) {
+    if (selectedLanguage === 'en') wikipediaData = aiData;
+    else if (translationQuery.data) wikipediaData = { ...aiData, summary: translationQuery.data };
+  }
+  if (!wikipediaData && wikiQuery.data) wikipediaData = wikiQuery.data;
+  if (!wikipediaData && aiData?.summary && !wikiQuery.isLoading) wikipediaData = aiData;
+
+  const isLoadingWikipedia =
+    !wikipediaData && (curiositiesQuery.isLoading || wikiQuery.isLoading || translationQuery.isLoading);
+  const wikipediaError = !wikipediaData && !isLoadingWikipedia ? 'Unable to load country information' : null;
+  // Showing Wikipedia as a stand-in while the AI guide / translation is still loading.
+  const isUpgrading =
+    wikipediaData?.source === 'wikipedia' && (curiositiesQuery.isFetching || translationQuery.isFetching);
 
   // Accessibility: open with keyboard
   const handleKeyOpen = useCallback(
@@ -325,7 +346,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                       Guide
                     </Text>
                     <Text fontFamily={MONO} fontSize="11px" letterSpacing="0.04em" color={t.textMuted}>
-                      {wikipediaData?.source === 'ai' ? '· Generated by AI' : '· From Wikipedia'}
+                      {wikipediaData?.source === 'ai' ? '· Generated by AI' : isUpgrading ? '· From Wikipedia · loading AI guide…' : '· From Wikipedia'}
                     </Text>
                   </HStack>
 
