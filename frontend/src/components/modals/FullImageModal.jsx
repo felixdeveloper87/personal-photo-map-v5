@@ -2,12 +2,22 @@ import React, { memo, useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Modal, ModalOverlay, ModalContent, ModalBody, IconButton,
-  Flex, Image, Box, useColorModeValue, useBreakpointValue,
-  Heading, Spinner, Center, Text, HStack, Badge,
+  Flex, Image, Box, Spinner, Center, Text, HStack,
 } from '@chakra-ui/react';
 import { FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { motion, AnimatePresence, useMotionValue, useSpring, animate } from 'framer-motion';
 import logo from '../../assets/logo.png';
+import { color, font, type } from '../../design/tokens';
+
+// Glass control used for the viewer chrome (close, prev/next, pills).
+const GLASS = {
+  bg: 'rgba(10,12,17,0.55)',
+  color: color.text,
+  border: '1px solid',
+  borderColor: 'rgba(236,231,220,0.14)',
+  backdropFilter: 'blur(12px)',
+  _focusVisible: { boxShadow: `0 0 0 3px ${color.focusRing}` },
+};
 
 const MotionOverlay = motion.create(ModalOverlay);
 const MotionDiv = motion.create('div');
@@ -33,9 +43,6 @@ const FullImageModal = memo(function FullImageModal({
   const [direction, setDirection] = useState(0);
   const [previousImage, setPreviousImage] = useState(null);
 
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const textColor = useColorModeValue('white', 'white');
-  const glassBg = useColorModeValue('rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)');
 
   // Motion values (zoom/pan)
   const scale = useSpring(1, { stiffness: 400, damping: 30 });
@@ -334,41 +341,51 @@ const FullImageModal = memo(function FullImageModal({
       left={0}
       right={0}
       zIndex={1000}
-      p={4}
+      p={{ base: 3, md: 5 }}
+      // iOS standalone PWA: keep the chrome clear of the status bar / Dynamic Island.
+      sx={{
+        paddingTop: 'calc(var(--chakra-space-3) + env(safe-area-inset-top))',
+        paddingLeft: 'max(var(--chakra-space-3), env(safe-area-inset-left))',
+        paddingRight: 'max(var(--chakra-space-3), env(safe-area-inset-right))',
+      }}
       justify="space-between"
       align="center"
-      bg="linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)"
+      bg="linear-gradient(to bottom, rgba(5,7,11,0.78), transparent)"
       pointerEvents="none"
     >
-      <HStack spacing={3} pointerEvents="auto">
-        <Image src={logo} alt="Photomap Logo" h={8} />
-        <Heading size="sm" color={textColor} fontWeight="800">
-          Photomap
-        </Heading>
+      <HStack spacing={{ base: 2, md: 3 }} pointerEvents="auto" minW={0}>
+        <Image src={logo} alt="PhotoMap" h={{ base: 7, md: 8 }} />
+        <Text fontFamily={font.display} fontSize={{ base: 'lg', md: 'xl' }} color={color.text} display={{ base: 'none', sm: 'block' }}>
+          PhotoMap
+        </Text>
         {countryName && (
-          <Badge colorScheme="blue" borderRadius="full" px={3} py={1} fontSize="xs">
-            {countryName}
-          </Badge>
+          <Box px={3} py={1} borderRadius="full" bg={color.primarySoftBg} border="1px solid" borderColor={color.primarySoftBorder} backdropFilter="blur(12px)">
+            <Text {...type.label} color={color.primary} noOfLines={1}>
+              {countryName}
+            </Text>
+          </Box>
         )}
         {totalCount > 1 && (
-          <Badge bg={glassBg} color="white" borderRadius="full" px={3} py={1} fontSize="xs" backdropFilter="blur(10px)">
-            {currentIndex + 1} / {totalCount}
-          </Badge>
+          <Box px={3} py={1} borderRadius="full" {...GLASS}>
+            <Text {...type.label} color={color.text}>
+              {currentIndex + 1} / {totalCount}
+            </Text>
+          </Box>
         )}
       </HStack>
       <IconButton
         icon={<FiX />}
         aria-label="Close"
-        size="lg"
-        bg={glassBg}
-        color={textColor}
+        size="md"
+        {...GLASS}
         onClick={() => {
           if (scale.get() > 1) resetZoom();
           else onClose();
         }}
         borderRadius="full"
         pointerEvents="auto"
-        _hover={{ bg: 'rgba(255,255,255,0.2)', transform: 'rotate(90deg)' }}
+        flexShrink={0}
+        _hover={{ bg: 'rgba(10,12,17,0.8)', borderColor: color.primarySoftBorder }}
         transition="all 0.2s ease"
       />
     </Flex>
@@ -377,7 +394,7 @@ const FullImageModal = memo(function FullImageModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full" motionPreset="fade" isCentered>
       <MotionOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} bg="black" backdropFilter="blur(10px)" />
-      <ModalContent bg="transparent" boxShadow="none" maxW="none">
+      <ModalContent bg="transparent" boxShadow="none" maxW="none" border="none" borderRadius={0} m={0}>
         <ModalBody p={0} h="100vh" position="relative" overflow="hidden">
           {Header}
 
@@ -435,7 +452,7 @@ const FullImageModal = memo(function FullImageModal({
                  >
                   {!imgLoaded && (
                     <Center position="absolute">
-                      <Spinner size="lg" color="white" thickness="3px" emptyColor="gray.700" />
+                      <Spinner size="lg" color={color.primary} thickness="3px" emptyColor="rgba(236,231,220,0.12)" />
                     </Center>
                   )}
 
@@ -473,12 +490,11 @@ const FullImageModal = memo(function FullImageModal({
                 top="50%"
                 transform="translateY(-50%)"
                 zIndex={100}
-                bg={glassBg}
-                color={textColor}
+                {...GLASS}
                 borderRadius="full"
                 size={{ base: 'md', md: 'lg' }}
                 display={{ base: 'none', md: 'flex' }}
-                _hover={{ bg: 'rgba(255,255,255,0.2)', transform: 'translateY(-50%) scale(1.1)' }}
+                _hover={{ bg: 'rgba(10,12,17,0.8)', borderColor: color.primarySoftBorder, transform: 'translateY(-50%) scale(1.06)' }}
                 onClick={() => {
                   if (scale.get() > 1) return;
                   setPreviousImage(imageUrl);
@@ -494,12 +510,11 @@ const FullImageModal = memo(function FullImageModal({
                 top="50%"
                 transform="translateY(-50%)"
                 zIndex={100}
-                bg={glassBg}
-                color={textColor}
+                {...GLASS}
                 borderRadius="full"
                 size={{ base: 'md', md: 'lg' }}
                 display={{ base: 'none', md: 'flex' }}
-                _hover={{ bg: 'rgba(255,255,255,0.2)', transform: 'translateY(-50%) scale(1.1)' }}
+                _hover={{ bg: 'rgba(10,12,17,0.8)', borderColor: color.primarySoftBorder, transform: 'translateY(-50%) scale(1.06)' }}
                 onClick={() => {
                   if (scale.get() > 1) return;
                   setPreviousImage(imageUrl);

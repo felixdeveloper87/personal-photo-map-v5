@@ -1,36 +1,17 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Input,
-  InputGroup,
-  InputRightElement,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Divider,
-  useToast,
-  InputLeftElement,
-} from '@chakra-ui/react';
-import {
-  FaEye,
-  FaEyeSlash,
-  FaSignInAlt,
-  FaUser,
-  FaLock,
-  FaEnvelope,
-  FaGoogle,
-  FaGithub,
-} from 'react-icons/fa';
+import { HStack, Text, VStack, useToast } from '@chakra-ui/react';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
+import { HiArrowRightOnRectangle, HiEnvelope, HiLockClosed, HiShieldCheck } from 'react-icons/hi2';
 import { AuthContext } from '../../context/AuthContext';
 import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
 import ResetPasswordModal from './ResetPasswordModal';
+import { ModalDivider, ModalField } from './ModalKit';
 import { buildApiUrl } from '../../utils/apiConfig';
-import { useLandingTokens } from '../features/landing/landingUI';
+import { color } from '../../design/tokens';
+
+const FORM_ID = 'login-form';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const navigate = useNavigate();
@@ -40,18 +21,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  const t = useLandingTokens();
-  const textColor = t.textSoft;
-  const borderColor = t.hairline;
-  const cardBg = t.surfaceSubtle;
-  const accentColor = t.primary;
-
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const validateForm = () => {
@@ -63,8 +37,8 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
     if (!validateForm()) return;
     setIsLoading(true);
     try {
@@ -75,7 +49,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       });
 
       if (!response.ok) {
-        // Try to get error message as text first (backend returns plain text on error)
+        // Backend returns plain text on error
         const errorText = await response.text();
         throw new Error(errorText || 'Login failed');
       }
@@ -98,7 +72,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     }
   };
 
-  const handleSocialLogin = provider => {
+  const handleSocialLogin = (provider) => {
     toast({
       title: 'Coming soon',
       description: `${provider} login will be available soon.`,
@@ -110,25 +84,24 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   };
 
   const footer = (
-    <VStack spacing={2.5} w="full">
+    <VStack spacing={3} w="full">
       <ModalButton
+        type="submit"
+        form={FORM_ID}
         variant="primary"
-        onClick={handleSubmit}
+        size="lg"
         isLoading={isLoading}
-        leftIcon={<FaSignInAlt />}
+        leftIcon={<HiArrowRightOnRectangle />}
         w="full"
       >
-        Sign In
+        Sign in
       </ModalButton>
-
-      <HStack spacing={2} w="full">
-        <ModalButton variant="outline" onClick={() => setShowResetModal(true)} w="full">
-          Forgot Password?
+      <Text fontSize="sm" color={color.textMuted} textAlign="center">
+        New to PhotoMap?{' '}
+        <ModalButton variant="ghost" size="sm" h="auto" px={1} py={0.5} color={color.primary} onClick={onSwitchToRegister}>
+          Create an account
         </ModalButton>
-        <ModalButton variant="secondary" onClick={onSwitchToRegister} w="full">
-          Create Account
-        </ModalButton>
-      </HStack>
+      </Text>
     </VStack>
   );
 
@@ -137,142 +110,68 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       <BaseModal
         isOpen={isOpen}
         onClose={onClose}
-        title="Welcome Back"
-        icon={FaUser}
+        eyebrow="Sign in"
+        title="Welcome back"
+        subtitle="Pick up your photo map right where you left it."
+        icon={HiArrowRightOnRectangle}
         footer={footer}
-        size={{ base: 'full', sm: 'md', md: 'lg' }}
+        size="md"
         closeOnOverlayClick={false}
       >
         <VStack spacing={5} align="stretch">
-          {/* Intro card */}
-          <Box
-            textAlign="center"
-            p={5}
-            borderRadius="14px"
-            bg={cardBg}
-            border="1px solid"
-            borderColor={borderColor}
-          >
-            <Text fontSize="md" color={t.text}>
-              Sign in to continue your photo mapping journey
-            </Text>
-          </Box>
-
-          {/* Social login */}
-          <VStack spacing={3} align="stretch">
-            <Text
-              fontSize="sm"
-              fontWeight="semibold"
-              color={textColor}
-              textAlign="center"
-            >
-              Or continue with
-            </Text>
-            <HStack spacing={3} flexDirection={{ base: 'column', sm: 'row' }}>
-              <ModalButton
-                variant="outline"
-                onClick={() => handleSocialLogin('Google')}
-                leftIcon={<FaGoogle />}
-                w="full"
-              >
-                Google
-              </ModalButton>
-              <ModalButton
-                variant="outline"
-                onClick={() => handleSocialLogin('GitHub')}
-                leftIcon={<FaGithub />}
-                w="full"
-              >
-                GitHub
-              </ModalButton>
-            </HStack>
-          </VStack>
-
-          <Divider />
-
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
+          <form id={FORM_ID} onSubmit={handleSubmit} noValidate>
             <VStack spacing={4} align="stretch">
-              <FormControl isInvalid={!!formErrors.email}>
-                <FormLabel color={textColor} fontWeight="semibold">
-                  Email Address
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftElement>
-                    <FaEnvelope color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={e => handleInputChange('email', e.target.value)}
-                    borderRadius="10px"
-                    border="1px solid"
-                    borderColor={borderColor}
-                    bg={cardBg}
-                    _focus={{
-                      borderColor: accentColor,
-                      boxShadow: `0 0 0 1px ${accentColor}`,
-                    }}
-                  />
-                </InputGroup>
-                <FormErrorMessage>{formErrors.email}</FormErrorMessage>
-              </FormControl>
-
-              <FormControl isInvalid={!!formErrors.password}>
-                <FormLabel color={textColor} fontWeight="semibold">
-                  Password
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftElement>
-                    <FaLock color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={e => handleInputChange('password', e.target.value)}
-                    borderRadius="10px"
-                    border="1px solid"
-                    borderColor={borderColor}
-                    bg={cardBg}
-                    _focus={{
-                      borderColor: accentColor,
-                      boxShadow: `0 0 0 1px ${accentColor}`,
-                    }}
-                  />
-                  <InputRightElement>
-                    <Box
-                      cursor="pointer"
-                      color="gray.500"
-                      _hover={{ color: 'gray.700' }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </Box>
-                  </InputRightElement>
-                </InputGroup>
-                <FormErrorMessage>{formErrors.password}</FormErrorMessage>
-              </FormControl>
+              <ModalField
+                label="Email"
+                icon={HiEnvelope}
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                error={formErrors.email}
+              />
+              <ModalField
+                label="Password"
+                icon={HiLockClosed}
+                type="password"
+                autoComplete="current-password"
+                placeholder="Your password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                error={formErrors.password}
+              />
+              <HStack justify="flex-end" mt={-1}>
+                <ModalButton
+                  variant="ghost"
+                  size="sm"
+                  h="auto"
+                  px={1}
+                  py={0.5}
+                  color={color.textSoft}
+                  onClick={() => setShowResetModal(true)}
+                >
+                  Forgot password?
+                </ModalButton>
+              </HStack>
             </VStack>
           </form>
 
-          {/* Security note */}
-          <Box
-            p={3}
-            borderRadius="10px"
-            bg={cardBg}
-            border="1px solid"
-            borderColor={borderColor}
-          >
-            <Text
-              fontSize="xs"
-              color={t.textMuted}
-              textAlign="center"
-            >
-              Your data is encrypted and secure. We never store your password.
-            </Text>
-          </Box>
+          <ModalDivider label="or continue with" />
+
+          <HStack spacing={2.5}>
+            <ModalButton variant="secondary" onClick={() => handleSocialLogin('Google')} leftIcon={<FaGoogle />} flex={1}>
+              Google
+            </ModalButton>
+            <ModalButton variant="secondary" onClick={() => handleSocialLogin('GitHub')} leftIcon={<FaGithub />} flex={1}>
+              GitHub
+            </ModalButton>
+          </HStack>
+
+          <HStack spacing={2} justify="center" color={color.textMuted}>
+            <HiShieldCheck />
+            <Text fontSize="xs">Your data is encrypted and secure. We never store your password.</Text>
+          </HStack>
         </VStack>
       </BaseModal>
 

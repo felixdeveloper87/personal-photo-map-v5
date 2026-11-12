@@ -3,20 +3,22 @@ import { useRef } from 'react';
 import { Box, Button, HStack, VStack, Heading, Text, Icon } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
+import { color, font, shadow } from '../../../design/tokens';
+
 export const BRAND = {
-  bg: '#0A0C11',
-  bg2: '#0E1118',
-  primary: '#EBB572',
-  primaryHover: '#F1C98D',
-  primaryActive: '#D79A55',
-  accent: '#6FD0C4',
-  rose: '#E58A7B',
-  cream: '#ECE7DC',
-  muted: '#8B90A0',
+  bg: color.bg,
+  bg2: color.bg2,
+  primary: color.primary,
+  primaryHover: color.primaryHover,
+  primaryActive: color.primaryActive,
+  accent: color.accent,
+  rose: color.rose,
+  cream: color.text,
+  muted: color.textMuted,
 };
 
-export const SERIF = "'Instrument Serif', Georgia, serif";
-export const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+export const SERIF = font.display;
+export const MONO = font.mono;
 
 export const fadeInUp = {
   initial: { opacity: 0, y: 18 },
@@ -27,35 +29,17 @@ export const fadeInUp = {
 
 export const MotionBox = motion.create(Box);
 
+// Stable object (tokens never change at runtime) — safe to use in hook deps.
+const LANDING_TOKENS = Object.freeze({
+  ...color,
+  shadowSm: shadow.sm,
+  shadowMd: shadow.md,
+  shadowLg: shadow.lg,
+});
+
+/** Atlas design tokens as a flat object (see src/design/tokens.js). */
 export function useLandingTokens() {
-  return {
-    bg: BRAND.bg,
-    bg2: BRAND.bg2,
-    primary: BRAND.primary,
-    primaryHover: BRAND.primaryHover,
-    primaryActive: BRAND.primaryActive,
-    accent: BRAND.accent,
-    rose: BRAND.rose,
-
-    text: BRAND.cream,
-    textSoft: '#B8B0A2',
-    textMuted: BRAND.muted,
-
-    surface: 'rgba(20,24,33,0.74)',
-    surfaceSolid: '#11151E',
-    surfaceSubtle: 'rgba(8,10,15,0.55)',
-
-    hairline: 'rgba(236,231,220,0.09)',
-    hairlineStrong: 'rgba(235,181,114,0.32)',
-
-    primarySoftBg: 'rgba(235,181,114,0.10)',
-    primarySoftBorder: 'rgba(235,181,114,0.24)',
-    accentSoftBg: 'rgba(111,208,196,0.12)',
-
-    shadowSm: '0 1px 2px rgba(0,0,0,0.36)',
-    shadowMd: '0 18px 44px -24px rgba(0,0,0,0.72)',
-    shadowLg: '0 34px 90px -38px rgba(0,0,0,0.88)',
-  };
+  return LANDING_TOKENS;
 }
 
 /** Italic serif word with a warm gold gradient, for headline accents. */

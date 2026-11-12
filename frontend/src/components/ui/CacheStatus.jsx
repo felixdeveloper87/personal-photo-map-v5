@@ -7,14 +7,7 @@ import {
   VStack,
   Badge,
   Tooltip,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
   useDisclosure,
-  Button,
   useToast,
   CircularProgress,
   CircularProgressLabel,
@@ -22,6 +15,7 @@ import {
 import { DeleteIcon } from '@chakra-ui/icons';
 import { useImageCache } from '../../hooks/useImageCache';
 import { useColorModeValue } from '@chakra-ui/react';
+import { ConfirmDialog } from './ConfirmDialog';
 
 const CacheStatus = () => {
   const {
@@ -34,7 +28,6 @@ const CacheStatus = () => {
   } = useImageCache();
   
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef();
   const toast = useToast();
   
   const bgColor = useColorModeValue('gray.50', 'gray.800');
@@ -113,33 +106,14 @@ const CacheStatus = () => {
         </Box>
       </Tooltip>
       
-      <AlertDialog
+      <ConfirmDialog
         isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
         onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Clear Photo Cache?
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure? This will remove all {cacheCount} cached images ({formatCacheSize(cacheSize)}). 
-              Images will need to be downloaded again when viewed.
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleClearCache} ml={3}>
-                Clear Cache
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+        onConfirm={handleClearCache}
+        title="Clear photo cache?"
+        confirmLabel="Clear cache"
+        message={`This will remove all ${cacheCount} cached images (${formatCacheSize(cacheSize)}). Images will need to be downloaded again when viewed.`}
+      />
     </>
   );
 };

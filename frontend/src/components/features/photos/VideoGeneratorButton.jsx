@@ -1,26 +1,10 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useColorModeValue,
-  Text,
-  Box,
-  VStack,
-  HStack,
-  Icon,
-  Badge,
-  Input,
-  FormControl,
-  FormLabel,
-} from '@chakra-ui/react';
-import { FaVideo, FaPlay, FaCog } from 'react-icons/fa';
+import { useState } from 'react';
+import { Button, useDisclosure, Text, VStack, HStack, Icon, Badge } from '@chakra-ui/react';
+import { FaVideo, FaPlay } from 'react-icons/fa';
+import { HiFilm, HiPencil } from 'react-icons/hi2';
 import TimelineVideoGeneratorRefactored from '../videos/components/TimelineVideoGeneratorRefactored';
+import BaseModal from '../../modals/BaseModal';
+import { ModalField } from '../../modals/ModalKit';
 
 /**
  * VideoGeneratorButton - Botão para gerar vídeos de fotos filtradas
@@ -42,9 +26,6 @@ const VideoGeneratorButton = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isHovered, setIsHovered] = useState(false);
   const [videoTitle, setVideoTitle] = useState('');
-
-  // Color scheme
-  const modalBg = useColorModeValue('white', 'gray.800');
 
   // Determina o título baseado no contexto
   const getContextTitle = () => {
@@ -109,67 +90,38 @@ const VideoGeneratorButton = ({
         </HStack>
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
-        <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
-        <ModalContent 
-          bg={modalBg}
-          borderRadius="xl"
-          maxH="90vh"
-          overflow="hidden"
-        >
-          <ModalHeader>
-            <VStack align="start" spacing={1}>
-                  <HStack spacing={3}>
-                    <Icon as={FaVideo} color="green.500" />
-                    <Text fontSize="xl" fontWeight="bold">
-                      Video Generator
-                    </Text>
-                  </HStack>
-              <Text fontSize="md" color="gray.600" fontWeight="normal">
-                {getContextTitle()} • {getContextSubtitle()}
-              </Text>
-            </VStack>
-          </ModalHeader>
-          <ModalCloseButton />
-          
-          <ModalBody pb={6} overflowY="auto">
-            <VStack spacing={4} align="stretch">
-              {/* Campo de título do vídeo */}
-              <FormControl>
-                <FormLabel fontSize="sm" fontWeight="semibold" color="gray.600">
-                  Video Title (optional)
-                </FormLabel>
-                <Input
-                  placeholder={getContextTitle()}
-                  value={videoTitle}
-                  onChange={(e) => setVideoTitle(e.target.value)}
-                  size="md"
-                  borderRadius="lg"
-                  borderColor="gray.300"
-                  _focus={{
-                    borderColor: "green.500",
-                    boxShadow: "0 0 0 1px green.500"
-                  }}
-                />
-                <Text fontSize="xs" color="gray.500" mt={1}>
-                  This title will appear on the first frame of your video
-                </Text>
-              </FormControl>
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        eyebrow={getContextTitle()}
+        title="Video generator"
+        subtitle={getContextSubtitle()}
+        icon={HiFilm}
+        size={{ base: 'full', sm: '2xl', md: '4xl', xl: '6xl' }}
+        maxHeight="90vh"
+      >
+        <VStack spacing={5} align="stretch">
+          <ModalField
+            label="Video title (optional)"
+            icon={HiPencil}
+            placeholder={getContextTitle()}
+            value={videoTitle}
+            onChange={(e) => setVideoTitle(e.target.value)}
+            helper="This title will appear on the first frame of your video"
+          />
 
-              <TimelineVideoGeneratorRefactored 
-                images={images}
-                contextInfo={{
-                  type: context,
-                  name: contextName,
-                  year: contextYear,
-                  album: contextAlbum,
-                }}
-                videoTitle={videoTitle || getContextTitle()}
-              />
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+          <TimelineVideoGeneratorRefactored
+            images={images}
+            contextInfo={{
+              type: context,
+              name: contextName,
+              year: contextYear,
+              album: contextAlbum,
+            }}
+            videoTitle={videoTitle || getContextTitle()}
+          />
+        </VStack>
+      </BaseModal>
     </>
   );
 };

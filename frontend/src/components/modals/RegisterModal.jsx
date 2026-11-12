@@ -1,41 +1,39 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Input,
-  InputGroup,
-  InputRightElement,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Divider,
-  Checkbox,
-  useToast,
-  InputLeftElement,
-  Select,
-} from '@chakra-ui/react';
-import {
-  FaEye,
-  FaEyeSlash,
-  FaUserPlus,
-  FaUser,
-  FaLock,
-  FaEnvelope,
-  FaGoogle,
-  FaGithub,
-  FaCheck,
-  FaGlobe,
-} from 'react-icons/fa';
-import { AuthContext } from '../../context/AuthContext';
+import { useState } from 'react';
+import { Checkbox, FormControl, FormErrorMessage, FormLabel, HStack, Icon, InputGroup, InputLeftElement, Select, SimpleGrid, Text, VStack, useToast } from '@chakra-ui/react';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
+import { HiEnvelope, HiGlobeAmericas, HiLockClosed, HiShieldCheck, HiUser, HiUserPlus } from 'react-icons/hi2';
 import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
-import { useLandingTokens } from '../features/landing/landingUI';
+import { ModalDivider, ModalField } from './ModalKit';
+import { color } from '../../design/tokens';
+
+const FORM_ID = 'register-form';
+
+const COUNTRIES = [
+  { code: 'br', name: 'Brazil' },
+  { code: 'us', name: 'United States' },
+  { code: 'uk', name: 'United Kingdom' },
+  { code: 'ca', name: 'Canada' },
+  { code: 'au', name: 'Australia' },
+  { code: 'de', name: 'Germany' },
+  { code: 'fr', name: 'France' },
+  { code: 'it', name: 'Italy' },
+  { code: 'es', name: 'Spain' },
+  { code: 'pt', name: 'Portugal' },
+  { code: 'mx', name: 'Mexico' },
+  { code: 'ar', name: 'Argentina' },
+  { code: 'cl', name: 'Chile' },
+  { code: 'jp', name: 'Japan' },
+  { code: 'kr', name: 'South Korea' },
+  { code: 'cn', name: 'China' },
+  { code: 'in', name: 'India' },
+  { code: 'ru', name: 'Russia' },
+  { code: 'za', name: 'South Africa' },
+  { code: 'eg', name: 'Egypt' },
+  { code: 'other', name: 'Other' },
+];
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const navigate = useNavigate();
   const toast = useToast();
   const [formData, setFormData] = useState({
     fullname: '',
@@ -46,63 +44,27 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
-  const t = useLandingTokens();
-  const textColor = t.textSoft;
-  const borderColor = t.hairline;
-  const cardBg = t.surfaceSubtle;
-  const focusColor = t.primary;
-
-  const countries = [
-    { code: 'br', name: 'Brazil' },
-    { code: 'us', name: 'United States' },
-    { code: 'uk', name: 'United Kingdom' },
-    { code: 'ca', name: 'Canada' },
-    { code: 'au', name: 'Australia' },
-    { code: 'de', name: 'Germany' },
-    { code: 'fr', name: 'France' },
-    { code: 'it', name: 'Italy' },
-    { code: 'es', name: 'Spain' },
-    { code: 'pt', name: 'Portugal' },
-    { code: 'mx', name: 'Mexico' },
-    { code: 'ar', name: 'Argentina' },
-    { code: 'cl', name: 'Chile' },
-    { code: 'jp', name: 'Japan' },
-    { code: 'kr', name: 'South Korea' },
-    { code: 'cn', name: 'China' },
-    { code: 'in', name: 'India' },
-    { code: 'ru', name: 'Russia' },
-    { code: 'za', name: 'South Africa' },
-    { code: 'eg', name: 'Egypt' },
-    { code: 'other', name: 'Other' },
-  ];
-
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const validateForm = () => {
     const errors = {};
     if (!formData.fullname) errors.fullname = 'Full name is required';
-    else if (formData.fullname.length < 2)
-      errors.fullname = 'Full name must be at least 2 characters';
+    else if (formData.fullname.length < 2) errors.fullname = 'Full name must be at least 2 characters';
 
     if (!formData.email) errors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      errors.email = 'Please enter a valid email';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Please enter a valid email';
 
     if (!formData.password) errors.password = 'Password is required';
-    else if (formData.password.length < 6)
-      errors.password = 'Password must be at least 6 characters';
+    else if (formData.password.length < 6) errors.password = 'Password must be at least 6 characters';
 
     if (!formData.confirmPassword) errors.confirmPassword = 'Please confirm your password';
-    else if (formData.password !== formData.confirmPassword)
-      errors.confirmPassword = 'Passwords do not match';
+    else if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Passwords do not match';
 
     if (!formData.country) errors.country = 'Please select your country';
     if (!acceptedTerms) errors.terms = 'You must accept the terms and conditions';
@@ -112,8 +74,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
     if (!validateForm()) return;
     setIsLoading(true);
 
@@ -158,21 +120,35 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     }
   };
 
+  const comingSoon = (provider) =>
+    toast({
+      title: 'Coming soon',
+      description: `${provider} sign up will be available soon.`,
+      status: 'info',
+      duration: 3000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
   const footer = (
-    <VStack spacing={2.5} w="full">
+    <VStack spacing={3} w="full">
       <ModalButton
+        type="submit"
+        form={FORM_ID}
         variant="primary"
-        onClick={handleSubmit}
+        size="lg"
         isLoading={isLoading}
-        leftIcon={<FaUserPlus />}
+        leftIcon={<HiUserPlus />}
         w="full"
       >
-        Create Account
+        Create account
       </ModalButton>
-
-      <ModalButton variant="secondary" onClick={onSwitchToLogin} w="full">
-        Already have an account? Sign In
-      </ModalButton>
+      <Text fontSize="sm" color={color.textMuted} textAlign="center">
+        Already have an account?{' '}
+        <ModalButton variant="ghost" size="sm" h="auto" px={1} py={0.5} color={color.primary} onClick={onSwitchToLogin}>
+          Sign in
+        </ModalButton>
+      </Text>
     </VStack>
   );
 
@@ -180,206 +156,124 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Join Photomap"
-      icon={FaUserPlus}
+      eyebrow="Create account"
+      title="Join PhotoMap"
+      subtitle="Start your photo mapping adventure today."
+      icon={HiUserPlus}
       footer={footer}
-      size={{ base: 'full', sm: 'md', md: 'lg', lg: 'xl' }}
+      size={{ base: 'full', sm: 'md', md: 'lg' }}
       closeOnOverlayClick={false}
     >
       <VStack spacing={5} align="stretch">
+        <HStack spacing={2.5}>
+          <ModalButton variant="secondary" onClick={() => comingSoon('Google')} leftIcon={<FaGoogle />} flex={1}>
+            Google
+          </ModalButton>
+          <ModalButton variant="secondary" onClick={() => comingSoon('GitHub')} leftIcon={<FaGithub />} flex={1}>
+            GitHub
+          </ModalButton>
+        </HStack>
 
-        {/* Header card */}
-        <Box
-          textAlign="center"
-          p={5}
-          borderRadius="14px"
-          bg={cardBg}
-          border="1px solid"
-          borderColor={borderColor}
-        >
-          <Text fontSize="md" color={t.text}>
-            Start your photo mapping adventure today.
-          </Text>
-        </Box>
+        <ModalDivider label="or sign up with email" />
 
-        {/* Social Buttons */}
-        <VStack spacing={3}>
-          <Text fontSize="sm" fontWeight="semibold" color={textColor} textAlign="center">
-            Or register with
-          </Text>
-          <HStack spacing={3} flexDirection={{ base: 'column', sm: 'row' }}>
-            <ModalButton variant="outline" onClick={() => toast({
-              title: 'Coming soon',
-              description: 'Google sign up will be available soon.',
-              status: 'info',
-              duration: 3000,
-              isClosable: true,
-              position: 'top-right',
-            })} leftIcon={<FaGoogle />} w="full">
-              Google
-            </ModalButton>
-            <ModalButton variant="outline" onClick={() => toast({
-              title: 'Coming soon',
-              description: 'GitHub sign up will be available soon.',
-              status: 'info',
-              duration: 3000,
-              isClosable: true,
-              position: 'top-right',
-            })} leftIcon={<FaGithub />} w="full">
-              GitHub
-            </ModalButton>
-          </HStack>
-        </VStack>
-
-        <Divider />
-
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
+        <form id={FORM_ID} onSubmit={handleSubmit} noValidate>
           <VStack spacing={4} align="stretch">
-            {/* Full name */}
-            <FormControl isInvalid={!!formErrors.fullname}>
-              <FormLabel color={textColor}>Full Name</FormLabel>
-              <InputGroup>
-                <InputLeftElement><FaUser color="gray.400" /></InputLeftElement>
-                <Input
-                  type="text"
-                  value={formData.fullname}
-                  onChange={e => handleInputChange('fullname', e.target.value)}
-                  placeholder="Enter your full name"
-                  border="1px solid"
-                  borderColor={borderColor}
-                  borderRadius="lg"
-                  bg={cardBg}
-                  backdropFilter="blur(8px)"
-                  _focus={{ borderColor: focusColor, boxShadow: `0 0 0 1px ${focusColor}` }}
-                />
-              </InputGroup>
-              <FormErrorMessage>{formErrors.fullname}</FormErrorMessage>
-            </FormControl>
+            <ModalField
+              label="Full name"
+              icon={HiUser}
+              autoComplete="name"
+              placeholder="Your full name"
+              value={formData.fullname}
+              onChange={(e) => handleInputChange('fullname', e.target.value)}
+              error={formErrors.fullname}
+            />
+            <ModalField
+              label="Email"
+              icon={HiEnvelope}
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              error={formErrors.email}
+            />
 
-            {/* Email */}
-            <FormControl isInvalid={!!formErrors.email}>
-              <FormLabel color={textColor}>Email Address</FormLabel>
-              <InputGroup>
-                <InputLeftElement><FaEnvelope color="gray.400" /></InputLeftElement>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={e => handleInputChange('email', e.target.value)}
-                  border="1px solid"
-                  borderColor={borderColor}
-                  borderRadius="lg"
-                  bg={cardBg}
-                  backdropFilter="blur(8px)"
-                  _focus={{ borderColor: focusColor, boxShadow: `0 0 0 1px ${focusColor}` }}
-                />
-              </InputGroup>
-              <FormErrorMessage>{formErrors.email}</FormErrorMessage>
-            </FormControl>
-
-            {/* Country */}
             <FormControl isInvalid={!!formErrors.country}>
-              <FormLabel color={textColor}>Country</FormLabel>
-              <HStack spacing={3}>
-                <Box color="gray.400"><FaGlobe /></Box>
+              <FormLabel variant="atlas">Country</FormLabel>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none" zIndex={1}>
+                  <Icon as={HiGlobeAmericas} boxSize={3.5} />
+                </InputLeftElement>
                 <Select
                   placeholder="Select your country"
+                  pl={10}
                   value={formData.country}
-                  onChange={e => handleInputChange('country', e.target.value)}
-                  border="1px solid"
-                  borderColor={borderColor}
-                  borderRadius="lg"
-                  bg={cardBg}
-                  backdropFilter="blur(8px)"
-                  _focus={{ borderColor: focusColor, boxShadow: `0 0 0 1px ${focusColor}` }}
+                  onChange={(e) => handleInputChange('country', e.target.value)}
                 >
-                  {countries.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
                   ))}
                 </Select>
-              </HStack>
+              </InputGroup>
               <FormErrorMessage>{formErrors.country}</FormErrorMessage>
             </FormControl>
 
-            {/* Passwords */}
-            {[{ label: 'Password', key: 'password', show: showPassword, setShow: setShowPassword },
-              { label: 'Confirm Password', key: 'confirmPassword', show: showConfirmPassword, setShow: setShowConfirmPassword }]
-              .map((f, i) => (
-                <FormControl key={i} isInvalid={!!formErrors[f.key]}>
-                  <FormLabel color={textColor}>{f.label}</FormLabel>
-                  <InputGroup>
-                    <InputLeftElement><FaLock color="gray.400" /></InputLeftElement>
-                    <Input
-                      type={f.show ? 'text' : 'password'}
-                      placeholder={f.label === 'Password'
-                        ? 'Create a password (min. 6 characters)'
-                        : 'Confirm your password'}
-                      value={formData[f.key]}
-                      onChange={e => handleInputChange(f.key, e.target.value)}
-                      border="1px solid"
-                      borderColor={borderColor}
-                      borderRadius="lg"
-                      bg={cardBg}
-                      backdropFilter="blur(8px)"
-                      _focus={{ borderColor: focusColor, boxShadow: `0 0 0 1px ${focusColor}` }}
-                    />
-                    <InputRightElement>
-                      <Box
-                        cursor="pointer"
-                        color="gray.500"
-                        _hover={{ color: 'gray.700' }}
-                        onClick={() => f.setShow(!f.show)}
-                      >
-                        {f.show ? <FaEyeSlash /> : <FaEye />}
-                      </Box>
-                    </InputRightElement>
-                  </InputGroup>
-                  <FormErrorMessage>{formErrors[f.key]}</FormErrorMessage>
-                </FormControl>
-              ))}
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+              <ModalField
+                label="Password"
+                icon={HiLockClosed}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Min. 6 characters"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                error={formErrors.password}
+              />
+              <ModalField
+                label="Confirm password"
+                icon={HiLockClosed}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Repeat password"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                error={formErrors.confirmPassword}
+              />
+            </SimpleGrid>
+
+            <VStack spacing={2.5} align="stretch" pt={1}>
+              <FormControl isInvalid={!!formErrors.terms}>
+                <Checkbox isChecked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)}>
+                  <Text fontSize="sm">
+                    I accept the{' '}
+                    <Text as="span" color={color.primary}>
+                      Terms and Conditions
+                    </Text>
+                  </Text>
+                </Checkbox>
+                <FormErrorMessage>{formErrors.terms}</FormErrorMessage>
+              </FormControl>
+              <FormControl isInvalid={!!formErrors.privacy}>
+                <Checkbox isChecked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)}>
+                  <Text fontSize="sm">
+                    I accept the{' '}
+                    <Text as="span" color={color.primary}>
+                      Privacy Policy
+                    </Text>
+                  </Text>
+                </Checkbox>
+                <FormErrorMessage>{formErrors.privacy}</FormErrorMessage>
+              </FormControl>
+            </VStack>
           </VStack>
         </form>
 
-        {/* Terms */}
-        <VStack spacing={2} align="stretch">
-          <FormControl isInvalid={!!formErrors.terms}>
-            <Checkbox isChecked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} colorScheme="blue">
-              <Text fontSize="sm" color={textColor}>
-                I accept the{' '}
-                <Text as="span" color={t.primary} _hover={{ textDecoration: 'underline' }}>
-                  Terms and Conditions
-                </Text>
-              </Text>
-            </Checkbox>
-            <FormErrorMessage>{formErrors.terms}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={!!formErrors.privacy}>
-            <Checkbox isChecked={acceptedPrivacy} onChange={e => setAcceptedPrivacy(e.target.checked)} colorScheme="blue">
-              <Text fontSize="sm" color={textColor}>
-                I accept the{' '}
-                <Text as="span" color={t.primary} _hover={{ textDecoration: 'underline' }}>
-                  Privacy Policy
-                </Text>
-              </Text>
-            </Checkbox>
-            <FormErrorMessage>{formErrors.privacy}</FormErrorMessage>
-          </FormControl>
-        </VStack>
-
-        {/* Security note */}
-        <Box
-          p={3}
-          borderRadius="lg"
-          bg={cardBg}
-          backdropFilter="blur(8px)"
-          border="1px solid"
-          borderColor={borderColor}
-        >
-          <Text fontSize="xs" color={t.textMuted} textAlign="center">
-            Your data is encrypted and secure. We never store your password.
-          </Text>
-        </Box>
+        <HStack spacing={2} justify="center" color={color.textMuted}>
+          <HiShieldCheck />
+          <Text fontSize="xs">Your data is encrypted and secure. We never store your password.</Text>
+        </HStack>
       </VStack>
     </BaseModal>
   );

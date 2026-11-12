@@ -1,40 +1,26 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { CountriesContext } from '../../context/CountriesContext';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { motion } from 'framer-motion';
+import { Avatar, Box, Circle, Flex, HStack, Icon, IconButton, SimpleGrid, Text, Tooltip, VStack } from '@chakra-ui/react';
 import {
-  Box,
-  Text,
-  Avatar,
-  Flex,
-  VStack,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Circle,
-  IconButton,
-  Tooltip,
-} from '@chakra-ui/react';
-import {
-  FaUser,
-  FaEnvelope,
-  FaCamera,
-  FaGlobe,
-  FaCalendarAlt,
-  FaFlag,
-  FaTrophy,
-  FaRoute,
-  FaCompass,
-  FaStar,
-  FaEdit,
-  FaCrown
-} from 'react-icons/fa';
+  HiCalendarDays,
+  HiCamera,
+  HiEnvelope,
+  HiFlag,
+  HiGlobeAmericas,
+  HiMap,
+  HiPencilSquare,
+  HiSparkles,
+  HiUser,
+} from 'react-icons/hi2';
 import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
+import { ModalActions, ModalSection, ModalStat, ModalState, Panel, ToneBadge, ToneProgress } from './ModalKit';
 import EnhancedFlag from '../features/CountryDetails/EnhancedFlag';
-import { useLandingTokens } from '../features/landing/landingUI';
+import { color, font, radius, type } from '../../design/tokens';
 
 countries.registerLocale(en);
 const MotionBox = motion.create(Box);
@@ -46,18 +32,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     totalPhotos: 0,
     countriesVisited: 0,
     joinDate: new Date().getFullYear(),
-    favoriteContinent: 'Unknown',
   });
   const [continentCount, setContinentCount] = useState(0);
-
-  const t = useLandingTokens();
-  const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
-  const SERIF = "'Instrument Serif', Georgia, serif";
-  const textColor = t.textSoft;
-  const headingColor = t.text;
-  const accentColor = t.primary;
-  const borderColor = t.hairline;
-  const cardBg = t.surface;
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -65,10 +41,9 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         totalPhotos: photoCount || 0,
         countriesVisited: countryCount || 0,
         joinDate: new Date().getFullYear(),
-        favoriteContinent: getFavoriteContinent(),
       });
     }
-  }, [isLoggedIn, photoCount, countryCount, countriesWithPhotos]);
+  }, [isLoggedIn, photoCount, countryCount]);
 
   useEffect(() => {
     if (isLoggedIn && countriesWithPhotos?.length > 0) {
@@ -76,27 +51,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     } else {
       setContinentCount(0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, countriesWithPhotos]);
-
-  const getFavoriteContinent = () => {
-    const map = {
-      'US': 'North America', 'CA': 'North America', 'MX': 'North America',
-      'BR': 'South America', 'AR': 'South America', 'CL': 'South America',
-      'FR': 'Europe', 'DE': 'Europe', 'IT': 'Europe', 'ES': 'Europe', 'UK': 'Europe',
-      'JP': 'Asia', 'CN': 'Asia', 'IN': 'Asia', 'TH': 'Asia', 'KR': 'Asia',
-      'AU': 'Oceania', 'NZ': 'Oceania',
-      'EG': 'Africa', 'ZA': 'Africa', 'MA': 'Africa', 'KE': 'Africa'
-    };
-
-    if (!countriesWithPhotos?.length) return 'World Explorer';
-    const counts = {};
-    countriesWithPhotos.forEach((item) => {
-      const code = typeof item === 'object' ? String(item.id || '').toUpperCase() : String(item).toUpperCase();
-      const c = map[code] || 'Other';
-      counts[c] = (counts[c] || 0) + 1;
-    });
-    return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b), 'World Explorer');
-  };
 
   const getContinentCount = async () => {
     if (!countriesWithPhotos?.length) return 0;
@@ -105,240 +61,180 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
     for (let i = 0; i < countriesWithPhotos.length; i += batchSize) {
       const batch = countriesWithPhotos.slice(i, i + batchSize);
-      const results = await Promise.all(batch.map(async (item) => {
-        const code = typeof item === 'object'
-          ? String(item.countryId || item.id || item.code || '').toUpperCase()
-          : String(item || '').toUpperCase();
-        if (!code || code === 'UNKNOWN') return null;
-        try {
-          const r = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
-          if (!r.ok) return null;
-          const data = await r.json();
-          return data[0]?.region || 'Unknown';
-        } catch {
-          return null;
-        }
-      }));
+      const results = await Promise.all(
+        batch.map(async (item) => {
+          const code =
+            typeof item === 'object'
+              ? String(item.countryId || item.id || item.code || '').toUpperCase()
+              : String(item || '').toUpperCase();
+          if (!code || code === 'UNKNOWN') return null;
+          try {
+            const r = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+            if (!r.ok) return null;
+            const data = await r.json();
+            return data[0]?.region || 'Unknown';
+          } catch {
+            return null;
+          }
+        })
+      );
       results.forEach((r) => r && set.add(r));
     }
 
     return set.size;
   };
 
-  const countryNamesList = countriesWithPhotos?.map((item) => {
-    const code = typeof item === 'object' ? String(item.countryId || '').toUpperCase() : String(item).toUpperCase();
-    const name = typeof item === 'object' ? item.countryName || code : countries.getName(code, 'en');
-    return { code, name: name || code, photoCount: item.photoCount || 0 };
-  }) || [];
+  const countryNamesList =
+    countriesWithPhotos?.map((item) => {
+      const code = typeof item === 'object' ? String(item.countryId || '').toUpperCase() : String(item).toUpperCase();
+      const name = typeof item === 'object' ? item.countryName || code : countries.getName(code, 'en');
+      return { code, name: name || code, photoCount: item.photoCount || 0 };
+    }) || [];
+
+  const worldPct = Math.min((countryNamesList.length / 195) * 100, 100);
 
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="User Profile"
-      icon={FaUser}
-      size={{ base: "full", sm: "md", md: "lg", lg: "xl" }}
+      eyebrow="Your account"
+      title="Profile"
+      icon={HiUser}
+      size={{ base: 'full', sm: 'md', md: 'lg', lg: 'xl' }}
+      footer={
+        <ModalActions>
+          <ModalButton variant="primary" onClick={onClose} leftIcon={<HiMap />}>
+            Continue exploring
+          </ModalButton>
+        </ModalActions>
+      }
     >
-      <VStack spacing={{ base: 5, sm: 6, md: 8 }} align="stretch">
-
-        {/* Header */}
-        <Box
-          p={{ base: 4, sm: 5, md: 6 }}
-          borderRadius="xl"
-          bg={cardBg}
-          backdropFilter="blur(8px)"
-          border="1px solid"
-          borderColor={borderColor}
-          boxShadow={t.shadowSm}
-          position="relative"
-        >
-          <Flex align="center" justify="space-between" flexDir={{ base: "column", sm: "row" }} gap={3}>
-            <HStack spacing={4}>
-              <Box position="relative">
+      <VStack spacing={6} align="stretch">
+        {/* Identity */}
+        <Panel p={{ base: 4, sm: 5 }}>
+          <Flex align="center" justify="space-between" gap={3}>
+            <HStack spacing={4} minW={0}>
+              <Box position="relative" flexShrink={0}>
                 <Avatar
                   size="md"
                   name={fullname}
-                  bg={isPremium ? t.accent : accentColor}
-                  color="white"
-                  ring="3px"
-                  ringColor={isPremium ? "yellow.400" : accentColor}
+                  bg={color.primary}
+                  color={color.textOnBrand}
+                  fontWeight="700"
+                  ring="2px"
+                  ringOffset="2px"
+                  ringOffsetColor={color.surfaceRaised}
+                  ringColor={isPremium ? color.primary : color.hairlineMid}
                 />
                 {isPremium && (
                   <Circle
-                    size="24px"
-                    bg={t.accent}
+                    size="22px"
+                    bg={color.primary}
                     position="absolute"
-                    bottom="-2px"
-                    right="-2px"
-                    border="2px solid white"
+                    bottom="-3px"
+                    right="-3px"
+                    border="2px solid"
+                    borderColor={color.surfaceRaised}
                   >
-                    <Icon as={FaCrown} color="white" w={3} h={3} />
+                    <Icon as={HiSparkles} color={color.textOnBrand} boxSize={3} />
                   </Circle>
                 )}
               </Box>
 
-              <VStack align="start" spacing={1}>
-                <HStack>
-                  <Text fontFamily={SERIF} fontSize="xl" fontWeight="400" color={headingColor} lineHeight="1.1">
+              <VStack align="start" spacing={1} minW={0}>
+                <HStack spacing={2.5} flexWrap="wrap">
+                  <Text fontFamily={font.display} fontSize="1.6rem" color={color.text} lineHeight="1.05" noOfLines={1}>
                     {fullname}
                   </Text>
                   {isPremium && (
-                    <Box
-                      px={2}
-                      py={0.5}
-                      borderRadius="full"
-                      bg="rgba(235,181,114,0.14)"
-                      border="1px solid rgba(235,181,114,0.32)"
-                      display="flex"
-                      alignItems="center"
-                      gap="4px"
-                    >
-                      <Icon as={FaStar} w={2.5} h={2.5} color={t.primary} />
-                      <Text fontFamily={MONO} fontSize="9px" fontWeight="700" color={t.primary} letterSpacing="0.10em">
-                        PREMIUM
-                      </Text>
-                    </Box>
+                    <ToneBadge tone="brand" icon={HiSparkles}>
+                      Premium
+                    </ToneBadge>
                   )}
                 </HStack>
-                <HStack spacing={2}>
-                  <Icon as={FaEnvelope} color={textColor} w={3.5} h={3.5} />
-                  <Text color={textColor} fontSize="sm">{email}</Text>
+                <HStack spacing={2} color={color.textSoft} minW={0}>
+                  <Icon as={HiEnvelope} boxSize={3.5} flexShrink={0} />
+                  <Text fontSize="sm" noOfLines={1}>
+                    {email}
+                  </Text>
                 </HStack>
               </VStack>
             </HStack>
 
-            <Tooltip label="Edit Profile" hasArrow>
+            <Tooltip label="Edit profile" hasArrow>
               <IconButton
-                aria-label="Edit Profile"
-                icon={<FaEdit />}
+                aria-label="Edit profile"
+                icon={<HiPencilSquare />}
                 size="sm"
                 variant="ghost"
-                color={textColor}
-                _hover={{ bg: t.surfaceSubtle, color: t.text }}
+                color={color.textSoft}
+                borderRadius="10px"
+                _hover={{ bg: color.surfaceHover, color: color.text }}
               />
             </Tooltip>
           </Flex>
-        </Box>
+        </Panel>
 
         {/* Statistics */}
-        <Box>
-          <HStack mb={4} spacing={2}>
-            <Icon as={FaTrophy} color={t.accent} boxSize={4} />
-            <Text fontFamily={MONO} fontSize="11px" fontWeight="700" color={t.textMuted} textTransform="uppercase" letterSpacing="0.08em">
-              Travel Statistics
-            </Text>
-          </HStack>
-          <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={3}>
-            {[
-              { label: "Photos", value: userStats.totalPhotos, icon: FaCamera },
-              { label: "Countries", value: userStats.countriesVisited, icon: FaGlobe },
-              { label: "Continents", value: continentCount, icon: FaFlag },
-              { label: "Member Since", value: userStats.joinDate, icon: FaCalendarAlt },
-            ].map((stat, i) => (
-              <Box
-                key={i}
-                bg={cardBg}
-                borderRadius="14px"
-                border="1px solid"
-                borderColor={borderColor}
-                boxShadow={t.shadowSm}
-                p={4}
-                textAlign="center"
-                transition="border-color .2s ease, box-shadow .2s ease, transform .2s ease"
-                _hover={{
-                  transform: "translateY(-2px)",
-                  borderColor: t.hairlineStrong,
-                  boxShadow: t.shadowMd,
-                }}
-              >
-                <Box display="inline-flex" p={2} borderRadius="10px" bg={t.primarySoftBg} color={t.primary} mb={2}>
-                  <Icon as={stat.icon} w={4} h={4} />
-                </Box>
-                <Text fontFamily={MONO} fontSize="lg" fontWeight="700" color={headingColor} lineHeight="1">{stat.value}</Text>
-                <Text fontFamily={MONO} fontSize="10px" color={textColor} textTransform="uppercase" letterSpacing="0.06em" mt={1}>{stat.label}</Text>
-              </Box>
-            ))}
+        <ModalSection title="Travel statistics">
+          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3}>
+            <ModalStat icon={HiCamera} value={userStats.totalPhotos} label="Photos" tone="brand" />
+            <ModalStat icon={HiGlobeAmericas} value={userStats.countriesVisited} label="Countries" tone="teal" />
+            <ModalStat icon={HiFlag} value={continentCount} label="Continents" tone="rose" />
+            <ModalStat icon={HiCalendarDays} value={userStats.joinDate} label="Member since" tone="neutral" />
           </SimpleGrid>
-        </Box>
+        </ModalSection>
 
         {/* Countries */}
-        <Box>
-          <HStack mb={4} spacing={2}>
-            <Icon as={FaFlag} color={t.primary} boxSize={4} />
-            <Text fontFamily={MONO} fontSize="11px" fontWeight="700" color={t.textMuted} textTransform="uppercase" letterSpacing="0.08em">
-              Countries Explored
-            </Text>
-          </HStack>
-          <Box
-            p={4}
-            borderRadius="lg"
-            bg={cardBg}
-            backdropFilter="blur(8px)"
-            border="1px solid"
-            borderColor={borderColor}
-          >
-            {countryNamesList.length > 0 ? (
-              <>
-                {/* Countries progress bar — amber fill, atlas style */}
-                <Box w="full" h="6px" borderRadius="full" bg={t.primarySoftBg} overflow="hidden" mb={3}>
-                  <Box
-                    h="full"
-                    w={`${Math.min((countryNamesList.length / 195) * 100, 100)}%`}
-                    borderRadius="full"
-                    bg={t.primary}
-                    boxShadow="0 0 8px rgba(235,181,114,0.5)"
-                    transition="width .6s ease"
-                  />
-                </Box>
-                <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={2}>
-                  {countryNamesList.slice(0, 12).map((c, i) => (
-                    <MotionBox
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      bg={cardBg}
-                      border="1px solid"
-                      borderColor={borderColor}
-                      borderRadius="md"
-                      p={3}
-                      cursor="pointer"
-                      textAlign="center"
-                      _hover={{
-                        bg: t.surfaceSubtle,
-                        borderColor: t.hairlineStrong,
-                        transform: "translateY(-2px)",
-                      }}
-                    >
-                      <Box width="48px" height="36px" mx="auto" mb={2}>
-                        <EnhancedFlag countryCode={c.code} />
-                      </Box>
-                      <HStack justify="center" spacing={1}>
-                        <Icon as={FaCamera} w={3} h={3} color={t.primary} />
-                        <Text fontSize="xs" color={textColor}>{c.photoCount}</Text>
-                      </HStack>
-                    </MotionBox>
-                  ))}
-                </SimpleGrid>
-              </>
-            ) : (
-              <VStack py={6} spacing={2}>
-                <Icon as={FaRoute} w={9} h={9} color={t.textMuted} />
-                <Text color={textColor} fontSize="sm">
-                  Start uploading photos to see your countries.
-                </Text>
-              </VStack>
-            )}
-          </Box>
-        </Box>
-
-        {/* Action */}
-        <Flex justify="center">
-          <ModalButton variant="primary" onClick={onClose} leftIcon={<FaCompass />}>
-            Continue Exploring
-          </ModalButton>
-        </Flex>
-
+        <ModalSection
+          title="Countries explored"
+          action={
+            countryNamesList.length > 0 && (
+              <Text {...type.label} color={color.primary}>
+                {countryNamesList.length} / 195
+              </Text>
+            )
+          }
+        >
+          {countryNamesList.length > 0 ? (
+            <VStack spacing={4} align="stretch">
+              <ToneProgress value={worldPct} />
+              <SimpleGrid columns={{ base: 3, sm: 4, md: 6 }} spacing={2}>
+                {countryNamesList.slice(0, 12).map((c, i) => (
+                  <MotionBox
+                    key={c.code || i}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    p={2.5}
+                    borderRadius={radius.md}
+                    bg="rgba(236,231,220,0.025)"
+                    border="1px solid"
+                    borderColor={color.hairline}
+                    textAlign="center"
+                    title={c.name}
+                  >
+                    <Box w="44px" h="30px" mx="auto" mb={2}>
+                      <EnhancedFlag countryCode={c.code} />
+                    </Box>
+                    <HStack justify="center" spacing={1} color={color.textMuted}>
+                      <Icon as={HiCamera} boxSize={3} />
+                      <Text {...type.label} color={color.textSoft}>
+                        {c.photoCount}
+                      </Text>
+                    </HStack>
+                  </MotionBox>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          ) : (
+            <Panel>
+              <ModalState kind="empty" icon={HiMap} title="No countries yet" py={6}>
+                Start uploading photos to see your countries.
+              </ModalState>
+            </Panel>
+          )}
+        </ModalSection>
       </VStack>
     </BaseModal>
   );

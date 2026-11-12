@@ -1,38 +1,53 @@
-// ConfirmDialog.jsx
-import React, { useRef } from 'react';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  Text
-} from '@chakra-ui/react';
+// ConfirmDialog.jsx — Atlas confirmation dialog (destructive by default).
+import { useRef } from 'react';
+import { Text } from '@chakra-ui/react';
+import { HiExclamationTriangle } from 'react-icons/hi2';
+import BaseModal from '../modals/BaseModal';
+import ModalButton from '../modals/ModalButton';
+import { ModalActions } from '../modals/ModalKit';
+import { color } from '../../design/tokens';
 
-export const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
-  const cancelRef = useRef();
+export const ConfirmDialog = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmLabel = 'Delete',
+  cancelLabel = 'Cancel',
+  tone = 'danger',
+  icon = HiExclamationTriangle,
+  isLoading = false,
+}) => {
+  // Focus the safe option first so Enter never confirms a destructive action by accident.
+  const cancelRef = useRef(null);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered initialFocusRef={cancelRef}>
-      <ModalOverlay />
-      <ModalContent bg="gray.900" color="white">
-        <ModalHeader>{title}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text>{message}</Text>
-        </ModalBody>
-        <ModalFooter>
-          <Button ref={cancelRef} onClick={onClose} mr={3}>
-            Cancel
-          </Button>
-          <Button colorScheme="red" onClick={onConfirm}>
-            Confirm
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      icon={icon}
+      tone={tone}
+      eyebrow={tone === 'danger' ? 'Confirm action' : undefined}
+      size="md"
+      initialFocusRef={cancelRef}
+      footer={
+        <ModalActions>
+          <ModalButton ref={cancelRef} variant="secondary" onClick={onClose}>
+            {cancelLabel}
+          </ModalButton>
+          <ModalButton variant={tone === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} isLoading={isLoading}>
+            {confirmLabel}
+          </ModalButton>
+        </ModalActions>
+      }
+    >
+      <Text fontSize="sm" color={color.textSoft} lineHeight="1.65">
+        {message}
+      </Text>
+    </BaseModal>
   );
 };
+
+export default ConfirmDialog;
