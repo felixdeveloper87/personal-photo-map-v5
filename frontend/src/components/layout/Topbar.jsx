@@ -21,7 +21,8 @@ const Topbar = forwardRef(({ nav }, ref) => {
       top={0}
       left={{ base: 0, lg: SIDEBAR_WIDTH }}
       right={0}
-      h="64px"
+      h="calc(64px + env(safe-area-inset-top))"
+      pt="env(safe-area-inset-top)"
       bg={t.surface}
       borderBottom="1px solid"
       borderColor={t.hairline}

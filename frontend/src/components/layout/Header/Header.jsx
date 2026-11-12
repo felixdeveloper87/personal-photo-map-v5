@@ -57,11 +57,24 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
         as="header"
         w="100%"
         position="fixed"
-        top={{ base: "10px", md: "16px" }}
+        // iOS standalone PWA (viewport-fit=cover + black-translucent) draws under the status bar /
+        // Dynamic Island; the safe-area insets push the header below it (they're 0 elsewhere).
+        top={{
+          base: "calc(10px + env(safe-area-inset-top))",
+          md: "calc(16px + env(safe-area-inset-top))",
+        }}
         left="0"
         right="0"
         zIndex={1000}
-        px={{ base: 3, md: 6 }}
+        // Same as px={{ base: 3, md: 6 }}, but never less than the landscape notch insets.
+        pl={{
+          base: "max(var(--chakra-space-3), env(safe-area-inset-left))",
+          md: "max(var(--chakra-space-6), env(safe-area-inset-left))",
+        }}
+        pr={{
+          base: "max(var(--chakra-space-3), env(safe-area-inset-right))",
+          md: "max(var(--chakra-space-6), env(safe-area-inset-right))",
+        }}
       >
         <Container maxW="container.xl" px={0}>
           <Flex
@@ -175,7 +188,25 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
   ];
 
   return (
-    <Box ref={ref} as="header" w="100%" position="fixed" top="0" left="0" right="0" zIndex={1000}>
+    <Box
+      ref={ref}
+      as="header"
+      w="100%"
+      position="fixed"
+      top="0"
+      left="0"
+      right="0"
+      zIndex={1000}
+      // Safe-area padding (iOS standalone PWA): the header's own background extends under the
+      // status bar / Dynamic Island instead of the page scrolling visibly behind it.
+      bg={containerStyles.bg}
+      backdropFilter={containerStyles.backdropFilter}
+      sx={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
+    >
       <Container
         maxW="container.2xl"
         px={{ base: 2, sm: 4, md: 6 }}

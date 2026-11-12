@@ -85,7 +85,13 @@ const AppShell = () => {
   const [isDesktop] = useMediaQuery('(min-width: 992px)');
   const useDesktopShell = nav.isLoggedIn && isDesktop;
   const isLandingHeader = location.pathname === '/' && !nav.isLoggedIn;
-  const topOffset = useDesktopShell ? '64px' : `${headerHeight}px`;
+  // The logged-in mobile header's measured height already includes its safe-area padding.
+  // The desktop topbar and the floating landing header are offset by the inset, so add it here.
+  const topOffset = useDesktopShell
+    ? 'calc(64px + env(safe-area-inset-top))'
+    : isLandingHeader
+      ? `calc(${headerHeight}px + env(safe-area-inset-top))`
+      : `${headerHeight}px`;
 
   return (
     <>

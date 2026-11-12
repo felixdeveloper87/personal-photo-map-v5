@@ -54,6 +54,10 @@ const Sidebar = ({ nav }) => {
       flexDirection="column"
       px={4}
       py={5}
+      sx={{
+        paddingTop: 'calc(var(--chakra-space-5) + env(safe-area-inset-top))',
+        paddingBottom: 'calc(var(--chakra-space-5) + env(safe-area-inset-bottom))',
+      }}
     >
       {/* Brand */}
       <HStack
