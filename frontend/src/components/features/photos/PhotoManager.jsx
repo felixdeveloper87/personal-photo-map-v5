@@ -11,7 +11,6 @@ import { buildApiUrl, buildImageUrl } from '../../../utils/apiConfig';
 import { useLandingTokens } from '../landing/landingUI';
 import {
   Box,
-  Button,
   Text,
   Flex,
   VStack,
@@ -28,9 +27,13 @@ import {
   PopoverBody,
   PopoverArrow,
   Icon,
-  useColorModeValue,
+  IconButton,
 } from '@chakra-ui/react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
+import { HiPhoto } from 'react-icons/hi2';
+import ModalButton from '../../modals/ModalButton';
+import { Chip, ModalState, Panel } from '../../modals/ModalKit';
+import { color as atlas, shadow, type } from '../../../design/tokens';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   showSuccessToast,
@@ -515,92 +518,69 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
                   closeOnBlur={true}
                 >
                   <PopoverTrigger>
-                    <Button
-                      size={{ base: "xs", sm: "sm", md: "sm" }}
-                      borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
-                      fontWeight="semibold"
-                      px={{ base: 2, sm: 3, md: 4 }}
-                      py={{ base: 1, sm: 2, md: 2 }}
-                      fontSize={{ base: "xs", sm: "sm", md: "sm" }}
-                      bg={useColorModeValue("green.500", "green.400")}
-                      color="white"
-                      _hover={{
-                        bg: useColorModeValue("green.600", "green.500"),
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 12px rgba(34, 197, 94, 0.4)",
-                      }}
-                      _active={{
-                        transform: "translateY(0)",
-                      }}
-                      transition="all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
-                      leftIcon={<Icon as={FaPlus} boxSize={3} />}
+                    <Chip
+                      h={{ base: '32px', sm: '36px' }}
+                      px={{ base: 3, sm: 4 }}
+                      fontSize={{ base: 'xs', sm: 'sm' }}
+                      borderStyle="dashed"
+                      borderColor={atlas.primarySoftBorder}
+                      color={atlas.primary}
+                      icon={FaPlus}
                     >
-                      New Album
-                    </Button>
+                      New album
+                    </Chip>
                   </PopoverTrigger>
                   <PopoverContent
-                    bg={useColorModeValue("white", "gray.800")}
-                    borderColor={useColorModeValue("gray.200", "gray.600")}
-                    boxShadow="lg"
+                    bg={atlas.surfaceRaised}
+                    borderColor={atlas.hairlineMid}
+                    borderRadius="14px"
+                    boxShadow={shadow.lg}
                     w={{ base: "90vw", sm: "320px" }}
                   >
-                    <PopoverArrow bg={useColorModeValue("white", "gray.800")} />
+                    <PopoverArrow bg={atlas.surfaceRaised} />
                     <PopoverBody p={4}>
                       <VStack spacing={3} align="stretch">
-                        <Text
-                          fontSize="sm"
-                          fontWeight="semibold"
-                          color={useColorModeValue("gray.700", "gray.200")}
-                        >
-                          Create New Album
+                        <Text {...type.eyebrow} color={atlas.primary}>
+                          Create new album
                         </Text>
                         <InputGroup size="md">
                           <Input
                             placeholder="Album name"
                             value={newAlbumName}
                             onChange={(e) => setNewAlbumName(e.target.value)}
-                            onKeyPress={(e) => {
+                            onKeyDown={(e) => {
                               if (e.key === 'Enter' && newAlbumName.trim() && selectedImageIds.length > 0) {
                                 handleCreateAlbum();
                               }
                             }}
-                            borderColor={useColorModeValue("gray.300", "gray.600")}
-                            _focus={{
-                              borderColor: "green.500",
-                              boxShadow: "0 0 0 1px var(--chakra-colors-green-500)",
-                            }}
                           />
                           {newAlbumName && (
-                            <InputRightElement width="3rem">
-                              <Button
-                                h="1.5rem"
-                                size="sm"
+                            <InputRightElement>
+                              <IconButton
+                                aria-label="Clear album name"
+                                icon={<Icon as={FaTimes} boxSize={2.5} />}
+                                size="xs"
                                 variant="ghost"
+                                color={atlas.textMuted}
                                 onClick={() => setNewAlbumName('')}
-                              >
-                                <Icon as={FaTimes} boxSize={2.5} />
-                              </Button>
+                              />
                             </InputRightElement>
                           )}
                         </InputGroup>
-                        <Text
-                          fontSize="xs"
-                          color={useColorModeValue("gray.500", "gray.400")}
-                        >
+                        <Text fontSize="xs" color={atlas.textMuted}>
                           {selectedImageIds.length > 0
                             ? `${selectedImageIds.length} photo(s) selected`
                             : 'Select photos to add to album'}
                         </Text>
-                        <Button
-                          colorScheme="green"
+                        <ModalButton
                           size="sm"
                           onClick={handleCreateAlbum}
                           isLoading={createAlbumMutation.isLoading}
                           isDisabled={!newAlbumName.trim() || selectedImageIds.length === 0}
                           w="full"
                         >
-                          Create Album
-                        </Button>
+                          Create album
+                        </ModalButton>
                       </VStack>
                     </PopoverBody>
                   </PopoverContent>
@@ -625,9 +605,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       {/* Listagem de imagens */}
       {((selectedYear || selectedAlbum || showAllSelected) && isLoadingImages) ||
       (!(selectedYear || selectedAlbum || showAllSelected) && isLoadingAllImages) ? (
-        <Text mt={1} mb={2} textAlign="center">
-          Loading photos...
-        </Text>
+        <ModalState kind="loading" title="Loading photos…" py={8} />
       ) : (selectedYear || selectedAlbum || showAllSelected) ? (
         images.length > 0 ? (
           <PhotoGallery
@@ -642,20 +620,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
             onClearSelection={clearSelection}               // NEW: unselect all
           />
         ) : (
-          <Box
-            textAlign="center"
-            py={6}
-            px={4}
-            bg="gray.50"
-            borderRadius="lg"
-            border="1px solid"
-            borderColor="gray.200"
-          >
-            <Text fontSize="lg" color="gray.600" mb={2}>
-              📸 Nenhuma foto encontrada para os filtros selecionados
-            </Text>
-            <Text fontSize="sm" color="gray.500">Tente selecionar outro ano ou álbum</Text>
-          </Box>
+          <Panel mx={{ base: 2, sm: 3, md: 4 }}>
+            <ModalState kind="empty" icon={HiPhoto} title="No photos match these filters" py={6}>
+              Try selecting another year or album.
+            </ModalState>
+          </Panel>
         )
       ) : (
         allImages.length > 0 && (

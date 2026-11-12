@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { Box, Flex, HStack, Text, Icon, Button, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import { FaSearch, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 import { useLandingTokens } from '../features/landing/landingUI';
+import { tones } from '../../design/tokens';
 import { SIDEBAR_WIDTH } from './Sidebar';
 
 const getInitials = (name) => {
@@ -84,7 +85,7 @@ const Topbar = forwardRef(({ nav }, ref) => {
                 <Icon as={FaChevronDown} boxSize={2.5} color={t.textMuted} display={{ base: 'none', md: 'block' }} />
               </HStack>
             </MenuButton>
-            <MenuList bg={t.surface} borderColor={t.hairline} borderRadius="14px" boxShadow={t.shadowLg} py={2} minW="190px">
+            <MenuList bg={t.surfaceRaised} borderColor={t.hairlineMid} borderRadius="14px" boxShadow={t.shadowLg} py={2} minW="190px">
               {nav.fullname && (
                 <Box px={3} py={1} mb={1}>
                   <Text fontSize="sm" fontWeight="700" color={t.text} isTruncated>{nav.fullname}</Text>
@@ -101,11 +102,11 @@ const Topbar = forwardRef(({ nav }, ref) => {
                 py={2}
                 w="auto"
                 borderRadius="8px"
-                color="#DC2626"
+                color={tones.danger.fg}
                 fontSize="sm"
                 fontWeight="500"
-                _hover={{ bg: 'rgba(220,38,38,0.08)' }}
-                _focus={{ bg: 'rgba(220,38,38,0.08)' }}
+                _hover={{ bg: tones.danger.soft }}
+                _focus={{ bg: tones.danger.soft }}
               >
                 <HStack spacing={3}>
                   <Icon as={FaSignOutAlt} boxSize={4} />

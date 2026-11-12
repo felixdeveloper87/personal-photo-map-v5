@@ -1,11 +1,9 @@
-import React from 'react';
 import {
   Box,
   Text,
   IconButton,
   HStack,
   VStack,
-  Badge,
   Tooltip,
   useDisclosure,
   useToast,
@@ -14,7 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { useImageCache } from '../../hooks/useImageCache';
-import { useColorModeValue } from '@chakra-ui/react';
+import { color, tones } from '../../design/tokens';
+import { ToneBadge } from '../modals/ModalKit';
 import { ConfirmDialog } from './ConfirmDialog';
 
 const CacheStatus = () => {
@@ -24,15 +23,14 @@ const CacheStatus = () => {
     formatCacheSize,
     clearCache,
     maxCacheSize,
-    maxCacheItems,
   } = useImageCache();
   
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   
-  const bgColor = useColorModeValue('gray.50', 'gray.800');
-  const textColor = useColorModeValue('gray.700', 'gray.300');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = 'rgba(236,231,220,0.025)';
+  const textColor = color.textSoft;
+  const borderColor = color.hairline;
   
   // Percentual usado
   const percentage = Math.min((cacheSize / maxCacheSize) * 100, 100);
@@ -68,9 +66,9 @@ const CacheStatus = () => {
                   Photo Cache
                 </Text>
                 {!isCacheEmpty && (
-                  <Badge colorScheme={percentage > 80 ? 'red' : percentage > 50 ? 'yellow' : 'green'}>
+                  <ToneBadge tone={percentage > 80 ? 'danger' : percentage > 50 ? 'warning' : 'success'}>
                     {cacheCount} images
-                  </Badge>
+                  </ToneBadge>
                 )}
               </HStack>
               <Text fontSize="xs" color={textColor} opacity={0.7}>
@@ -84,7 +82,7 @@ const CacheStatus = () => {
             
             <HStack spacing={2}>
               {!isCacheEmpty && (
-                <CircularProgress value={percentage} size="40px" color="blue.500">
+                <CircularProgress value={percentage} size="40px" color={color.primary} trackColor={color.hairline}>
                   <CircularProgressLabel fontSize="xs">
                     {Math.round(percentage)}%
                   </CircularProgressLabel>
@@ -97,7 +95,8 @@ const CacheStatus = () => {
                   icon={<DeleteIcon />}
                   size="sm"
                   variant="ghost"
-                  colorScheme="red"
+                  color={tones.danger.fg}
+                  _hover={{ bg: tones.danger.soft }}
                   onClick={onOpen}
                 />
               )}

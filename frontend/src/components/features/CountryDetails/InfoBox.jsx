@@ -10,16 +10,17 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useLandingTokens } from '../landing/landingUI';
+import { font, tones } from '../../../design/tokens';
 
 const MotionBox = motion.create(Box);
 
-const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+const MONO = font.mono;
 
 // Cartographic tones — each metric gets its own identity (amber / teal / rose).
 const TONES = {
-  amber: { icon: '#EBB572', soft: 'rgba(235,181,114,0.12)', border: 'rgba(235,181,114,0.30)', glow: 'rgba(235,181,114,0.22)' },
-  teal: { icon: '#6FD0C4', soft: 'rgba(111,208,196,0.12)', border: 'rgba(111,208,196,0.30)', glow: 'rgba(111,208,196,0.22)' },
-  rose: { icon: '#E58A7B', soft: 'rgba(229,138,123,0.12)', border: 'rgba(229,138,123,0.32)', glow: 'rgba(229,138,123,0.24)' },
+  amber: { icon: tones.brand.fg, soft: tones.brand.soft, border: tones.brand.border, glow: tones.brand.glow },
+  teal: { icon: tones.teal.fg, soft: tones.teal.soft, border: tones.teal.border, glow: tones.teal.glow },
+  rose: { icon: tones.rose.fg, soft: tones.rose.soft, border: tones.rose.border, glow: tones.rose.glow },
 };
 
 // Back-compat: legacy color names still resolve to a cartographic tone.

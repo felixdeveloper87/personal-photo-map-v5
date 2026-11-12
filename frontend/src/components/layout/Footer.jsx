@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Flex, Text, Link, HStack, Container, VStack, Icon } from '@chakra-ui/react';
 import { FaHeart, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { useLandingTokens } from '../features/landing/landingUI';
+import { tones } from '../../design/tokens';
+import Wordmark from '../ui/Wordmark';
 
 const NAV = ['About', 'Contact', 'Timeline'];
 const SOCIAL = [
@@ -34,12 +36,7 @@ const Footer = () => {
             maxW="340px"
             textAlign={{ base: 'center', md: 'left' }}
           >
-            <Text fontFamily="'Instrument Serif', Georgia, serif" fontSize="30px" lineHeight="1" color={t.text}>
-              Photo
-              <Box as="span" color={t.primary} fontStyle="italic">
-                Map
-              </Box>
-            </Text>
+            <Wordmark size="lg" />
             <Text fontSize="sm" color={t.textSoft} lineHeight="1.7">
               Travel photos that teach you the world — mapped by country and enriched with
               real economic and social data.
@@ -111,7 +108,7 @@ const Footer = () => {
           </Text>
           <HStack spacing={1.5} color={t.textMuted}>
             <Text fontSize="sm">Made with</Text>
-            <Icon as={FaHeart} color="#EF4444" boxSize={3.5} />
+            <Icon as={FaHeart} color={tones.rose.fg} boxSize={3.5} />
             <Text fontSize="sm">by Leandro Felix</Text>
           </HStack>
         </Flex>

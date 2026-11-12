@@ -34,9 +34,10 @@ import AddPhotosButton from './AddPhotosButton';
 import BaseModal from '../../modals/BaseModal';
 import IndicatorsModal from './IndicatorsModal';
 import { useLandingTokens } from '../landing/landingUI';
+import { font } from '../../../design/tokens';
 
-const SERIF = "'Instrument Serif', Georgia, serif";
-const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+const SERIF = font.display;
+const MONO = font.mono;
 
 const compactNumber = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 

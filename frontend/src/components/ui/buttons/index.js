@@ -1,41 +1,29 @@
-// Custom Buttons - Botões com cores semânticas
+// Page action buttons (Atlas)
 export {
-  SignInButton,
-  SignUpButton,
-  SignOutButton,
-  TimelineButton,
-  UpgradeToPremiumButton,
-
   UploadButton,
   DeleteButton,
   DeleteAlbum,
   CreateAlbumButton,
   YearButton,
   DeleteByYearButton,
-  DeleteAllByYearButton
+  DeleteAllByYearButton,
 } from './CustomButtons';
 
-// Modern Buttons - Botões ultra-modernos com design sofisticado
-export {
-  ModernLoginButton,
-  ModernRegisterButton
-} from './ModernButtons';
+// Header auth buttons
+export { ModernLoginButton, ModernRegisterButton } from './ModernButtons';
 
-// Header Buttons - Botões específicos do header
+// Header nav pills
 export {
-    PremiumButton,
-    PhotoStorageButton,
-    UserProfileButton,
-    TimelineButton,
-    SearchButton,
-    MapButton,
-    LogoutButton,
-    LoginButton,
-    RegisterButton,
+  PremiumButton,
+  PhotoStorageButton,
+  UserProfileButton,
+  TimelineButton,
+  SearchButton,
+  MapButton,
+  LogoutButton,
+  LoginButton,
+  RegisterButton,
 } from './HeaderButtons';
 
-// Selectable Buttons - Botões selecionáveis
-export {
-  SelectableButton,
-  SelectableButtonGroup
-} from './SelectableButtons';
+// Filter chips
+export { ShowAllButton, YearSelectableButton, AlbumSelectableButton } from './SelectableButtons';

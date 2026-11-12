@@ -20,11 +20,12 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchCountryCuriosities, fetchWikipediaData, translateText } from './services';
 import { getName } from 'i18n-iso-countries';
 import { useLandingTokens } from '../landing/landingUI';
+import { font, color as atlasColor } from '../../../design/tokens';
 
 const MotionButton = motion.create(Button);
 
-const SERIF = "'Instrument Serif', Georgia, serif";
-const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+const SERIF = font.display;
+const MONO = font.mono;
 
 const LANGUAGES = [
   ['en', 'English'],
@@ -309,7 +310,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                   fontWeight="600"
                   borderRadius="10px"
                   bg={t.primary}
-                  color="#0A0C11"
+                  color={atlasColor.textOnBrand}
                   aria-label="Start your journey by uploading your first photo"
                   boxShadow="0 12px 32px rgba(235,181,114,0.18)"
                   _hover={{ bg: t.primaryHover, transform: 'translateY(-1px)', boxShadow: t.shadowMd }}

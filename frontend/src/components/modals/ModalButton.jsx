@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Button } from '@chakra-ui/react';
-import { brandGradient, brandGradientHover, color, radius, shadow, tones } from '../../design/tokens';
+import { brandGradient, brandGradientHover, color, palette, radius, shadow, tones } from '../../design/tokens';
 
 const lift = { transform: 'translateY(-1px)' };
 const settle = { transform: 'translateY(0)' };
@@ -48,13 +48,13 @@ const VARIANTS = {
     bg: tones.danger.fg,
     color: '#1F0E0B',
     boxShadow: '0 14px 36px -14px rgba(229,138,123,0.55)',
-    _hover: { bg: '#EDA597', ...lift },
+    _hover: { bg: palette.rose[400], ...lift },
     _active: settle,
   },
   success: {
     bg: tones.success.fg,
     color: '#0A1F1C',
-    _hover: { bg: '#8ADBD1', ...lift },
+    _hover: { bg: palette.teal[400], ...lift },
     _active: settle,
   },
 };

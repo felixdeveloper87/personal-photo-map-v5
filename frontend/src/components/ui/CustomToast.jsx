@@ -1,90 +1,52 @@
-// src/components/CustomToast.jsx
-import { CheckCircleIcon, WarningTwoIcon, InfoIcon } from "@chakra-ui/icons";
-import { Box, Flex, Text } from "@chakra-ui/react";
+// src/components/ui/CustomToast.jsx — Atlas toasts (same look as the themed default toasts).
+import { Box, Flex, Icon, Text } from '@chakra-ui/react';
+import { HiCheckCircle, HiExclamationTriangle, HiXCircle } from 'react-icons/hi2';
+import { color, radius, resolveTone, shadow } from '../../design/tokens';
 
-const iconMap = {
-    success: CheckCircleIcon,
-    error: WarningTwoIcon,
-    warning: InfoIcon,
-    info: InfoIcon,
-};
-
-export const showSuccessToast = (toast, message = "Action completed successfully") => {
-    toast({
-        position: "top",
-        duration: 3000,
-        isClosable: true,
-        render: () => (
-            <Box
-                bg="green.500"
-                color="white"
-                px={6}
-                py={4}
-                borderRadius="lg"
-                maxW="420px"
-                boxShadow="xl"
-            >
-                <Flex direction="column">
-                    <Flex align="center" mb={1}>
-                        <CheckCircleIcon boxSize={5} mr={3} />
-                        <Text fontWeight="semibold">Success!</Text>
-                    </Flex>
-                    <Text fontSize="sm">{message}</Text>
-                </Flex>
-            </Box>
-        ),
-    });
+const AtlasToast = ({ tone, icon, title, message }) => {
+  const tn = resolveTone(tone);
+  return (
+    <Box
+      bg={color.surfaceRaised}
+      color={color.text}
+      px={4}
+      py={3.5}
+      borderRadius={radius.md}
+      border="1px solid"
+      borderColor={tn.border}
+      borderLeft="3px solid"
+      borderLeftColor={tn.fg}
+      boxShadow={shadow.lg}
+      maxW="420px"
+    >
+      <Flex align="start" gap={3}>
+        <Icon as={icon} boxSize={5} color={tn.fg} mt="1px" flexShrink={0} />
+        <Box>
+          <Text fontWeight="700" fontSize="sm">
+            {title}
+          </Text>
+          <Text fontSize="sm" color={color.textSoft} mt={0.5}>
+            {message}
+          </Text>
+        </Box>
+      </Flex>
+    </Box>
+  );
 };
 
-export const showErrorToast = (toast, message = "Something went wrong") => {
-    toast({
-        position: "top",
-        duration: 3000,
-        isClosable: true,
-        render: () => (
-            <Box
-                bg="red.500"
-                color="white"
-                px={6}
-                py={4}
-                borderRadius="lg"
-                maxW="420px"
-                boxShadow="xl"
-            >
-                <Flex direction="column">
-                    <Flex align="center" mb={1}>
-                        <WarningTwoIcon boxSize={5} mr={3} />
-                        <Text fontWeight="semibold">Error!</Text>
-                    </Flex>
-                    <Text fontSize="sm">{message}</Text>
-                </Flex>
-            </Box>
-        ),
-    });
-};
-export const showWarningToast = (toast, message = "Warning") => {
-    toast({
-        position: "top",
-        duration: 3000,
-        isClosable: true,
-        render: () => (
-            <Box
-                bg="yellow.400"
-                color="black"
-                px={6}
-                py={4}
-                borderRadius="lg"
-                maxW="420px"
-                boxShadow="xl"
-            >
-                <Flex direction="column">
-                    <Flex align="center" mb={1}>
-                        <InfoIcon boxSize={5} mr={3} />
-                        <Text fontWeight="semibold">Warning</Text>
-                    </Flex>
-                    <Text fontSize="sm">{message}</Text>
-                </Flex>
-            </Box>
-        ),
-    });
-};
+const show = (toast, props) =>
+  toast({
+    position: 'top',
+    duration: 3000,
+    isClosable: true,
+    render: () => <AtlasToast {...props} />,
+  });
+
+export const showSuccessToast = (toast, message = 'Action completed successfully') =>
+  show(toast, { tone: 'success', icon: HiCheckCircle, title: 'Success', message });
+
+export const showErrorToast = (toast, message = 'Something went wrong') =>
+  show(toast, { tone: 'danger', icon: HiXCircle, title: 'Error', message });
+
+export const showWarningToast = (toast, message = 'Warning') =>
+  show(toast, { tone: 'warning', icon: HiExclamationTriangle, title: 'Warning', message });

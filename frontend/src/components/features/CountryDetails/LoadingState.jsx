@@ -1,125 +1,53 @@
-import { Box, VStack, HStack, Icon, Text, Spinner, useColorModeValue, usePrefersReducedMotion } from '@chakra-ui/react';
-import { FaGlobe, FaMapMarkedAlt, FaCamera } from 'react-icons/fa';
+import { Box, HStack, Text, VStack, usePrefersReducedMotion } from '@chakra-ui/react';
+import { color, type } from '../../../design/tokens';
 
+// `mutedTextColor` is accepted for backwards compatibility.
+// eslint-disable-next-line no-unused-vars
 const LoadingState = ({ mutedTextColor }) => {
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const accentColor = useColorModeValue('blue.500', 'blue.400');
-  const textColor = useColorModeValue('gray.700', 'gray.300');
+  const reduced = usePrefersReducedMotion();
 
   return (
-    <Box p={6} textAlign="center" minH="100vh" display="flex" alignItems="center" justifyContent="center">
+    <Box minH="100vh" bg={color.bg} display="flex" alignItems="center" justifyContent="center" p={6} role="status" aria-live="polite">
       <VStack spacing={6}>
-        {/* Animated Icons */}
-        <HStack spacing={4} justify="center">
+        {/* Map pin with a sonar ring */}
+        <Box position="relative" w="64px" h="64px" display="flex" alignItems="center" justifyContent="center">
+          {[0, 0.8].map((delay) => (
+            <Box
+              key={delay}
+              position="absolute"
+              inset={0}
+              borderRadius="full"
+              border="1px solid"
+              borderColor={color.primary}
+              sx={{
+                '@keyframes atlasSonar': {
+                  '0%': { transform: 'scale(0.4)', opacity: 0.8 },
+                  '100%': { transform: 'scale(1.4)', opacity: 0 },
+                },
+                animation: reduced ? 'none' : `atlasSonar 1.6s ease-out ${delay}s infinite`,
+                opacity: reduced ? 0.4 : undefined,
+              }}
+            />
+          ))}
           <Box
-            sx={{
-              '@keyframes pulseIcon': {
-                '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
-                '50%': { transform: 'scale(1.2)', opacity: 1 },
-              },
-              animation: prefersReducedMotion ? 'none' : 'pulseIcon 1.5s ease-in-out infinite',
-              animationDelay: '0s',
-            }}
-          >
-            <Icon as={FaGlobe} boxSize={8} color={accentColor} />
-          </Box>
-          <Box
-            sx={{
-              '@keyframes pulseIcon': {
-                '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
-                '50%': { transform: 'scale(1.2)', opacity: 1 },
-              },
-              animation: prefersReducedMotion ? 'none' : 'pulseIcon 1.5s ease-in-out infinite',
-              animationDelay: '0.3s',
-            }}
-          >
-            <Icon as={FaMapMarkedAlt} boxSize={8} color={accentColor} />
-          </Box>
-          <Box
-            sx={{
-              '@keyframes pulseIcon': {
-                '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
-                '50%': { transform: 'scale(1.2)', opacity: 1 },
-              },
-              animation: prefersReducedMotion ? 'none' : 'pulseIcon 1.5s ease-in-out infinite',
-              animationDelay: '0.6s',
-            }}
-          >
-            <Icon as={FaCamera} boxSize={8} color={accentColor} />
-          </Box>
-        </HStack>
+            w="16px"
+            h="16px"
+            borderRadius="50% 50% 50% 0"
+            bg={color.primary}
+            transform="rotate(-45deg)"
+            boxShadow="0 0 24px rgba(235,181,114,0.6)"
+          />
+        </Box>
 
-        {/* Animated Spinner */}
-        <Spinner size="xl" color={accentColor} thickness="4px" speed="0.8s" />
-
-        {/* Animated Text */}
         <VStack spacing={2}>
-          <Box
-            sx={{
-              '@keyframes fadeInUp': {
-                from: { opacity: 0, transform: 'translateY(10px)' },
-                to: { opacity: 1, transform: 'translateY(0)' },
-              },
-              animation: prefersReducedMotion ? 'none' : 'fadeInUp 0.5s ease-out forwards',
-            }}
-          >
-            <Text fontSize="lg" color={textColor || mutedTextColor} fontWeight="semibold">
+          <Text {...type.display} color={color.text}>
+            Charting this country
+          </Text>
+          <HStack spacing={2}>
+            <Text {...type.eyebrow} color={color.textMuted}>
               Gathering data from multiple sources
             </Text>
-          </Box>
-          <Box
-            sx={{
-              '@keyframes fadeIn': {
-                from: { opacity: 0 },
-                to: { opacity: 1 },
-              },
-              '@keyframes pulseDot': {
-                '0%, 100%': { opacity: 0.3 },
-                '50%': { opacity: 1 },
-              },
-              animation: prefersReducedMotion ? 'none' : 'fadeIn 0.5s ease-out 0.3s forwards',
-              opacity: 0,
-            }}
-          >
-            <HStack spacing={1} justify="center">
-              <Text
-                as="span"
-                fontSize="md"
-                color={accentColor}
-                fontWeight="medium"
-                sx={{
-                  animation: prefersReducedMotion ? 'none' : 'pulseDot 1.5s ease-in-out infinite',
-                  animationDelay: '0s',
-                }}
-              >
-                •
-              </Text>
-              <Text
-                as="span"
-                fontSize="md"
-                color={accentColor}
-                fontWeight="medium"
-                sx={{
-                  animation: prefersReducedMotion ? 'none' : 'pulseDot 1.5s ease-in-out infinite',
-                  animationDelay: '0.2s',
-                }}
-              >
-                •
-              </Text>
-              <Text
-                as="span"
-                fontSize="md"
-                color={accentColor}
-                fontWeight="medium"
-                sx={{
-                  animation: prefersReducedMotion ? 'none' : 'pulseDot 1.5s ease-in-out infinite',
-                  animationDelay: '0.4s',
-                }}
-              >
-                •
-              </Text>
-            </HStack>
-          </Box>
+          </HStack>
         </VStack>
       </VStack>
     </Box>

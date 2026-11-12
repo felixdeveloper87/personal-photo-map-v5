@@ -6,6 +6,7 @@ import BentoShowcase from '../components/features/landing/BentoShowcase';
 import MemoryGallerySection from '../components/features/landing/MemoryGallerySection';
 import CTASection from '../components/features/landing/CTASection';
 import { Grain } from '../components/features/landing/landingUI';
+import { color, font } from '../design/tokens';
 import LoginModal from '../components/modals/LoginModal';
 import RegisterModal from '../components/modals/RegisterModal';
 
@@ -22,7 +23,7 @@ function Home() {
 
   return (
     <>
-      <Box bg="#0A0C11" minH="100vh" fontFamily="'Schibsted Grotesk', Inter, sans-serif">
+      <Box bg={color.bg} minH="100vh" fontFamily={font.sans}>
         <Grain />
         <HeroSection onOpenRegister={handleOpenRegister} onOpenLogin={loginModal.onOpen} />
         <BentoShowcase />

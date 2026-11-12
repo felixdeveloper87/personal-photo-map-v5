@@ -6,7 +6,6 @@ import {
   Flex,
   Icon,
   Link,
-  Text,
   useMediaQuery,
   useBreakpointValue,
   Container,
@@ -15,6 +14,8 @@ import {
 import { FaClock, FaCrown, FaGlobe, FaImages, FaSearch, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 
 import { useHeaderStyles, useHeaderContainerStyles } from "../../../styles/headerStyles";
+import { brandGradient, brandGradientHover, color, radius, shadow } from "../../../design/tokens";
+import Wordmark from "../../ui/Wordmark";
 
 import HeaderLogo from "./HeaderLogo";
 import HeaderAuth from "./HeaderAuth";
@@ -83,39 +84,14 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
             gap={{ base: 3, md: 6 }}
             bg="rgba(14,17,24,0.72)"
             border="1px solid"
-            borderColor="rgba(236,231,220,0.12)"
-            boxShadow="0 18px 54px rgba(0,0,0,0.38)"
+            borderColor={color.hairlineMid}
+            boxShadow={shadow.md}
             backdropFilter="blur(18px)"
-            borderRadius={{ base: "12px", md: "999px" }}
+            borderRadius={{ base: radius.md, md: radius.full }}
             px={{ base: 3, sm: 4, md: 5 }}
             py={{ base: 2.5, md: 3 }}
           >
-            <Flex
-              align="center"
-              gap={2.5}
-              minW="max-content"
-              cursor="pointer"
-              onClick={() => nav.navigate("/")}
-              role="group"
-            >
-              <Box
-                w="10px"
-                h="10px"
-                borderRadius="50% 50% 50% 0"
-                bg="#EBB572"
-                transform="rotate(-45deg)"
-                boxShadow="0 0 18px rgba(235,181,114,0.45)"
-              />
-              <Text
-                fontFamily="'Instrument Serif', Georgia, serif"
-                fontSize={{ base: "21px", md: "24px" }}
-                lineHeight="1"
-                color="#ECE7DC"
-                whiteSpace="nowrap"
-              >
-                Photo<Text as="span" color="#EBB572" fontStyle="italic">Map</Text>
-              </Text>
-            </Flex>
+            <Wordmark onClick={() => nav.navigate("/")} />
 
             <HStack
               as="nav"
@@ -128,11 +104,11 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  color="#8B90A0"
+                  color={color.textMuted}
                   fontSize="13px"
                   fontWeight="600"
                   textDecoration="none"
-                  _hover={{ color: "#ECE7DC", textDecoration: "none" }}
+                  _hover={{ color: color.text, textDecoration: "none" }}
                 >
                   {item.label}
                 </Link>
@@ -145,12 +121,12 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
                 variant="ghost"
                 h={{ base: "34px", md: "38px" }}
                 px={{ base: 3, md: 4 }}
-                borderRadius="8px"
-                color="#ECE7DC"
+                borderRadius={radius.sm}
+                color={color.text}
                 fontSize="13px"
                 fontWeight="600"
                 bg="transparent"
-                _hover={{ bg: "rgba(236,231,220,0.07)", color: "#EBB572" }}
+                _hover={{ bg: color.surfaceHover, color: color.primary }}
                 _active={{ bg: "rgba(236,231,220,0.10)" }}
               >
                 Log in
@@ -159,14 +135,14 @@ const Header = forwardRef(({ nav, isLandingHeader = false }, ref) => {
                 onClick={nav.registerModal.onOpen}
                 h={{ base: "34px", md: "38px" }}
                 px={{ base: 3.5, md: 5 }}
-                borderRadius="8px"
-                bg="#EBB572"
-                color="#0A0C11"
+                borderRadius={radius.sm}
+                bgGradient={brandGradient}
+                color={color.textOnBrand}
                 fontSize="13px"
                 fontWeight="700"
                 rightIcon={<Icon as={FaGlobe} boxSize={3.5} display={{ base: "none", sm: "block" }} />}
-                _hover={{ bg: "#F1C98D", transform: "translateY(-1px)", boxShadow: "0 14px 34px rgba(235,181,114,0.22)" }}
-                _active={{ bg: "#D79A55", transform: "translateY(0)" }}
+                _hover={{ bgGradient: brandGradientHover, transform: "translateY(-1px)", boxShadow: shadow.brandGlow }}
+                _active={{ transform: "translateY(0)" }}
               >
                 Create map
               </Button>

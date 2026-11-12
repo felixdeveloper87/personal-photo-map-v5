@@ -60,7 +60,7 @@ const AppModals = ({ nav }) => {
       />
       <SearchForm
         countriesWithPhotos={countriesWithPhotos}
-        onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
+        onSearch={(p) => navigate(p.year ? `/countries/${p.country}?year=${p.year}` : `/countries/${p.country}`)}
       />
     </>
   );

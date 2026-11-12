@@ -2,6 +2,7 @@ import React from 'react';
 import { Menu, MenuButton, MenuList, MenuItem, Button, IconButton, HStack, Icon, Text, Box } from '@chakra-ui/react';
 import { FaBars, FaCog, FaUserCircle, FaImages, FaChevronRight } from 'react-icons/fa';
 import { useLandingTokens } from '../features/landing/landingUI';
+import { tones, type } from '../../design/tokens';
 
 /**
  * "Sandwich" Settings menu grouping Profile + Photos.
@@ -101,15 +102,15 @@ const SettingsMenu = ({
       )}
 
       <MenuList
-        bg={t.surface}
-        borderColor={t.hairline}
+        bg={t.surfaceRaised}
+        borderColor={t.hairlineMid}
         borderRadius="14px"
         boxShadow={t.shadowLg}
         py={2}
         minW="200px"
       >
         <Box px={3} pb={2} pt={1}>
-          <Text fontSize="10px" fontWeight="700" letterSpacing="0.12em" textTransform="uppercase" color={t.textMuted}>
+          <Text {...type.eyebrow} color={t.textMuted}>
             {title}
           </Text>
         </Box>
@@ -123,14 +124,14 @@ const SettingsMenu = ({
             px={2.5}
             py={2}
             w="auto"
-            color={it.danger ? '#DC2626' : t.text}
+            color={it.danger ? tones.danger.fg : t.text}
             fontSize="sm"
             fontWeight="500"
-            _hover={it.danger ? { bg: 'rgba(220,38,38,0.08)' } : { bg: t.primarySoftBg, color: t.primary }}
-            _focus={it.danger ? { bg: 'rgba(220,38,38,0.08)' } : { bg: t.primarySoftBg, color: t.primary }}
+            _hover={it.danger ? { bg: tones.danger.soft } : { bg: t.primarySoftBg, color: t.primary }}
+            _focus={it.danger ? { bg: tones.danger.soft } : { bg: t.primarySoftBg, color: t.primary }}
           >
             <HStack spacing={3}>
-              <Icon as={it.icon} boxSize={4} color={it.danger ? '#DC2626' : t.primary} />
+              <Icon as={it.icon} boxSize={4} color={it.danger ? tones.danger.fg : t.primary} />
               <Text>{it.label}</Text>
             </HStack>
           </MenuItem>

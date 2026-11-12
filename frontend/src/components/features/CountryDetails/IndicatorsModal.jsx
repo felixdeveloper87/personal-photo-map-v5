@@ -30,15 +30,16 @@ import {
 import { fetchFullRanking } from '../../../data/worldBankService';
 import { buildApiUrl } from '../../../utils/apiConfig';
 import { useLandingTokens } from '../landing/landingUI';
+import { font, tones, color as atlasColor } from '../../../design/tokens';
 
-const SERIF = "'Instrument Serif', Georgia, serif";
-const MONO = "'Spline Sans Mono', ui-monospace, SFMono-Regular, monospace";
+const SERIF = font.display;
+const MONO = font.mono;
 
 // Cartographic tones — shared with InfoBox.
 const TONES = {
-  amber: { icon: '#EBB572', soft: 'rgba(235,181,114,0.12)', border: 'rgba(235,181,114,0.30)', glow: 'rgba(235,181,114,0.22)' },
-  teal: { icon: '#6FD0C4', soft: 'rgba(111,208,196,0.12)', border: 'rgba(111,208,196,0.30)', glow: 'rgba(111,208,196,0.22)' },
-  rose: { icon: '#E58A7B', soft: 'rgba(229,138,123,0.12)', border: 'rgba(229,138,123,0.32)', glow: 'rgba(229,138,123,0.24)' },
+  amber: { icon: tones.brand.fg, soft: tones.brand.soft, border: tones.brand.border, glow: tones.brand.glow },
+  teal: { icon: tones.teal.fg, soft: tones.teal.soft, border: tones.teal.border, glow: tones.teal.glow },
+  rose: { icon: tones.rose.fg, soft: tones.rose.soft, border: tones.rose.border, glow: tones.rose.glow },
 };
 const TONE_CYCLE = ['amber', 'teal', 'rose'];
 
@@ -352,7 +353,7 @@ export default function IndicatorsModal({ indicatorsData, weatherData, exchange 
               fontSize="xs"
               fontWeight="700"
               bg={isActive ? t.primary : 'transparent'}
-              color={isActive ? '#0A0C11' : t.textSoft}
+              color={isActive ? atlasColor.textOnBrand : t.textSoft}
               border="1px solid"
               borderColor={isActive ? t.primary : t.hairlineStrong}
               transition="all 0.2s ease"

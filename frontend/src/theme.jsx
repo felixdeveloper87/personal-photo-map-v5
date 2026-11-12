@@ -1,6 +1,6 @@
 // theme.jsx — Chakra theme built on the Atlas design tokens (src/design/tokens.js).
 import { extendTheme } from '@chakra-ui/react';
-import { color, font, palette, radius, shadow } from './design/tokens';
+import { color, font, palette, radius, shadow, tones } from './design/tokens';
 
 // Fixed dark cartographic identity — no user-facing theme switching.
 const config = {
@@ -82,6 +82,15 @@ const fieldTheme = {
     lg: { field: { h: '52px', fontSize: 'md', px: 4 }, addon: { h: '52px' }, element: { h: '52px', w: '52px' } },
   },
   defaultProps: { variant: 'outline', size: 'md' },
+};
+
+// Chakra maps alert/toast status → colorScheme (success=green, error=red, warning=orange, info/loading=blue).
+const ALERT_TONE = {
+  green: tones.success.fg,
+  red: tones.danger.fg,
+  orange: tones.warning.fg,
+  yellow: tones.warning.fg,
+  blue: tones.info.fg,
 };
 
 const components = {
@@ -190,6 +199,43 @@ const components = {
     defaultProps: { colorScheme: 'brand' },
   },
   Spinner: { baseStyle: { color: color.primary } },
+
+  /*
+   * Alerts — also what every useToast() renders (variant "solid"). Instead of the
+   * light-theme solid green/red/orange/blue blocks, toasts become raised dark cards
+   * with a tone accent.
+   */
+  Alert: {
+    variants: {
+      solid: (props) => {
+        const fg = ALERT_TONE[props.colorScheme] || color.primary;
+        return {
+          container: {
+            bg: color.surfaceRaised,
+            color: color.text,
+            border: '1px solid',
+            borderColor: color.hairlineMid,
+            borderLeft: '3px solid',
+            borderLeftColor: fg,
+            borderRadius: radius.md,
+            boxShadow: shadow.lg,
+          },
+          icon: { color: fg },
+          spinner: { color: fg },
+          title: { fontWeight: 700, fontSize: 'sm' },
+          description: { color: color.textSoft, fontSize: 'sm' },
+        };
+      },
+      subtle: (props) => {
+        const fg = ALERT_TONE[props.colorScheme] || color.primary;
+        return {
+          container: { bg: 'rgba(236,231,220,0.03)', border: '1px solid', borderColor: color.hairlineMid, borderRadius: radius.md },
+          icon: { color: fg },
+          description: { color: color.textSoft },
+        };
+      },
+    },
+  },
 
   Divider: { baseStyle: { borderColor: color.hairline, opacity: 1 } },
   Kbd: {

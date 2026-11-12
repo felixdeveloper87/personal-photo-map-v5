@@ -1,29 +1,20 @@
 /**
- * Componente principal do gerador de vídeo timeline (Refatorado)
+ * Componente principal do gerador de vídeo timeline (Refatorado) — Atlas UI
  */
 
-import React, { useState, useContext } from 'react';
-import {
-  Box,
-  VStack,
-  HStack,
-  Stack,
-  Text,
-  Button,
-  Progress,
-  useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertDescription,
-} from '@chakra-ui/react';
-import { FaVideo, FaDownload, FaStop } from 'react-icons/fa';
+import { useState, useContext } from 'react';
+import { Box, HStack, Text, VStack } from '@chakra-ui/react';
+import { HiArrowDownTray, HiFilm, HiStop } from 'react-icons/hi2';
 import { AuthContext } from '../../../../context/AuthContext';
 import { useVideoGenerator } from '../hooks/useVideoGenerator';
 import VideoSettings from './VideoSettings';
+import ModalButton from '../../../modals/ModalButton';
+import { ModalActions, ModalNotice, Panel, ToneBadge, ToneProgress } from '../../../modals/ModalKit';
+import { color, radius, type } from '../../../../design/tokens';
 
 const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) => {
   const { isLoggedIn } = useContext(AuthContext);
-  
+
   const {
     canvasRef,
     videoRef,
@@ -37,14 +28,6 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
     downloadVideo,
     stopGeneration,
   } = useVideoGenerator();
-
-  // Cores do tema - Estilo OpenAI
-  const bgColor = useColorModeValue('#f8f9fa', '#262626');
-  const textColor = useColorModeValue('#1a1a1a', '#f0f0f0');
-  const borderColor = useColorModeValue('rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.1)');
-  const mutedTextColor = useColorModeValue('#666666', '#a0a0a0');
-  const buttonBg = useColorModeValue('#000000', '#ffffff');
-  const buttonText = useColorModeValue('#ffffff', '#000000');
 
   // State para configurações
   const [settings, setSettings] = useState({
@@ -73,12 +56,9 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
 
   // Funções para personalizar vídeo baseado no contexto
   const getVideoTitle = () => {
-    // Se um título personalizado foi fornecido, usar ele
     if (videoTitle && videoTitle.trim()) {
       return videoTitle.trim();
     }
-    
-    // Caso contrário, usar o título baseado no contexto
     if (contextInfo?.album) return `Album: ${contextInfo.album}`;
     if (contextInfo?.type === 'timeline' && contextInfo?.year) return `Timeline - ${contextInfo.year}`;
     if (contextInfo?.type === 'timeline') return 'Complete Timeline';
@@ -96,7 +76,6 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
     return `Timeline video with ${images?.length || 0} photos`;
   };
 
-  // Handlers
   const handleGenerateVideo = () => {
     generateVideo(images, settings, audioFile, getVideoTitle());
   };
@@ -107,8 +86,7 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
       URL.revokeObjectURL(audioUrl);
     }
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAudioUrl(url);
+      setAudioUrl(URL.createObjectURL(file));
     } else {
       setAudioUrl(null);
     }
@@ -116,255 +94,146 @@ const TimelineVideoGenerator = ({ images, onClose, contextInfo, videoTitle }) =>
 
   if (!isLoggedIn) {
     return (
-      <Alert status="warning">
-        <AlertIcon />
-        <AlertDescription>
-          You need to be logged in to generate timeline videos.
-        </AlertDescription>
-      </Alert>
+      <ModalNotice tone="warning" title="Sign in required">
+        You need to be logged in to generate timeline videos.
+      </ModalNotice>
     );
   }
 
+  const missingAudio = settings.musicEnabled && settings.musicSource === 'upload' && !audioFile;
+  const isBusy = isGenerating || isConverting;
+
   return (
-    <Box 
-      display="flex"
-      flexDirection="column"
-      h="100%"
-      bg={bgColor} 
-      borderRadius="xl" 
-      border={`1px solid ${borderColor}`}
-      boxShadow={useColorModeValue(
-        "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "0 4px 6px -1px rgba(0, 0, 0, 0.3)"
-      )}
-    >
-      {/* Conteúdo principal com scroll */}
-      <Box 
-        flex="1"
-        overflowY="auto"
-        p={{ base: 6, md: 8 }}
-      >
-        <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-        <VStack spacing={2} align="start">
-          <Text fontSize="xl" fontWeight="bold" color={textColor}>
-            {getVideoTitle()}
-          </Text>
-          <Text fontSize="sm" color={mutedTextColor}>
-            {getVideoDescription()}
-          </Text>
-        </VStack>
-
-        {/* Settings */}
-        <VideoSettings
-          settings={settings}
-          onSettingsChange={setSettings}
-          audioFile={audioFile}
-          onAudioFileChange={handleAudioFileChange}
-          audioUrl={audioUrl}
-        />
-
-        {/* Canvas escondido para renderização */}
-        <canvas
-          ref={canvasRef}
-          style={{ display: 'none' }}
-        />
-
-        {/* Progress */}
-        {(isGenerating || isConverting) && (
-          <VStack spacing={4}>
-            {isGenerating && (
-              <VStack spacing={3}>
-                <Text fontWeight="semibold" color={textColor}>
-                  {progress === 100 ? 'Finalizing video...' : `Generating video... ${progress}%`}
-                </Text>
-                <Progress 
-                  value={progress} 
-                  colorScheme={progress === 100 ? "green" : "blue"} 
-                  size="lg" 
-                  borderRadius="md"
-                  isAnimated={progress < 100}
-                  hasStripe={progress < 100}
-                />
-                {progress < 100 && (
-                  <Text fontSize="sm" color={mutedTextColor}>
-                    Processing timeline video frames...
-                  </Text>
-                )}
-              </VStack>
-            )}
-
-            {isConverting && (
-              <VStack spacing={3}>
-                <Text fontWeight="semibold" color={textColor}>
-                  {conversionProgress === 100 ? 'Finalizing MP4 conversion...' : `Converting to MP4... ${conversionProgress}%`}
-                </Text>
-                <Progress 
-                  value={conversionProgress} 
-                  colorScheme="purple" 
-                  size="lg" 
-                  borderRadius="md"
-                  isAnimated={conversionProgress < 100}
-                  hasStripe={conversionProgress < 100}
-                />
-                <Text fontSize="sm" color={mutedTextColor}>
-                  📱 Converting for iPhone compatibility...
-                </Text>
-              </VStack>
-            )}
-          </VStack>
-        )}
-
-        {/* Generated video */}
-        {videoUrl && (
-          <VStack spacing={3}>
-            <HStack spacing={2}>
-              <Text color="green.500" fontWeight="bold">Video generated successfully!</Text>
-              {mp4VideoUrl && (
-                <Text fontSize="sm" color="purple.500" fontWeight="semibold">
-                  📱 MP4 Ready
-                </Text>
-              )}
-            </HStack>
-            <video
-              ref={videoRef}
-              src={mp4VideoUrl || videoUrl}
-              controls
-              style={{ width: '100%', maxWidth: '400px', borderRadius: '8px' }}
-            />
-            <Text fontSize="sm" color={mutedTextColor} textAlign="center">
-              {mp4VideoUrl ? '📱 Mobile Ready: Tap "Share Video" to save or share!' : 'Format: WebM (Browser compatible)'}
+    <Panel p={0} display="flex" flexDirection="column" h="100%" overflow="hidden">
+      {/* Scrollable content */}
+      <Box flex="1" overflowY="auto" p={{ base: 4, md: 6 }}>
+        <VStack spacing={{ base: 5, md: 6 }} align="stretch">
+          <VStack spacing={1.5} align="start">
+            <Text {...type.eyebrow} color={color.primary}>
+              Your video
+            </Text>
+            <Text {...type.display} color={color.text}>
+              {getVideoTitle()}
+            </Text>
+            <Text fontSize="sm" color={color.textSoft}>
+              {getVideoDescription()}
             </Text>
           </VStack>
-        )}
 
+          <VideoSettings
+            settings={settings}
+            onSettingsChange={setSettings}
+            audioFile={audioFile}
+            onAudioFileChange={handleAudioFileChange}
+            audioUrl={audioUrl}
+          />
+
+          {/* Hidden canvas used for rendering */}
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+          {isGenerating && (
+            <Panel tone="brand">
+              <HStack justify="space-between" mb={3}>
+                <Text fontWeight="600" color={color.text} fontSize="sm">
+                  {progress === 100 ? 'Finalizing video…' : 'Generating video…'}
+                </Text>
+                <Text {...type.data} fontSize="sm" color={color.primary}>
+                  {progress}%
+                </Text>
+              </HStack>
+              <ToneProgress value={progress} tone={progress === 100 ? 'success' : 'brand'} h="8px" />
+              {progress < 100 && (
+                <Text fontSize="xs" color={color.textMuted} mt={2.5}>
+                  Processing timeline video frames…
+                </Text>
+              )}
+            </Panel>
+          )}
+
+          {isConverting && (
+            <Panel tone="teal">
+              <HStack justify="space-between" mb={3}>
+                <Text fontWeight="600" color={color.text} fontSize="sm">
+                  {conversionProgress === 100 ? 'Finalizing MP4 conversion…' : 'Converting to MP4…'}
+                </Text>
+                <Text {...type.data} fontSize="sm" color={color.accent}>
+                  {conversionProgress}%
+                </Text>
+              </HStack>
+              <ToneProgress value={conversionProgress} tone="teal" h="8px" />
+              <Text fontSize="xs" color={color.textMuted} mt={2.5}>
+                Converting for iPhone compatibility…
+              </Text>
+            </Panel>
+          )}
+
+          {videoUrl && (
+            <VStack spacing={3}>
+              <HStack spacing={2}>
+                <ToneBadge tone="success">Video ready</ToneBadge>
+                {mp4VideoUrl && <ToneBadge tone="teal">MP4 · Mobile ready</ToneBadge>}
+              </HStack>
+              <Box
+                as="video"
+                ref={videoRef}
+                src={mp4VideoUrl || videoUrl}
+                controls
+                w="100%"
+                maxW="420px"
+                borderRadius={radius.md}
+                border="1px solid"
+                borderColor={color.hairlineMid}
+                bg="black"
+              />
+              <Text fontSize="xs" color={color.textMuted} textAlign="center">
+                {mp4VideoUrl ? 'Tap "Share video" to save or share it.' : 'Format: WebM (browser compatible)'}
+              </Text>
+            </VStack>
+          )}
         </VStack>
       </Box>
 
-      {/* Botões fixos no bottom */}
-      <Box
-        borderTop={`1px solid ${borderColor}`}
-        bg={bgColor}
-        p={{ base: 4, md: 6 }}
-        borderBottomRadius="xl"
-      >
-        {/* Aviso se música está habilitada mas arquivo não foi carregado */}
-        {settings.musicEnabled && settings.musicSource === 'upload' && !audioFile && (
-          <Text fontSize="sm" color="orange.500" textAlign="center" mb={4}>
-            ⚠️ Select an audio file or switch to "Preset music" to generate the video
-          </Text>
+      {/* Sticky actions */}
+      <Box borderTop="1px solid" borderColor={color.hairline} bg="rgba(8,10,15,0.35)" p={{ base: 4, md: 5 }}>
+        {missingAudio && (
+          <ModalNotice tone="warning" mb={4}>
+            Select an audio file or switch to &quot;Preset music&quot; to generate the video.
+          </ModalNotice>
         )}
 
-        <Stack 
-          direction={{ base: "column", sm: "row" }} 
-          spacing={{ base: 3, sm: 4 }} 
-          justify="center"
-          align="center"
-        >
-          {!isGenerating && !isConverting && !videoUrl && (
-            <Button
-              leftIcon={<FaVideo />}
-              bg={buttonBg}
-              color={buttonText}
-              size={{ base: "lg", md: "lg" }}
-              onClick={handleGenerateVideo}
-              isDisabled={
-                !images || 
-                images.length === 0 || 
-                (settings.musicEnabled && settings.musicSource === 'upload' && !audioFile)
-              }
-              w={{ base: "100%", sm: "auto" }}
-              minW="250px"
-              borderRadius="xl"
-              fontSize="md"
-              fontWeight="semibold"
-              py={6}
-              _hover={{ 
-                transform: "translateY(-1px)",
-                boxShadow: useColorModeValue(
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.4)"
-                )
-              }}
-              _active={{ transform: "translateY(0)" }}
-              transition="all 0.2s"
-              border={`1px solid ${useColorModeValue("transparent", "#404040")}`}
-            >
-              Generate Video ({images?.length || 0} photos)
-            </Button>
+        <ModalActions align="center">
+          {onClose && (
+            <ModalButton variant="secondary" size="lg" onClick={onClose}>
+              Close
+            </ModalButton>
           )}
 
-          {(isGenerating || isConverting) && (
-            <Button
-              leftIcon={<FaStop />}
-              bg="red.500"
-              color="white"
-              size={{ base: "lg", md: "lg" }}
-              onClick={stopGeneration}
-              w={{ base: "100%", sm: "auto" }}
-              minW="200px"
-              borderRadius="xl"
-              fontSize="md"
-              fontWeight="semibold"
-              py={6}
-              isDisabled={isConverting}
-              _hover={{
-                bg: "red.600",
-                transform: "translateY(-1px)",
-                boxShadow: "0 10px 15px -3px rgba(239, 68, 68, 0.4)"
-              }}
-              _active={{ transform: "translateY(0)" }}
-              transition="all 0.2s"
+          {!isBusy && !videoUrl && (
+            <ModalButton
+              variant="primary"
+              size="lg"
+              leftIcon={<HiFilm />}
+              onClick={handleGenerateVideo}
+              isDisabled={!images || images.length === 0 || missingAudio}
             >
-              {isConverting ? 'Converting...' : 'Stop Generation'}
-            </Button>
+              Generate video ({images?.length || 0} photos)
+            </ModalButton>
+          )}
+
+          {isBusy && (
+            <ModalButton variant="danger" size="lg" leftIcon={<HiStop />} onClick={stopGeneration} isDisabled={isConverting}>
+              {isConverting ? 'Converting…' : 'Stop generation'}
+            </ModalButton>
           )}
 
           {videoUrl && !isConverting && (
-            <Button
-              leftIcon={<FaDownload />}
-              bg="green.500"
-              color="white"
-              size={{ base: "lg", md: "lg" }}
-              onClick={downloadVideo}
-              w={{ base: "100%", sm: "auto" }}
-              minW="200px"
-              borderRadius="xl"
-              fontSize="md"
-              fontWeight="semibold"
-              py={6}
-              _hover={{ 
-                bg: "green.600",
-                transform: "translateY(-1px)",
-                boxShadow: "0 10px 15px -3px rgba(34, 197, 94, 0.4)"
-              }}
-              _active={{ transform: "translateY(0)" }}
-              transition="all 0.2s"
-            >
-              📱 Share Video
-            </Button>
+            <ModalButton variant="primary" size="lg" leftIcon={<HiArrowDownTray />} onClick={downloadVideo}>
+              Share video
+            </ModalButton>
           )}
-
-          <Button 
-            variant="outline" 
-            onClick={onClose}
-            borderColor={borderColor}
-            color={textColor}
-            _hover={{ 
-              bg: useColorModeValue("gray.50", "gray.700"),
-              borderColor: useColorModeValue("gray.300", "gray.500")
-            }}
-            size={{ base: "lg", md: "lg" }}
-            w={{ base: "100%", sm: "auto" }}
-            minW="120px"
-            borderRadius="xl"
-            py={6}
-            transition="all 0.2s"
-          >
-            Close
-          </Button>
-        </Stack>
+        </ModalActions>
       </Box>
-    </Box>
+    </Panel>
   );
 };
 

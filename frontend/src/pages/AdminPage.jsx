@@ -1,31 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  useToast,
-  Spinner,
-  Text,
-  Badge,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  useColorModeValue,
-  VStack,
-  HStack,
-} from '@chakra-ui/react';
-import { FaTrash, FaUserShield, FaUsers } from 'react-icons/fa';
+import { Box, Container, Table, TableContainer, Thead, Tbody, Tr, Th, Td, useToast, Text, VStack, HStack } from '@chakra-ui/react';
+import { HiShieldCheck, HiUsers } from 'react-icons/hi2';
 import { AuthContext } from '../context/AuthContext';
 import { buildApiUrl } from '../utils/apiConfig';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { DeleteButton } from '../components/ui/buttons/CustomButtons';
+import { IconTile, ModalNotice, ModalState, Panel, ToneBadge } from '../components/modals/ModalKit';
+import { color, font, type } from '../design/tokens';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -34,9 +16,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
-
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const [pendingDelete, setPendingDelete] = useState(null); // { id, email } awaiting confirmation
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -96,10 +76,7 @@ const AdminPage = () => {
   };
 
   const handleDeleteUser = async (userId, userEmail) => {
-    if (!window.confirm(`Are you sure you want to delete user "${userEmail}"? This will also delete all their photos. This action cannot be undone.`)) {
-      return;
-    }
-
+    setPendingDelete(null);
     setDeleting(userId);
     try {
       const token = localStorage.getItem('token');
@@ -178,92 +155,99 @@ const AdminPage = () => {
     return null;
   }
 
+  const thStyle = { ...type.label, color: color.textMuted, borderColor: color.hairline, py: 3.5 };
+  const tdStyle = { borderColor: color.hairline, color: color.textSoft, fontSize: 'sm', py: 3.5 };
+
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={6} align="stretch">
-        {/* Header */}
-        <Box>
-          <HStack spacing={3} mb={2}>
-            <FaUserShield size={32} />
-            <Heading size="lg">Admin Panel</Heading>
+    <Box bg={color.bg} minH="100vh">
+      <Container maxW="container.xl" py={{ base: 8, md: 12 }}>
+        <VStack spacing={6} align="stretch">
+          {/* Header */}
+          <HStack spacing={4}>
+            <IconTile icon={HiShieldCheck} size="lg" />
+            <Box>
+              <Text {...type.eyebrow} color={color.primary}>
+                Administration
+              </Text>
+              <Text {...type.displayLg} color={color.text}>
+                Admin panel
+              </Text>
+              <Text color={color.textSoft} fontSize="sm">
+                Manage users and their photos
+              </Text>
+            </Box>
           </HStack>
-          <Text color="gray.500">Manage users and their photos</Text>
-        </Box>
 
-        {/* Users Table */}
-        <Box
-          bg={bgColor}
-          borderRadius="lg"
-          border="1px solid"
-          borderColor={borderColor}
-          overflow="hidden"
-          boxShadow="md"
-        >
-          {loading ? (
-            <Box p={8} textAlign="center">
-              <Spinner size="xl" />
-              <Text mt={4}>Loading users...</Text>
-            </Box>
-          ) : users.length === 0 ? (
-            <Box p={8} textAlign="center">
-              <FaUsers size={48} style={{ margin: '0 auto', opacity: 0.3 }} />
-              <Text mt={4} color="gray.500">No users found</Text>
-            </Box>
-          ) : (
-            <Table variant="simple">
-              <Thead bg={useColorModeValue('gray.50', 'gray.700')}>
-                <Tr>
-                  <Th>ID</Th>
-                  <Th>Name</Th>
-                  <Th>Email</Th>
-                  <Th>Country</Th>
-                  <Th>Photos</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {users.map((user) => (
-                  <Tr key={user.id}>
-                    <Td>{user.id}</Td>
-                    <Td fontWeight="medium">{user.fullname}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>{user.country || '-'}</Td>
-                    <Td>
-                      <Badge colorScheme="blue" fontSize="sm">
-                        {user.photoCount} photos
-                      </Badge>
-                    </Td>
-                    <Td>
-                      <Button
-                        size="sm"
-                        colorScheme="red"
-                        leftIcon={<FaTrash />}
-                        onClick={() => handleDeleteUser(user.id, user.email)}
-                        isLoading={deleting === user.id}
-                        loadingText="Deleting..."
-                      >
-                        Delete
-                      </Button>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          )}
-        </Box>
+          {/* Users table */}
+          <Panel p={0} overflow="hidden" bg={color.surface}>
+            {loading ? (
+              <ModalState kind="loading" title="Loading users…" />
+            ) : users.length === 0 ? (
+              <ModalState kind="empty" icon={HiUsers} title="No users found" />
+            ) : (
+              <TableContainer>
+                <Table variant="simple">
+                  <Thead bg="rgba(236,231,220,0.03)">
+                    <Tr>
+                      {['ID', 'Name', 'Email', 'Country', 'Photos', 'Actions'].map((h) => (
+                        <Th key={h} {...thStyle}>
+                          {h}
+                        </Th>
+                      ))}
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {users.map((user) => (
+                      <Tr key={user.id} _hover={{ bg: color.surfaceHover }}>
+                        <Td {...tdStyle} fontFamily={font.mono} color={color.textMuted}>
+                          {user.id}
+                        </Td>
+                        <Td {...tdStyle} fontWeight="600" color={color.text}>
+                          {user.fullname}
+                        </Td>
+                        <Td {...tdStyle}>{user.email}</Td>
+                        <Td {...tdStyle}>{user.country || '—'}</Td>
+                        <Td {...tdStyle}>
+                          <ToneBadge tone="brand">{user.photoCount} photos</ToneBadge>
+                        </Td>
+                        <Td {...tdStyle}>
+                          <DeleteButton
+                            size="sm"
+                            h="34px"
+                            onClick={() => setPendingDelete({ id: user.id, email: user.email })}
+                            isLoading={deleting === user.id}
+                            loadingText="Deleting…"
+                          >
+                            Delete
+                          </DeleteButton>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            )}
+          </Panel>
 
-        {/* Info Alert */}
-        <Alert status="info" borderRadius="lg">
-          <AlertIcon />
-          <Box>
-            <AlertTitle>Admin Actions</AlertTitle>
-            <AlertDescription>
-              You can delete users and all their associated photos. This action cannot be undone.
-            </AlertDescription>
-          </Box>
-        </Alert>
-      </VStack>
-    </Container>
+          <ModalNotice tone="info" title="Admin actions">
+            You can delete users and all their associated photos. This action cannot be undone.
+          </ModalNotice>
+        </VStack>
+      </Container>
+
+      <ConfirmDialog
+        isOpen={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => handleDeleteUser(pendingDelete.id, pendingDelete.email)}
+        title="Delete user?"
+        confirmLabel="Delete user"
+        message={
+          pendingDelete
+            ? `Are you sure you want to delete user "${pendingDelete.email}"? This will also delete all their photos. This action cannot be undone.`
+            : ''
+        }
+      />
+    </Box>
   );
 };
 

@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Button, useDisclosure, Text, VStack, HStack, Icon, Badge } from '@chakra-ui/react';
+import { useDisclosure, Text, VStack, HStack, Icon } from '@chakra-ui/react';
 import { FaVideo, FaPlay } from 'react-icons/fa';
 import { HiFilm, HiPencil } from 'react-icons/hi2';
 import TimelineVideoGeneratorRefactored from '../videos/components/TimelineVideoGeneratorRefactored';
 import BaseModal from '../../modals/BaseModal';
-import { ModalField } from '../../modals/ModalKit';
+import ModalButton from '../../modals/ModalButton';
+import { ModalField, ToneBadge } from '../../modals/ModalKit';
+import { color } from '../../../design/tokens';
 
 /**
  * VideoGeneratorButton - Botão para gerar vídeos de fotos filtradas
@@ -54,41 +56,27 @@ const VideoGeneratorButton = ({
 
   return (
     <>
-      <Button
-        colorScheme="green"
-        variant="solid"
-        size={{ base: "sm", sm: "sm", md: "sm" }}
-        borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
-        px={{ base: 2, sm: 3, md: 4 }}
-        py={{ base: 2, sm: 2, md: 2 }}
-        fontWeight="semibold"
-        boxShadow="md"
-        _hover={{
-          transform: 'translateY(-1px)',
-          boxShadow: 'lg',
-        }}
-        _active={{
-          transform: 'translateY(0)',
-        }}
-        transition="all 0.2s"
+      <ModalButton
+        variant="secondary"
+        size="sm"
+        h={{ base: '34px', sm: '36px' }}
+        px={{ base: 3, sm: 4 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={onOpen}
         isDisabled={!canGenerateVideo}
+        aria-label={`Generate video from ${images.length} photos`}
       >
         <HStack spacing={2}>
-          <Icon as={isHovered ? FaPlay : FaVideo} />
-          <Text display={{ base: "none", sm: "block" }}>Generate Video</Text>
-          <Badge 
-            colorScheme="green" 
-            variant="subtle" 
-            fontSize="xs"
-            display={{ base: "none", sm: "inline-flex" }}
-          >
+          <Icon as={isHovered ? FaPlay : FaVideo} color={color.primary} />
+          <Text as="span" display={{ base: 'none', sm: 'inline' }}>
+            Generate video
+          </Text>
+          <ToneBadge tone="brand" display={{ base: 'none', sm: 'inline-flex' }} px={2} py={0.5}>
             {images.length}
-          </Badge>
+          </ToneBadge>
         </HStack>
-      </Button>
+      </ModalButton>
 
       <BaseModal
         isOpen={isOpen}

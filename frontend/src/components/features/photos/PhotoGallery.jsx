@@ -6,21 +6,21 @@ import {
   useDisclosure,
   Flex,
   Text,
-  Button,
   VStack,
-  useColorModeValue,
   SimpleGrid,
   HStack,
   useBreakpointValue,
   Icon,
   Tooltip,
-  Badge,
   IconButton,
   useToast,
 } from '@chakra-ui/react';
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { IoCheckmark, IoDownload } from 'react-icons/io5';
 import { FaDownload } from 'react-icons/fa';
+import { HiCheck, HiPhoto, HiSquares2X2 } from 'react-icons/hi2';
+import ModalButton from '../../modals/ModalButton';
+import { Chip, ModalState, ToneBadge } from '../../modals/ModalKit';
+import { color as atlas, shadow, tones, type } from '../../../design/tokens';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
@@ -38,10 +38,10 @@ const imageVariants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { 
-      duration: 0.5, 
+    transition: {
+      duration: 0.5,
       ease: [0.34, 1.56, 0.64, 1],
-      staggerChildren: 0.05 
+      staggerChildren: 0.05
     },
   },
   hover: {
@@ -87,26 +87,23 @@ const PhotoGallery = memo(function PhotoGallery({
   const fullscreenRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const toast = useToast();
-  
+
   // Drag-to-select state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartIndex, setDragStartIndex] = useState(null);
   const dragAreaRef = useRef(null);
   const [imageLoadStates, setImageLoadStates] = useState(new Map());
-  
+
   // Image cache hook
   const { cacheImage } = useImageCache();
 
   const isMobile = useBreakpointValue({ base: true, sm: false });
-  const textColor = useColorModeValue('gray.800', 'white');
-  const selectionColor = useColorModeValue('blue.500', 'blue.300');
-  const selectionBgColor = useColorModeValue('blue.50', 'blue.900');
-  const checkboxBgColor = useColorModeValue('white', 'gray.800');
-  const checkboxBorderColor = useColorModeValue('gray.300', 'gray.600');
-  const shimmerColor1 = useColorModeValue('#e2e8f0', '#1a202c');
-  const shimmerColor2 = useColorModeValue('#cbd5e0', '#2d3748');
-  const buttonBorderColor = useColorModeValue('blue.600', 'white');
-  const buttonTextColor = useColorModeValue('blue.600', 'white');
+  // Atlas: selection is amber; skeletons are ink.
+  const selectionColor = atlas.primary;
+  const checkboxBgColor = 'rgba(10,12,17,0.72)';
+  const checkboxBorderColor = 'rgba(236,231,220,0.5)';
+  const shimmerColor1 = atlas.surfaceSolid;
+  const shimmerColor2 = atlas.surfaceRaised;
 
   // O(1) lookup — garante que Select All/Unselect All reflitam imediatamente nos checkboxes
   const selectedSet = useMemo(
@@ -154,13 +151,13 @@ const PhotoGallery = memo(function PhotoGallery({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isSelectionMode) return;
-      
+
       // Select all with Ctrl/Cmd+A
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
         onSelectAll?.(images);
       }
-      
+
       // Escape to exit selection mode
       if (e.key === 'Escape') {
         toggleSelectionMode?.();
@@ -175,7 +172,7 @@ const PhotoGallery = memo(function PhotoGallery({
   const handleImageLoad = useCallback((imageId) => {
     setImageLoadStates((prev) => new Map(prev).set(imageId, true));
   }, []);
-  
+
   // Cache images when they're visible
   useEffect(() => {
     // Cache all visible images in background
@@ -186,7 +183,7 @@ const PhotoGallery = memo(function PhotoGallery({
         }
       }
     };
-    
+
     if (images.length > 0) {
       cacheImages();
     }
@@ -201,10 +198,10 @@ const PhotoGallery = memo(function PhotoGallery({
 
   const handleDragMove = useCallback((index) => {
     if (!isDragging || dragStartIndex === null) return;
-    
+
     const start = Math.min(dragStartIndex, index);
     const end = Math.max(dragStartIndex, index);
-    
+
     for (let i = start; i <= end; i++) {
       if (images[i]?.id) {
         const imageId = images[i].id;
@@ -223,42 +220,9 @@ const PhotoGallery = memo(function PhotoGallery({
   // Empty state
   if (!Array.isArray(images) || images.length === 0) {
     return (
-      <VStack spacing={8} py={20} textAlign="center">
-        <Box
-          w="140px"
-          h="140px"
-          borderRadius="full"
-          bg="gray.100"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          mb={6}
-          boxShadow="0 8px 32px rgba(0, 0, 0, 0.1)"
-          transition="all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-          _hover={{ transform: 'scale(1.05)', boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)' }}
-        >
-          <Text fontSize="5xl" color="gray.400">📸</Text>
-        </Box>
-        <VStack spacing={3}>
-          <Text fontSize="2xl" color={textColor} fontWeight="semibold">No Photos Yet</Text>
-          <Text fontSize="md" color="gray.500" maxW="450px" lineHeight="1.6">
-            Start capturing your journey by uploading your first photo to this country
-          </Text>
-        </VStack>
-        <Button
-          colorScheme="blue"
-          size="lg"
-          borderRadius="full"
-          px={10}
-          py={7}
-          onClick={() => (window.location.href = '/upload')}
-          _hover={{ transform: 'translateY(-2px)', boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)' }}
-          _active={{ transform: 'translateY(0)' }}
-          transition="all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-        >
-          Upload Photos
-        </Button>
-      </VStack>
+      <ModalState kind="empty" icon={HiPhoto} title="No photos yet" py={16}>
+        Start capturing your journey by uploading your first photo to this country.
+      </ModalState>
     );
   }
 
@@ -283,102 +247,49 @@ const PhotoGallery = memo(function PhotoGallery({
           `,
         }}
       />
-      
+
       {/* Selection Controls - Only show if toggleSelectionMode is provided */}
       {toggleSelectionMode && (
       <Box mb={4}>
         <Flex justify="space-between" align="center" maxW="2600px" mx="auto" px={{ base: 3, md: 6 }}>
           <VStack alignItems={{ base: 'stretch', md: 'flex-start' }} spacing={{ base: 2, md: 3 }} flex={1}>
-            <Button
-              size={{ base: 'xs', md: 'sm' }}
-              colorScheme="blue"
-              variant={isSelectionMode ? 'solid' : 'outline'}
-              onClick={() => {
-                if (toggleSelectionMode) toggleSelectionMode();
-              }}
-              leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
-              borderRadius="full"
-              px={{ base: 4, md: 6 }}
-              borderWidth="1px"
-              borderColor={isSelectionMode ? undefined : buttonBorderColor}
-              color={isSelectionMode ? undefined : buttonTextColor}
-              fontSize={{ base: 'xs', md: 'sm' }}
-              _hover={{
-                transform: 'translateY(-1px)',
-                boxShadow: isSelectionMode 
-                  ? '0 4px 12px rgba(59, 130, 246, 0.3)' 
-                  : '0 4px 12px rgba(0, 0, 0, 0.1)',
-                borderColor: isSelectionMode ? undefined : buttonBorderColor
-              }}
-              transition="all 0.2s ease"
+            <Chip
+              isActive={isSelectionMode}
+              onClick={() => toggleSelectionMode?.()}
+              icon={isSelectionMode ? HiCheck : HiSquares2X2}
+              alignSelf={{ base: 'stretch', md: 'flex-start' }}
             >
-              {isSelectionMode ? 'Exit Selection' : 'Select Photos'}
-            </Button>
+              {isSelectionMode ? 'Exit selection' : 'Select photos'}
+            </Chip>
 
             {isSelectionMode && (
               <VStack spacing={{ base: 2, md: 3 }} align="stretch" w="full">
                 <HStack spacing={2} wrap="wrap">
                   <Tooltip label="Select all photos currently visible" hasArrow>
-                    <Button
-                      size={{ base: 'xs', md: 'sm' }}
-                      variant="ghost"
-                      onClick={() => onSelectAll?.(images)}
-                      borderRadius="full"
-                      colorScheme="blue"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      px={{ base: 3, md: 4 }}
-                      _hover={{
-                        bg: 'blue.50',
-                        transform: 'translateY(-1px)',
-                      }}
-                      transition="all 0.2s ease"
-                    >
-                      Select All ({total})
-                    </Button>
+                    <ModalButton variant="ghost" size="sm" onClick={() => onSelectAll?.(images)} color={atlas.primary}>
+                      Select all ({total})
+                    </ModalButton>
                   </Tooltip>
 
                   <Tooltip label="Clear current selection" hasArrow>
-                    <Button
-                      size={{ base: 'xs', md: 'sm' }}
-                      variant="ghost"
-                      onClick={() => onClearSelection?.()}
-                      borderRadius="full"
-                      colorScheme="gray"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      px={{ base: 3, md: 4 }}
-                      _hover={{
-                        bg: 'gray.50',
-                        transform: 'translateY(-1px)',
-                      }}
-                      transition="all 0.2s ease"
-                    >
-                      Unselect All
-                    </Button>
+                    <ModalButton variant="ghost" size="sm" onClick={() => onClearSelection?.()}>
+                      Unselect all
+                    </ModalButton>
                   </Tooltip>
                 </HStack>
 
                 <HStack spacing={2} flexWrap="wrap">
-                  <Badge
-                    colorScheme="blue"
-                    variant="subtle"
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                    px={{ base: 2, md: 3 }}
-                    py={1}
-                    borderRadius="full"
-                    bg={selectionBgColor}
-                    color={selectionColor}
-                    fontWeight="semibold"
-                  >
+                  <ToneBadge tone="brand" alignSelf="center">
                     {selectedCount} selected
-                  </Badge>
-                  
+                  </ToneBadge>
+
                   {/* Download Selected Button */}
-                  <Button
+                  <ModalButton
                     onClick={async () => {
                       try {
                         // Get selected images
                         const selectedImages = images.filter(img => selectedSet.has(String(img.id)));
-                        
+
                         if (selectedImages.length === 0) {
                           toast({
                             title: 'No images selected',
@@ -404,16 +315,16 @@ const PhotoGallery = memo(function PhotoGallery({
                         // Download each image
                         for (let i = 0; i < selectedImages.length; i++) {
                           const image = selectedImages[i];
-                          
+
                           try {
                             const response = await fetch(image.url);
                             const blob = await response.blob();
-                            
+
                             // Use Web Share API for mobile devices (iOS and Android)
                             if (isMobile && navigator.share && navigator.canShare && i === 0) {
                               try {
                                 const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
-                                
+
                                 if (navigator.canShare({ files: [file] })) {
                                   // For multiple images, only share first one via Web Share API
                                   // Others will use standard download
@@ -433,7 +344,7 @@ const PhotoGallery = memo(function PhotoGallery({
                                 // Continue to standard download if share fails
                               }
                             }
-                            
+
                             // Standard download for desktop or subsequent images
                             const url = window.URL.createObjectURL(blob);
                             const link = document.createElement('a');
@@ -441,11 +352,11 @@ const PhotoGallery = memo(function PhotoGallery({
                             link.download = `image-${image.id}.jpg`;
                             document.body.appendChild(link);
                             link.click();
-                            
+
                             // Clean up
                             document.body.removeChild(link);
                             window.URL.revokeObjectURL(url);
-                            
+
                             // Add small delay between downloads to avoid overwhelming the browser
                             if (i < selectedImages.length - 1) {
                               await new Promise(resolve => setTimeout(resolve, 100));
@@ -454,7 +365,7 @@ const PhotoGallery = memo(function PhotoGallery({
                             console.error(`Failed to download image ${image.id}:`, err);
                           }
                         }
-                        
+
                         toast({
                           title: 'Download complete',
                           description: `Successfully downloaded ${selectedImages.length} image(s)`,
@@ -474,43 +385,20 @@ const PhotoGallery = memo(function PhotoGallery({
                       }
                     }}
                     isDisabled={selectedCount === 0}
-                    size={{ base: 'xs', md: 'sm' }}
-                    colorScheme="blue"
-                    variant="outline"
-                    borderRadius="full"
-                    px={{ base: 3, md: 4 }}
+                    variant="secondary"
+                    size="sm"
                     leftIcon={<FaDownload />}
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                    borderColor={buttonBorderColor}
-                    color={buttonTextColor}
-                    _hover={{
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                      borderColor: 'blue.500',
-                      bg: 'blue.50',
-                    }}
-                    transition="all 0.2s ease"
                   >
-                    Download Selected
-                  </Button>
+                    Download selected
+                  </ModalButton>
 
                   <DeleteButton
                     onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
                     isDisabled={selectedCount === 0}
-                    size={{ base: 'xs', md: 'sm' }}
-                    colorScheme="red"
-                    variant="outline"
-                    borderRadius="full"
-                    px={{ base: 3, md: 4 }}
-                    leftIcon={<CloseIcon />}
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                    _hover={{
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-                    }}
-                    transition="all 0.2s ease"
+                    size="sm"
+                    h="36px"
                   >
-                    Delete Selected
+                    Delete selected
                   </DeleteButton>
                 </HStack>
               </VStack>
@@ -558,17 +446,17 @@ const PhotoGallery = memo(function PhotoGallery({
                   position="relative"
                   borderRadius={{ base: '6px', sm: '8px', md: '12px' }}
                   overflow="hidden"
-                  bg="white"
+                  bg={atlas.surfaceSolid}
                   boxShadow={
                     isSelected
-                      ? `0 0 0 3px ${selectionColor}, 0 8px 32px rgba(59,130,246,0.25)`
-                      : '0 2px 8px rgba(0,0,0,0.08)'
+                      ? `0 0 0 2px ${selectionColor}, 0 10px 30px -10px ${tones.brand.glow}`
+                      : `inset 0 0 0 1px ${atlas.hairline}, ${shadow.sm}`
                   }
                   cursor="pointer"
                   _hover={{
                     boxShadow: isSelected
-                      ? `0 0 0 3px ${selectionColor}, 0 12px 40px rgba(59,130,246,0.35)`
-                      : '0 8px 25px rgba(0,0,0,0.15)',
+                      ? `0 0 0 2px ${selectionColor}, 0 14px 36px -10px ${tones.brand.glow}`
+                      : `inset 0 0 0 1px ${atlas.hairlineMid}, ${shadow.md}`,
                   }}
                   transition="all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
                   role="group"
@@ -584,7 +472,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     <Box
                       position="absolute"
                       inset="0"
-                      bg="rgba(59,130,246,0.15)"
+                      bg={tones.brand.soft}
                       zIndex={1}
                       pointerEvents="none"
                       border={`3px solid ${selectionColor}`}
@@ -592,13 +480,13 @@ const PhotoGallery = memo(function PhotoGallery({
                       animation="pulse 1s ease-in-out infinite"
                     />
                   )}
-                  
+
                   {/* Overlay sutil quando selecionado */}
                   {isSelectionMode && !isDragging && (
                     <Box
                       position="absolute"
                       inset="0"
-                      bg={isSelected ? 'rgba(59,130,246,0.08)' : 'transparent'}
+                      bg={isSelected ? tones.brand.softer : 'transparent'}
                       zIndex={1}
                       pointerEvents="none"
                       transition="all 0.3s ease"
@@ -625,7 +513,7 @@ const PhotoGallery = memo(function PhotoGallery({
                         w={isMobile ? '20px' : '24px'}
                         h={isMobile ? '20px' : '24px'}
                         borderRadius="full"
-                        bg={checkboxBgColor}
+                        bg={isSelected ? selectionColor : checkboxBgColor}
                         border="2px solid"
                         borderColor={isSelected ? selectionColor : checkboxBorderColor}
                         boxShadow="0 4px 16px rgba(0,0,0,0.15)"
@@ -637,7 +525,7 @@ const PhotoGallery = memo(function PhotoGallery({
                         _hover={{
                           transform: 'scale(1.1)',
                           boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
-                          borderColor: isSelected ? selectionColor : 'blue.400',
+                          borderColor: selectionColor,
                         }}
                         onClick={() => handleImageSelection?.(image.id)}
                       >
@@ -650,8 +538,7 @@ const PhotoGallery = memo(function PhotoGallery({
                             <Icon
                               as={IoCheckmark}
                               boxSize={isMobile ? 3 : 3.5}
-                              color={selectionColor}
-                              filter="drop-shadow(0 1px 2px rgba(0,0,0,0.3))"
+                              color={atlas.textOnBrand}
                             />
                           </motion.div>
                         )}
@@ -688,7 +575,7 @@ const PhotoGallery = memo(function PhotoGallery({
                         />
                       </motion.div>
                     )}
-                    
+
                     <Image
                       src={image.url}
                       alt={`Photo from ${countryName}`}
@@ -696,7 +583,6 @@ const PhotoGallery = memo(function PhotoGallery({
                       height="auto"
                       objectFit="cover"
                       loading="lazy"
-                      fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
                       onLoad={() => {
                         handleImageLoad(image.id);
                       }}
@@ -718,7 +604,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     bottom="0"
                     left="0"
                     right="0"
-                    bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
+                    bg="linear-gradient(transparent, rgba(5,7,11,0.85))"
                     p={isMobile ? 2 : 3}
                     color="white"
                     opacity={0}
@@ -726,11 +612,11 @@ const PhotoGallery = memo(function PhotoGallery({
                     transition="opacity 0.3s ease"
                   >
                     <VStack spacing={isMobile ? 0.5 : 1} align="start">
-                      <Text fontSize={isMobile ? 'xs' : 'sm'} fontWeight="semibold" lineHeight="1.2" noOfLines={1}>
+                      <Text fontSize={isMobile ? 'xs' : 'sm'} fontWeight="600" color={atlas.text} lineHeight="1.2" noOfLines={1}>
                         {countryName}
                       </Text>
                       {image.year && (
-                        <Text fontSize={isMobile ? '2xs' : 'xs'} opacity={0.9} noOfLines={1}>
+                        <Text {...type.label} color={atlas.primary} noOfLines={1}>
                           {image.year}
                         </Text>
                       )}
@@ -747,11 +633,14 @@ const PhotoGallery = memo(function PhotoGallery({
                       right="8px"
                       size="sm"
                       borderRadius="full"
-                      bg="rgba(0,0,0,0.6)"
-                      color="white"
+                      bg="rgba(10,12,17,0.6)"
+                      color={atlas.text}
+                      border="1px solid"
+                      borderColor="rgba(236,231,220,0.14)"
                       opacity={0}
                       _groupHover={{ opacity: 1 }}
-                      _hover={{ bg: 'rgba(0,0,0,0.8)', transform: 'scale(1.1)' }}
+                      _hover={{ bg: 'rgba(10,12,17,0.85)', color: atlas.primary }}
+                      _focusVisible={{ opacity: 1, boxShadow: `0 0 0 3px ${atlas.focusRing}` }}
                       transition="all 0.2s ease"
                       backdropFilter="blur(8px)"
                       onClick={async (e) => {
@@ -760,20 +649,20 @@ const PhotoGallery = memo(function PhotoGallery({
                           // Fetch the image as a blob
                           const response = await fetch(image.url);
                           const blob = await response.blob();
-                          
+
                           // Check if Web Share API with files is supported (iOS Safari and Android)
                           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                          
+
                           if (isMobile && navigator.share && navigator.canShare) {
                             try {
                               const file = new File([blob], `image-${image.id}.jpg`, { type: blob.type });
-                              
+
                               if (navigator.canShare({ files: [file] })) {
                                 await navigator.share({
                                   files: [file],
                                   title: 'Photo',
                                 });
-                                
+
                                 toast({
                                   title: 'Share opened',
                                   description: 'Use "Save Image" to save to your device',
@@ -797,7 +686,7 @@ const PhotoGallery = memo(function PhotoGallery({
                               // Continue to standard download if share fails
                             }
                           }
-                          
+
                           // Standard download for desktop or when Web Share is not available
                           const url = window.URL.createObjectURL(blob);
                           const link = document.createElement('a');
@@ -805,11 +694,11 @@ const PhotoGallery = memo(function PhotoGallery({
                           link.download = `image-${image.id}.jpg`;
                           document.body.appendChild(link);
                           link.click();
-                          
+
                           // Clean up
                           document.body.removeChild(link);
                           window.URL.revokeObjectURL(url);
-                          
+
                           toast({
                             title: 'Download started',
                             status: 'success',

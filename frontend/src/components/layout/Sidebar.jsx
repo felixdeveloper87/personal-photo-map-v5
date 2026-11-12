@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, VStack, HStack, Text, Icon, Image, Button } from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Icon, Button } from '@chakra-ui/react';
 import { FaGlobe, FaClock, FaCrown } from 'react-icons/fa';
-import logo from '../../assets/logo.png';
+import Wordmark from '../ui/Wordmark';
 import { useLandingTokens } from '../features/landing/landingUI';
 import SettingsMenu from './SettingsMenu';
 
@@ -68,11 +68,7 @@ const Sidebar = ({ nav }) => {
         onClick={() => navigate('/')}
         role="group"
       >
-        <Image src={logo} alt="Photomap" h="34px" w="34px" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.12))" />
-        <Text fontFamily="heading" fontSize="xl" fontWeight="900" letterSpacing="-0.02em" lineHeight="1">
-          <Box as="span" color={t.text}>Photo</Box>
-          <Box as="span" color={t.primary}>map</Box>
-        </Text>
+        <Wordmark mark="logo" size="sm" />
       </HStack>
 
       {/* Primary nav */}

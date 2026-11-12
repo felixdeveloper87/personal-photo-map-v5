@@ -1,126 +1,162 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Container,
-  Heading,
-  Text,
-  VStack,
   HStack,
+  Icon,
+  Link,
   SimpleGrid,
-  Button,
-  Input,
+  Text,
   Textarea,
   FormControl,
-  FormLabel,
   FormErrorMessage,
-  useColorModeValue,
+  FormLabel,
+  VStack,
   useToast,
-  Icon,
-  Card,
-  CardBody,
-  Badge,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  Link,
-  Flex,
-  Avatar,
-  Divider,
 } from '@chakra-ui/react';
+import { FaInstagram, FaTwitter, FaFacebook, FaLinkedin } from 'react-icons/fa';
 import {
-  FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaInstagram,
-  FaTwitter,
-  FaFacebook,
-  FaLinkedin,
-  FaQuestionCircle,
-  FaHeadset,
-  FaBug,
-  FaLightbulb,
-  FaRocket,
-  FaClock,
-  FaGlobe,
-  FaHeart,
-  FaPaperPlane,
-  FaCheckCircle,
-} from 'react-icons/fa';
+  HiChatBubbleLeftRight,
+  HiClock,
+  HiEnvelope,
+  HiMapPin,
+  HiPaperAirplane,
+  HiPhone,
+  HiQuestionMarkCircle,
+  HiRocketLaunch,
+  HiUser,
+  HiTag,
+} from 'react-icons/hi2';
+import ModalButton from '../components/modals/ModalButton';
+import { IconTile, ModalField, ToneBadge } from '../components/modals/ModalKit';
+import { Eyebrow, GlowCard } from '../components/features/landing/landingUI';
+import { color, font, radius, type } from '../design/tokens';
 
 const MotionBox = motion.create(Box);
-const MotionCard = motion.create(Card);
+
+const CONTACT_METHODS = [
+  {
+    icon: HiEnvelope,
+    tone: 'brand',
+    title: 'Email Support',
+    description: 'Get help via email',
+    contact: 'support@photomap.com',
+    action: 'mailto:support@photomap.com',
+    responseTime: 'Within 24 hours',
+  },
+  {
+    icon: HiChatBubbleLeftRight,
+    tone: 'teal',
+    title: 'Live Chat',
+    description: 'Chat with our team',
+    contact: 'Available 9 AM - 6 PM GMT',
+    action: '#',
+    responseTime: 'Instant response',
+  },
+  {
+    icon: HiPhone,
+    tone: 'rose',
+    title: 'Phone Support',
+    description: 'Speak with an expert',
+    contact: '+44 20 1234 5678',
+    action: 'tel:+442012345678',
+    responseTime: 'Mon-Fri 9-5 GMT',
+  },
+];
+
+const FAQ = [
+  {
+    question: 'How do I upload photos to PhotoMap?',
+    answer:
+      'Simply go to the Countries page, select your destination, and use the upload button. You can upload multiple photos at once and organize them by year.',
+  },
+  {
+    question: 'Is PhotoMap free to use?',
+    answer:
+      'PhotoMap offers both free and premium plans. Free users can upload photos and track their travels, while premium users get unlimited storage and advanced features.',
+  },
+  {
+    question: 'Can I export my travel data?',
+    answer:
+      'Yes! Premium users can export their travel data, photos, and statistics in various formats including PDF reports and CSV files.',
+  },
+  {
+    question: 'How do I reset my password?',
+    answer:
+      "Click the 'Forgot Password' link on the login page and follow the instructions. You'll receive an email with reset instructions.",
+  },
+  {
+    question: 'Is my data secure on PhotoMap?',
+    answer:
+      'Absolutely! We use industry-standard encryption and security measures to protect your photos and personal data. Your privacy is our top priority.',
+  },
+];
+
+const SOCIALS = [
+  { icon: FaInstagram, label: 'Instagram', href: 'https://instagram.com' },
+  { icon: FaTwitter, label: 'Twitter', href: 'https://twitter.com' },
+  { icon: FaFacebook, label: 'Facebook', href: 'https://facebook.com' },
+  { icon: FaLinkedin, label: 'LinkedIn', href: 'https://linkedin.com' },
+];
+
+const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
+const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.45 } } };
+
+const SectionTitle = ({ eyebrow, title, subtitle }) => (
+  <VStack spacing={3} textAlign="center" mb={{ base: 5, md: 6 }}>
+    {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+    <Text {...type.display} fontSize={{ base: '1.9rem', md: '2.3rem' }} color={color.text}>
+      {title}
+    </Text>
+    {subtitle && (
+      <Text color={color.textSoft} maxW="560px" lineHeight="1.7">
+        {subtitle}
+      </Text>
+    )}
+  </VStack>
+);
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
 
-  // Theme colors
-  const bgGradient = useColorModeValue(
-    "linear(135deg, blue.50 0%, purple.50 25%, pink.50 50%, orange.50 75%, yellow.50 100%)",
-    "linear(135deg, gray.900 0%, blue.900 25%, purple.900 50%, pink.900 75%, red.900 100%)"
-  );
-  
-  const cardBg = useColorModeValue("rgba(255, 255, 255, 0.9)", "rgba(26, 32, 44, 0.9)");
-  const cardBorder = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.1)");
-  const textColor = useColorModeValue("gray.600", "gray.300");
-  const headingColor = useColorModeValue("gray.800", "white");
-  const accentColor = useColorModeValue("blue.500", "blue.300");
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
     if (!formData.message.trim()) newErrors.message = 'Message is required';
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
-        title: "Message sent successfully!",
+        title: 'Message sent successfully!',
         description: "We'll get back to you within 24 hours.",
-        status: "success",
+        status: 'success',
         duration: 5000,
         isClosable: true,
       });
@@ -128,452 +164,232 @@ const Contact = () => {
     }, 2000);
   };
 
-  const contactMethods = [
-    {
-      icon: FaEnvelope,
-      title: "Email Support",
-      description: "Get help via email",
-      contact: "support@photomap.com",
-      action: "mailto:support@photomap.com",
-      color: "blue",
-      responseTime: "Within 24 hours"
-    },
-    {
-      icon: FaHeadset,
-      title: "Live Chat",
-      description: "Chat with our team",
-      contact: "Available 9 AM - 6 PM GMT",
-      action: "#",
-      color: "green",
-      responseTime: "Instant response"
-    },
-    {
-      icon: FaPhone,
-      title: "Phone Support",
-      description: "Speak with an expert",
-      contact: "+44 20 1234 5678",
-      action: "tel:+442012345678",
-      color: "purple",
-      responseTime: "Mon-Fri 9-5 GMT"
-    }
-  ];
-
-  const faqData = [
-    {
-      question: "How do I upload photos to PhotoMap?",
-      answer: "Simply go to the Countries page, select your destination, and use the upload button. You can upload multiple photos at once and organize them by year."
-    },
-    {
-      question: "Is PhotoMap free to use?",
-      answer: "PhotoMap offers both free and premium plans. Free users can upload photos and track their travels, while premium users get unlimited storage and advanced features."
-    },
-    {
-      question: "Can I export my travel data?",
-      answer: "Yes! Premium users can export their travel data, photos, and statistics in various formats including PDF reports and CSV files."
-    },
-    {
-      question: "How do I reset my password?",
-      answer: "Click the 'Forgot Password' link on the login page and follow the instructions. You'll receive an email with reset instructions."
-    },
-    {
-      question: "Is my data secure on PhotoMap?",
-      answer: "Absolutely! We use industry-standard encryption and security measures to protect your photos and personal data. Your privacy is our top priority."
-    }
-  ];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
-
   return (
-    <Box
-      minH="100vh"
-      bgGradient={bgGradient}
-      py={10}
-      position="relative"
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        opacity: 0.4
-      }}
-    >
-      <Container maxW="7xl" position="relative" zIndex={1}>
-        <MotionBox
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Hero Section */}
-          <MotionBox variants={itemVariants} textAlign="center" mb={12}>
-            <VStack spacing={6}>
-              <Icon as={FaGlobe} w={20} h={20} color={accentColor} />
-              <Heading
-                size="2xl"
-                color={headingColor}
-                bgGradient="linear(to-r, blue.400, purple.500, pink.500)"
-                bgClip="text"
-              >
-                Get in Touch
-              </Heading>
-              <Text fontSize="xl" color={textColor} maxW="2xl">
-                Have questions about your travels or need support? We're here to help you 
-                make the most of your PhotoMap experience.
+    <Box minH="100vh" bg={color.bg} py={{ base: 10, md: 16 }} position="relative">
+      <Box
+        aria-hidden
+        position="absolute"
+        inset={0}
+        pointerEvents="none"
+        bg="radial-gradient(900px 480px at 15% -10%, rgba(235,181,114,0.10), transparent 60%), radial-gradient(700px 420px at 95% 20%, rgba(111,208,196,0.07), transparent 60%)"
+      />
+      <Container maxW="6xl" position="relative" zIndex={1} px={{ base: 4, md: 6 }}>
+        <MotionBox variants={containerVariants} initial="hidden" animate="visible">
+          {/* Hero */}
+          <MotionBox variants={itemVariants} textAlign="center" mb={{ base: 10, md: 14 }}>
+            <VStack spacing={5}>
+              <Eyebrow>Contact</Eyebrow>
+              <Text fontFamily={font.display} fontSize={{ base: '2.6rem', md: '3.6rem' }} lineHeight="1.02" color={color.text}>
+                Get in{' '}
+                <Text as="em" color={color.primary}>
+                  touch
+                </Text>
+              </Text>
+              <Text fontSize={{ base: 'md', md: 'lg' }} color={color.textSoft} maxW="2xl" lineHeight="1.7">
+                Have questions about your travels or need support? We&apos;re here to help you make the most of your
+                PhotoMap experience.
               </Text>
             </VStack>
           </MotionBox>
 
-          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} mb={12}>
-            {/* Contact Form */}
-            <MotionCard
-              variants={itemVariants}
-              bg={cardBg}
-              backdropFilter="blur(20px)"
-              borderRadius="2xl"
-              border="1px solid"
-              borderColor={cardBorder}
-              boxShadow="0 25px 50px rgba(0, 0, 0, 0.1)"
-            >
-              <CardBody p={8}>
+          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 6, lg: 8 }} mb={{ base: 10, md: 14 }}>
+            {/* Contact form */}
+            <MotionBox variants={itemVariants}>
+              <GlowCard h="full">
                 <VStack spacing={6} align="stretch">
-                  <VStack spacing={2} textAlign="center">
-                    <Icon as={FaPaperPlane} w={8} h={8} color={accentColor} />
-                    <Heading size="lg" color={headingColor}>
-                      Send us a Message
-                    </Heading>
-                    <Text color={textColor}>
-                      Fill out the form below and we'll get back to you soon
-                    </Text>
-                  </VStack>
+                  <HStack spacing={3.5}>
+                    <IconTile icon={HiPaperAirplane} />
+                    <Box>
+                      <Text {...type.display} fontSize="1.6rem" color={color.text}>
+                        Send us a message
+                      </Text>
+                      <Text fontSize="sm" color={color.textSoft}>
+                        Fill out the form below and we&apos;ll get back to you soon
+                      </Text>
+                    </Box>
+                  </HStack>
 
-                  <form onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit} noValidate>
                     <VStack spacing={4}>
-                      <FormControl isInvalid={errors.name}>
-                        <FormLabel color={headingColor}>Name</FormLabel>
-                        <Input
+                      <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="full">
+                        <ModalField
+                          label="Name"
+                          icon={HiUser}
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder="Your full name"
-                          bg="whiteAlpha.100"
-                          border="1px solid"
-                          borderColor={cardBorder}
-                          _focus={{
-                            borderColor: accentColor,
-                            boxShadow: `0 0 0 1px ${accentColor}`
-                          }}
+                          error={errors.name}
                         />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={errors.email}>
-                        <FormLabel color={headingColor}>Email</FormLabel>
-                        <Input
+                        <ModalField
+                          label="Email"
+                          icon={HiEnvelope}
                           name="email"
                           type="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          placeholder="your.email@example.com"
-                          bg="whiteAlpha.100"
-                          border="1px solid"
-                          borderColor={cardBorder}
-                          _focus={{
-                            borderColor: accentColor,
-                            boxShadow: `0 0 0 1px ${accentColor}`
-                          }}
+                          placeholder="you@example.com"
+                          error={errors.email}
                         />
-                        <FormErrorMessage>{errors.email}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={errors.subject}>
-                        <FormLabel color={headingColor}>Subject</FormLabel>
-                        <Input
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleInputChange}
-                          placeholder="What can we help you with?"
-                          bg="whiteAlpha.100"
-                          border="1px solid"
-                          borderColor={cardBorder}
-                          _focus={{
-                            borderColor: accentColor,
-                            boxShadow: `0 0 0 1px ${accentColor}`
-                          }}
-                        />
-                        <FormErrorMessage>{errors.subject}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={errors.message}>
-                        <FormLabel color={headingColor}>Message</FormLabel>
+                      </SimpleGrid>
+                      <ModalField
+                        label="Subject"
+                        icon={HiTag}
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange}
+                        placeholder="What can we help you with?"
+                        error={errors.subject}
+                      />
+                      <FormControl isInvalid={!!errors.message}>
+                        <FormLabel variant="atlas">Message</FormLabel>
                         <Textarea
                           name="message"
                           value={formData.message}
                           onChange={handleInputChange}
                           placeholder="Tell us more about your question or concern..."
-                          rows={4}
-                          bg="whiteAlpha.100"
-                          border="1px solid"
-                          borderColor={cardBorder}
-                          _focus={{
-                            borderColor: accentColor,
-                            boxShadow: `0 0 0 1px ${accentColor}`
-                          }}
+                          rows={5}
                         />
                         <FormErrorMessage>{errors.message}</FormErrorMessage>
                       </FormControl>
 
-                      <Button
+                      <ModalButton
                         type="submit"
-                        colorScheme="blue"
+                        variant="primary"
                         size="lg"
-                        width="full"
-                        leftIcon={isSubmitting ? undefined : <FaPaperPlane />}
+                        w="full"
+                        leftIcon={<HiPaperAirplane />}
                         isLoading={isSubmitting}
-                        loadingText="Sending..."
-                        _hover={{ transform: "translateY(-2px)" }}
-                        transition="all 0.2s"
+                        loadingText="Sending…"
                       >
-                        Send Message
-                      </Button>
+                        Send message
+                      </ModalButton>
                     </VStack>
                   </form>
                 </VStack>
-              </CardBody>
-            </MotionCard>
+              </GlowCard>
+            </MotionBox>
 
-            {/* Contact Methods */}
-            <VStack spacing={6}>
-              <MotionBox variants={itemVariants} w="full">
-                <Heading size="lg" color={headingColor} mb={6} textAlign="center">
-                  <Icon as={FaHeadset} mr={3} color={accentColor} />
-                  Contact Methods
-                </Heading>
-                <VStack spacing={4}>
-                  {contactMethods.map((method, index) => (
-                    <MotionCard
-                      key={index}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      bg={cardBg}
-                      backdropFilter="blur(20px)"
-                      borderRadius="xl"
-                      border="1px solid"
-                      borderColor={cardBorder}
-                      boxShadow="0 10px 25px rgba(0, 0, 0, 0.1)"
-                      w="full"
-                      cursor="pointer"
-                      _hover={{ transform: "translateY(-2px)" }}
-                    >
-                      <CardBody p={6}>
-                        <HStack spacing={4}>
-                          <Box
-                            p={3}
-                            bg={`${method.color}.100`}
-                            color={`${method.color}.600`}
-                            borderRadius="xl"
-                          >
-                            <Icon as={method.icon} w={6} h={6} />
-                          </Box>
-                          <VStack align="start" spacing={1} flex={1}>
-                            <Heading size="sm" color={headingColor}>
-                              {method.title}
-                            </Heading>
-                            <Text color={textColor} fontSize="sm">
-                              {method.description}
-                            </Text>
-                            <Link
-                              href={method.action}
-                              color={accentColor}
-                              fontWeight="bold"
-                              fontSize="sm"
-                            >
-                              {method.contact}
-                            </Link>
-                            <Badge
-                              colorScheme={method.color}
-                              size="sm"
-                              borderRadius="full"
-                            >
-                              <Icon as={FaClock} mr={1} w={3} h={3} />
-                              {method.responseTime}
-                            </Badge>
-                          </VStack>
-                        </HStack>
-                      </CardBody>
-                    </MotionCard>
-                  ))}
-                </VStack>
-              </MotionBox>
+            {/* Contact methods + HQ */}
+            <MotionBox variants={itemVariants}>
+              <VStack spacing={4} align="stretch" h="full">
+                {CONTACT_METHODS.map((m) => (
+                  <GlowCard key={m.title} p={5}>
+                    <HStack spacing={4} align="start">
+                      <IconTile icon={m.icon} tone={m.tone} />
+                      <VStack align="start" spacing={1} flex={1} minW={0}>
+                        <Text fontWeight="700" color={color.text}>
+                          {m.title}
+                        </Text>
+                        <Text color={color.textSoft} fontSize="sm">
+                          {m.description}
+                        </Text>
+                        <Link href={m.action} color={color.primary} fontWeight="600" fontSize="sm" _hover={{ color: color.primaryHover }}>
+                          {m.contact}
+                        </Link>
+                        <ToneBadge tone={m.tone} icon={HiClock} mt={1}>
+                          {m.responseTime}
+                        </ToneBadge>
+                      </VStack>
+                    </HStack>
+                  </GlowCard>
+                ))}
 
-              {/* Company Info */}
-              <MotionCard
-                variants={itemVariants}
-                bg={cardBg}
-                backdropFilter="blur(20px)"
-                borderRadius="xl"
-                border="1px solid"
-                borderColor={cardBorder}
-                boxShadow="0 10px 25px rgba(0, 0, 0, 0.1)"
-                w="full"
-              >
-                <CardBody p={6}>
-                  <VStack spacing={4} textAlign="center">
-                    <Icon as={FaMapMarkerAlt} w={8} h={8} color={accentColor} />
-                    <Heading size="md" color={headingColor}>
-                      PhotoMap Headquarters
-                    </Heading>
-                    <VStack spacing={2} color={textColor}>
-                      <Text fontWeight="bold">PhotoMap Ltd.</Text>
+                <GlowCard p={5}>
+                  <HStack spacing={4} align="start">
+                    <IconTile icon={HiMapPin} tone="neutral" />
+                    <VStack align="start" spacing={0.5} color={color.textSoft} fontSize="sm">
+                      <Text fontWeight="700" color={color.text} fontSize="md">
+                        PhotoMap Headquarters
+                      </Text>
+                      <Text>PhotoMap Ltd.</Text>
                       <Text>123 Tech Street</Text>
                       <Text>London, UK, W1A 1AA</Text>
-                      <Badge colorScheme="green" mt={2}>
-                        <Icon as={FaClock} mr={1} w={3} h={3} />
+                      <ToneBadge tone="teal" icon={HiClock} mt={2}>
                         Mon-Fri 9AM-5PM GMT
-                      </Badge>
+                      </ToneBadge>
                     </VStack>
-                  </VStack>
-                </CardBody>
-              </MotionCard>
-            </VStack>
+                  </HStack>
+                </GlowCard>
+              </VStack>
+            </MotionBox>
           </SimpleGrid>
 
-          {/* FAQ Section */}
-          <MotionBox variants={itemVariants} mb={12}>
-            <Card
-              bg={cardBg}
-              backdropFilter="blur(20px)"
-              borderRadius="2xl"
-              border="1px solid"
-              borderColor={cardBorder}
-              boxShadow="0 25px 50px rgba(0, 0, 0, 0.1)"
-            >
-              <CardBody p={8}>
-                <VStack spacing={6}>
-                  <VStack spacing={2} textAlign="center">
-                    <Icon as={FaQuestionCircle} w={12} h={12} color={accentColor} />
-                    <Heading size="xl" color={headingColor}>
-                      Frequently Asked Questions
-                    </Heading>
-                    <Text color={textColor} fontSize="lg">
-                      Find answers to common questions about PhotoMap
-                    </Text>
-                  </VStack>
-
-                  <Accordion allowToggle w="full">
-                    {faqData.map((faq, index) => (
-                      <AccordionItem key={index} border="none">
-                        <AccordionButton
-                          bg="whiteAlpha.50"
-                          borderRadius="lg"
-                          mb={2}
-                          _hover={{ bg: "whiteAlpha.100" }}
-                          _expanded={{ bg: "whiteAlpha.100" }}
-                        >
-                          <Box flex="1" textAlign="left">
-                            <Text fontWeight="bold" color={headingColor}>
-                              {faq.question}
-                            </Text>
-                          </Box>
-                          <AccordionIcon color={accentColor} />
-                        </AccordionButton>
-                        <AccordionPanel pb={4}>
-                          <Text color={textColor} lineHeight="1.7">
-                            {faq.answer}
-                          </Text>
-                        </AccordionPanel>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </VStack>
-              </CardBody>
-            </Card>
+          {/* FAQ */}
+          <MotionBox variants={itemVariants} mb={{ base: 10, md: 14 }}>
+            <GlowCard>
+              <SectionTitle eyebrow="FAQ" title="Frequently asked questions" subtitle="Find answers to common questions about PhotoMap" />
+              <Accordion allowToggle w="full">
+                {FAQ.map((faq) => (
+                  <AccordionItem key={faq.question} border="none" mb={2}>
+                    <AccordionButton
+                      px={4}
+                      py={3.5}
+                      borderRadius={radius.md}
+                      bg="rgba(236,231,220,0.03)"
+                      border="1px solid"
+                      borderColor={color.hairline}
+                      _hover={{ bg: 'rgba(236,231,220,0.06)' }}
+                      _expanded={{ bg: color.primarySoftBg, borderColor: color.primarySoftBorder }}
+                      _focusVisible={{ boxShadow: `0 0 0 3px ${color.focusRing}` }}
+                    >
+                      <HStack flex="1" textAlign="left" spacing={3}>
+                        <Icon as={HiQuestionMarkCircle} color={color.primary} boxSize={4} flexShrink={0} />
+                        <Text fontWeight="600" color={color.text} fontSize="sm">
+                          {faq.question}
+                        </Text>
+                      </HStack>
+                      <AccordionIcon color={color.textMuted} />
+                    </AccordionButton>
+                    <AccordionPanel px={4} pt={3} pb={4}>
+                      <Text color={color.textSoft} lineHeight="1.7" fontSize="sm">
+                        {faq.answer}
+                      </Text>
+                    </AccordionPanel>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </GlowCard>
           </MotionBox>
 
-          {/* Social Media & Final CTA */}
+          {/* Social + CTA */}
           <MotionBox variants={itemVariants}>
-            <Card
-              bg={cardBg}
-              backdropFilter="blur(20px)"
-              borderRadius="2xl"
-              border="1px solid"
-              borderColor={cardBorder}
-              boxShadow="0 25px 50px rgba(0, 0, 0, 0.1)"
-            >
-              <CardBody p={8}>
-                <VStack spacing={6} textAlign="center">
-                  <Icon as={FaHeart} w={12} h={12} color="red.400" />
-                  <Heading size="xl" color={headingColor}>
-                    Stay Connected
-                  </Heading>
-                  <Text color={textColor} fontSize="lg" maxW="2xl">
-                    Follow us on social media for travel inspiration, tips, and updates about new PhotoMap features.
-                  </Text>
-
-                  <HStack spacing={6}>
-                    {[
-                      { icon: FaInstagram, color: "pink.500", href: "https://instagram.com" },
-                      { icon: FaTwitter, color: "blue.400", href: "https://twitter.com" },
-                      { icon: FaFacebook, color: "blue.600", href: "https://facebook.com" },
-                      { icon: FaLinkedin, color: "blue.700", href: "https://linkedin.com" }
-                    ].map((social, index) => (
-                      <Link key={index} href={social.href} isExternal>
-                        <Box
-                          p={3}
-                          bg="whiteAlpha.100"
-                          borderRadius="full"
-                          _hover={{
-                            bg: "whiteAlpha.200",
-                            transform: "translateY(-2px)"
-                          }}
-                          transition="all 0.2s"
-                        >
-                          <Icon as={social.icon} w={6} h={6} color={social.color} />
-                        </Box>
-                      </Link>
-                    ))}
-                  </HStack>
-
-                  <Divider />
-
-                  <VStack spacing={3}>
-                    <Text color={textColor}>
-                      Ready to start documenting your travels?
-                    </Text>
-                    <Button
-                      colorScheme="blue"
-                      size="lg"
-                      leftIcon={<FaRocket />}
-                      _hover={{ transform: "translateY(-2px)" }}
-                      transition="all 0.2s"
+            <GlowCard textAlign="center">
+              <SectionTitle
+                eyebrow="Community"
+                title="Stay connected"
+                subtitle="Follow us on social media for travel inspiration, tips, and updates about new PhotoMap features."
+              />
+              <HStack spacing={3} justify="center" mb={8}>
+                {SOCIALS.map((s) => (
+                  <Link key={s.label} href={s.href} isExternal aria-label={s.label}>
+                    <Box
+                      w="44px"
+                      h="44px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      borderRadius="full"
+                      bg="rgba(236,231,220,0.04)"
+                      border="1px solid"
+                      borderColor={color.hairlineMid}
+                      color={color.textSoft}
+                      transition="all .2s ease"
+                      _hover={{ color: color.primary, borderColor: color.primarySoftBorder, bg: color.primarySoftBg }}
                     >
-                      Start Your Journey
-                    </Button>
-                  </VStack>
-                </VStack>
-              </CardBody>
-            </Card>
+                      <Icon as={s.icon} boxSize={4.5} />
+                    </Box>
+                  </Link>
+                ))}
+              </HStack>
+              <Box h="1px" bg={color.hairline} mb={6} />
+              <VStack spacing={3}>
+                <Text color={color.textSoft}>Ready to start documenting your travels?</Text>
+                <ModalButton variant="primary" size="lg" leftIcon={<HiRocketLaunch />}>
+                  Start your journey
+                </ModalButton>
+              </VStack>
+            </GlowCard>
           </MotionBox>
         </MotionBox>
       </Container>
