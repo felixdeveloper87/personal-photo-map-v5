@@ -32,6 +32,17 @@ public class CountryCuriositiesService {
     @Value("${openai.api.key:}")
     private String openaiApiKey;
 
+    // Configurable so a model retirement (like gpt-3.5-turbo's) is an env change, not a code change.
+    @Value("${openai.model:gpt-4o-mini}")
+    private String openaiModel;
+
+    // Optional: some newer models only accept the default temperature, so it is sent only when set.
+    @Value("${openai.temperature:}")
+    private String openaiTemperature;
+
+    @Value("${openai.max-completion-tokens:1200}")
+    private int openaiMaxCompletionTokens;
+
     private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
     public CountryCuriositiesService() {
@@ -161,10 +172,13 @@ public class CountryCuriositiesService {
             userMessage.put("content", prompt);
             
             // Request body
-            request.put("model", "gpt-3.5-turbo");
+            request.put("model", openaiModel);
             request.put("messages", List.of(systemMessage, userMessage));
-            request.put("temperature", 0.7);
-            request.put("max_tokens", 700);
+            // `max_completion_tokens` replaces the deprecated `max_tokens` (rejected by newer models).
+            request.put("max_completion_tokens", openaiMaxCompletionTokens);
+            if (openaiTemperature != null && !openaiTemperature.isBlank()) {
+                request.put("temperature", Double.parseDouble(openaiTemperature.trim()));
+            }
 
             String requestBody = objectMapper.writeValueAsString(request);
 
@@ -174,7 +188,7 @@ public class CountryCuriositiesService {
             headers.setBearerAuth(openaiApiKey);
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
-            logger.info("🌐 [OpenAI] Calling API for: {} (model: gpt-3.5-turbo)", countryId);
+            logger.info("🌐 [OpenAI] Calling API for: {} (model: {})", countryId, openaiModel);
             long apiStartTime = System.currentTimeMillis();
             String response = restTemplate.postForObject(OPENAI_URL, entity, String.class);
             long apiDuration = System.currentTimeMillis() - apiStartTime;
