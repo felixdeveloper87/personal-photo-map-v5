@@ -37,6 +37,13 @@ const colors = {
   ink: palette.ink,
 };
 
+/*
+ * Chakra's scale jumps from 4 (1rem) to 5 (1.25rem). Without this, `boxSize={4.5}` is
+ * read as 4.5 *pixels* — which rendered icons as tiny dots (e.g. the indicators modal).
+ */
+const space = { 4.5: '1.125rem' };
+const sizes = { 4.5: '1.125rem' };
+
 const styles = {
   global: {
     body: {
@@ -295,6 +302,8 @@ const theme = extendTheme({
   config,
   fonts,
   colors,
+  space,
+  sizes,
   styles,
   components,
 });
