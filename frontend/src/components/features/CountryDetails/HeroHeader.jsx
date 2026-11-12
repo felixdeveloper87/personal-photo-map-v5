@@ -250,21 +250,22 @@ export default function HeroHeader({
             alignItems="stretch"
             gap={{ base: 4, lg: 6 }}
           >
+            {/* Stacked layouts: height follows the width (2:1) but is capped so the flag never
+                dominates the screen. Side-by-side (lg+): stretches to the row height. */}
             <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
+              position="relative"
+              w="100%"
               borderRadius="14px"
               overflow="hidden"
-              h={{ base: '130px', sm: '170px', md: '210px', lg: '100%' }}
-              minH={{ lg: '240px' }}
               bg={t.surfaceSubtle}
               border="1px solid"
               borderColor={t.hairline}
+              sx={{ aspectRatio: { base: '2 / 1', lg: 'auto' } }}
+              maxH={{ base: '180px', sm: '220px', md: '260px', lg: 'none' }}
+              h={{ lg: '100%' }}
+              minH={{ base: '120px', lg: '240px' }}
             >
-              <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-                <EnhancedFlag countryCode={countryId?.toUpperCase()} isHero={false} />
-              </Box>
+              <EnhancedFlag countryCode={countryId?.toUpperCase()} backdrop />
             </Box>
 
             <Flex minW={0} direction="column" justify="space-between" gap={{ base: 3, md: 4 }}>
